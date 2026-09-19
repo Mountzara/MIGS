@@ -3961,9 +3961,14 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
     verdict per citation, and a wrong one refuses the brief.
     """
     items, rejected = [], set()
+    # Position, not paper. Withdrawing by PMID removed fifteen citations from
+    # W33 including correct ones already standing in the syntheses, because one
+    # instance of that paper was misplaced. Only the instance judged wrong goes.
+    idx = 0
     for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
                          r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
         frag = m.group(1) if m.group(1) is not None else m.group(2)
+        base = m.start(1) if m.group(1) is not None else m.start(2)
         for sm in SUP_RE.finditer(frag):
             pm = _pmid_of(sm.group(0))
             if not pm:
@@ -3971,7 +3976,9 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
             before = H.unescape(re.sub(r"<[^>]+>", " ", frag[:sm.start()]))[-320:]
             after = H.unescape(re.sub(r"<[^>]+>", " ", frag[sm.end():]))[:120]
             r = real.get(pm) or {}
-            items.append({"pmid": pm, "sentence": re.sub(r"\s+", " ", before + " ⟦here⟧ " + after).strip(),
+            idx += 1
+            items.append({"id": idx, "pmid": pm, "_at": base + sm.start(),
+                          "sentence": re.sub(r"\s+", " ", before + " ⟦here⟧ " + after).strip(),
                           "paper_title": r.get("title", ""), "abstract": (r.get("abstract") or "")[:2500]})
     if not items:
         return
@@ -3981,25 +3988,29 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
         v = _claude(f"""Each item below is a sentence from a clinical brief with a citation placed at ⟦here⟧, and the paper
 that citation points at. For EACH, judge whether that paper is the one the sentence is talking about,
 and whether what the sentence claims is supported by that paper's abstract.
-ITEMS: {json.dumps(chunk, ensure_ascii=False)[:90000]}
-Reply with ONLY {{"items": [{{"pmid": "...", "right_paper": true|false, "supported": true|false,
+ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
+Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "supported": true|false,
 "why": "<one clause when either is false>"}}, ...]}} with one object for EVERY item given.""",
                     timeout_s=900)
         if not v or not isinstance(v.get("items"), list):
             die("the inserted-citation review returned no verdict")
-        judged = {str(x.get("pmid")) for x in v["items"]}
-        missing = [x["pmid"] for x in chunk if x["pmid"] not in judged]
+        judged = {int(x["id"]) for x in v["items"] if str(x.get("id", "")).strip().isdigit()}
+        missing = [x["id"] for x in chunk if x["id"] not in judged]
         if missing:
-            die(f"the inserted-citation review skipped {missing[:4]}")
+            die(f"the inserted-citation review skipped item(s) {missing[:4]}")
+        by_id = {x["id"]: x for x in chunk}
         for r in v["items"]:
-            if not r.get("right_paper") or not r.get("supported"):
-                faults.append(f"citation to {r.get('pmid')}: {str(r.get('why', ''))[:140]}")
-                rejected.add(str(r.get("pmid")))
+            if not str(r.get("id", "")).strip().isdigit():
+                continue
+            it = by_id.get(int(r["id"]))
+            if it and (not r.get("right_paper") or not r.get("supported")):
+                faults.append(f"citation to {it['pmid']}: {str(r.get('why', ''))[:140]}")
+                rejected.add(it["_at"])
     if faults:
         for f_ in faults[:10]:
             print("  CITATION REVIEW:", f_)
     print(f"  citation review: {len(items) - len(rejected)} of {len(items)} citation(s) confirmed"
-          + (f"; {len(rejected)} withdrawn as the wrong paper for the claim" if rejected else ""))
+          + (f"; {len(rejected)} withdrawn as the wrong paper for that claim" if rejected else ""))
     return rejected
 
 
@@ -4093,6 +4104,20 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
             emptied.append(tid)
             h = re.sub(r'<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
                        % re.escape(tid), "", h)
+            # the reader's jump list must not offer a heading that is gone
+            h = re.sub(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#%s"[\s\S]*?</a>' % re.escape(tid), "", h)
+            h = re.sub(r'<a[^>]*href="#%s"[^>]*class="[^"]*mz-toc-chip[^"]*"[\s\S]*?</a>' % re.escape(tid), "", h)
+    # and every surviving chip's count is what the section now holds
+    for tid, t in topics.items():
+        if tid in emptied:
+            continue
+        sec = re.search(r'<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
+                        % re.escape(tid), h)
+        if not sec:
+            continue
+        left = len(set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', sec.group(0))))
+        h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(tid),
+                   lambda m: m.group(1) + str(left) + m.group(2), h)
     return h, drops, reasons, emptied
 
 
@@ -4179,11 +4204,16 @@ def cmd_renumber(post_id: str) -> None:
     if named:
         withdrawn = review_inserted_citations(W, h, real) or set()
         if withdrawn:
-            # a citation the review says points at the wrong paper for its claim
-            # is REMOVED, not shipped and not a reason to refuse the whole brief
-            h = SUP_RE.sub(lambda m: "" if _pmid_of(m.group(0)) in withdrawn else m.group(0), h)
-            print(f"  withdrew every citation to {sorted(withdrawn)} — the review could not match it "
-                  f"to the claim it sat on")
+            # ONLY the instances judged wrong. Other citations to the same paper
+            # stand: a misplaced marker in one sentence says nothing about a
+            # correct one in another.
+            gone = []
+            for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                if m.start() in withdrawn:
+                    gone.append(_pmid_of(m.group(0)))
+                    h = h[:m.start()] + h[m.end():]
+            print(f"  withdrew {len(gone)} misplaced citation(s) ({', '.join(sorted(set(x for x in gone if x))[:6])})"
+                  f" — other citations to those papers stand")
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
