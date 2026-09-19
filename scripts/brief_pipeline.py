@@ -3523,6 +3523,9 @@ def cmd_publish(post_id: str) -> None:
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
     preview_and_verify(W, post_id, "/evidence/")
+    if dry:
+        print(f"DRY RUN OK — {post_id} passes every check; nothing was written to the site")
+        return
     body = open(W + "body.applied.html", encoding="utf-8").read()
     receipt = json.load(open(W + ".ledger/receipt.json"))
     json.dump({"body_html": body, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
@@ -3751,7 +3754,7 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
     note = ""
     t = ""
     for attempt in range(3):
-        v = _claude(f"""Write the hover summary a clinician sees for one citation.
+        v = _ask_cached(W, "findings", f"""Write the hover summary a clinician sees for one citation.
 PAPER: {json.dumps(title)}
 ABSTRACT (the only source; use nothing else):
 {abstract[:6000]}
@@ -3985,7 +3988,7 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
     faults = []
     for i in range(0, len(items), 6):
         chunk = items[i:i + 6]
-        v = _claude(f"""Each item below is a sentence from a clinical brief with a citation placed at ⟦here⟧, and the paper
+        v = _ask_cached(W, "cites", f"""Each item below is a sentence from a clinical brief with a citation placed at ⟦here⟧, and the paper
 that citation points at. For EACH, judge whether that paper is the one the sentence is talking about,
 and whether what the sentence claims is supported by that paper's abstract.
 ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
@@ -4027,7 +4030,51 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
 # pelvic pain carrying prostatitis. The code was not missing. I routed around
 # it. Curation is now part of the one path that updates a published brief.
 
-def curate_live(h: str, topics: dict, papers: dict) -> tuple:
+
+# ---------------------------------------------------------------------------
+# VERDICT CACHE — a model answer is paid for once
+# ---------------------------------------------------------------------------
+# Every failure in this work so far was in deterministic code, and each one
+# cost a full publish cycle to find because the model passes ran again from
+# scratch every time. A verdict is keyed by the exact question asked, so
+# re-running after fixing a regex costs nothing for work already judged.
+
+def _cache_get(W: str, kind: str, key: str):
+    path = W + f"cache.{kind}.json"
+    if not os.path.exists(path):
+        return None
+    try:
+        return json.load(open(path)).get(key)
+    except Exception:
+        return None
+
+
+def _cache_put(W: str, kind: str, key: str, value) -> None:
+    path = W + f"cache.{kind}.json"
+    d = {}
+    if os.path.exists(path):
+        try:
+            d = json.load(open(path))
+        except Exception:
+            d = {}
+    d[key] = value
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    json.dump(d, open(path, "w"), ensure_ascii=False)
+
+
+def _ask_cached(W: str, kind: str, prompt: str, timeout_s: int = 900):
+    import hashlib as _h
+    key = _h.sha256(prompt.encode("utf-8")).hexdigest()[:24]
+    hit = _cache_get(W, kind, key)
+    if hit is not None:
+        return hit
+    v = _claude(prompt, timeout_s=timeout_s)
+    if v is not None:
+        _cache_put(W, kind, key, v)
+    return v
+
+
+def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
     """Judge every paper against the heading it sits under, twice.
 
     First pass: does this paper belong under this heading, for gynecologic
@@ -4050,7 +4097,7 @@ def curate_live(h: str, topics: dict, papers: dict) -> tuple:
             continue
         for i in range(0, len(pmids), 10):
             batch = pmids[i:i + 10]
-            v = _claude(f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
+            v = _ask_cached(W, "curate", f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
 minimally invasive gynecologic surgery practice. Its readers are practising gynecologic surgeons.
 SECTION HEADING: {json.dumps(t["title"])}
 For EACH paper: does it belong under THAT heading for THAT audience?
@@ -4078,7 +4125,7 @@ with one object for EVERY paper given.""", timeout_s=900)
     keeps = [q for tid, t in topics.items() for q in t["pmids"] if q in papers and q not in drops]
     for i in range(0, len(keeps), 10):
         batch = keeps[i:i + 10]
-        v = _claude(f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
+        v = _ask_cached(W, "curate", f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
 audience of gynecologic surgeons. Answer "NONE" when no heading fits — a different organ, specialty,
 sex or population.
 HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
@@ -4121,7 +4168,10 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
     return h, drops, reasons, emptied
 
 
-def cmd_renumber(post_id: str) -> None:
+def cmd_renumber(post_id: str, dry: bool = False) -> None:
+    """dry=True runs the whole transformation and every check, and writes
+    nothing to the site. Model verdicts are cached, so iterating on a regex
+    after a failed check costs nothing."""
     # No spec receipt required. That receipt certifies the AUTHORING pipeline,
     # and this command authors nothing: it renumbers markers and rebuilds the
     # reference list over prose that is already written, already reviewed and
@@ -4171,7 +4221,7 @@ def cmd_renumber(post_id: str) -> None:
     papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
                        "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
     if topics:
-        h, dropped_map, drop_why, emptied = curate_live(h, topics, papers_ctx)
+        h, dropped_map, drop_why, emptied = curate_live(h, topics, papers_ctx, W)
         if dropped_map:
             print(f"  curation removed {len(dropped_map)} paper(s) that are not about their heading:")
             for pm, tid in list(dropped_map.items())[:12]:
@@ -4389,4 +4439,14 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    _dry = "--dry" in sys.argv
+    _cmd = sys.argv[1]
+    _fn = {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids,
+           "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish,
+           "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(_cmd)
+    if not _fn:
+        die(f"unknown stage {_cmd}")
+    if _cmd == "renumber":
+        _fn(sys.argv[2], dry=_dry)
+    else:
+        _fn(sys.argv[2])
