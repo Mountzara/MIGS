@@ -6006,6 +6006,15 @@ def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> 
     lock = hold_work_lock(W, post_id)
     try:
         _renumber(post_id, W, dry, resume)
+    except Refused:
+        # the refusal names the failing stage; this names how to continue
+        # from the last good checkpoint once that stage is fixed
+        done = [st for st in RENUMBER_STAGES if os.path.exists(W + f"snap.{st}.json")]
+        if done:
+            print(f"  to continue after fixing the failing stage, without replaying the stages before it:\n"
+                  f"    python3 scripts/brief_pipeline.py renumber {post_id} --from={done[-1]}{' --dry' if dry else ''}",
+                  file=sys.stderr)
+        raise
     finally:
         release_work_lock(lock)
 

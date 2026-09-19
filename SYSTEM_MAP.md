@@ -2124,6 +2124,16 @@ Rules that came out of building it:
 `renumber` does NOT require the `standards-check` receipt (it authors nothing;
 its gates are the post-conditions, the site audit and the browser). `run` does.
 
+**CHECKPOINTS (2026-09-19).** Owner: *"if everything before is fine in the
+process, there's no reason to start from the beginning."* `renumber` writes
+`<work>/snap.curated.json` (body + pmids, PubMed facts, curation results,
+journal lines), `snap.cited.json` (after the citation chain) and
+`snap.numbered.json` (after numbering/references). A refusal prints the
+resume command for the latest checkpoint; `renumber <id> --from=<stage>`
+continues from there, so a fix to a later stage costs that stage plus the
+final audits — never a replay. (`run` resumes from its `.ledger/` receipts
+the same way.)
+
 **THE WEEKLY PATH RUNS THE SAME CHAIN (2026-09-19).** Owner: *"this is tied
 to a scheduled automated routine that is supposed to create these briefs
 each week — they should be done right the first time."* Every step above
