@@ -4507,11 +4507,38 @@ def remove_orphan_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
     rounds; a study still reported after that refuses the brief.
     Returns (h, sentences_changed)."""
     covered = [{"pmid": q, "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip(),
+                "journal": (real.get(q) or {}).get("journal", ""),
                 "title": (real.get(q) or {}).get("title", "")[:150]} for q in pmids if real.get(q)]
     if not covered:
         return h, 0
     total = 0
     last_orphans = []
+
+    def _words(x):
+        return set(w for w in re.findall(r"[a-z][a-z0-9-]{3,}", (x or "").lower()))
+
+    def confirm_orphan(sentence, study):
+        # A flagged sentence is checked once more against the covered papers
+        # most like it, by overlap of title, journal and abstract with the
+        # sentence. W33's "a Cochrane review on embryo-transfer preparation
+        # techniques" WAS a covered paper (Yamaji, Cochrane Database Syst
+        # Rev); the first pass matched on first author alone and a correct
+        # clause was removed.
+        sw = _words(sentence + " " + study)
+        scored = sorted(covered, key=lambda c: -len(sw & _words(c["title"] + " " + c["journal"] + " "
+                                                                 + ((real.get(c["pmid"]) or {}).get("abstract") or "")[:1500])))[:6]
+        cands = [{"pmid": c["pmid"], "first_author": c["first_author"], "journal": c["journal"], "title": c["title"],
+                  "abstract_head": re.sub(r"\s+", " ", (real.get(c["pmid"]) or {}).get("abstract") or "")[:500]} for c in scored]
+        v = _ask_cached(W, "orphans", f"""A sentence of a clinical brief reports a study, described as {json.dumps(study)}:
+{json.dumps(sentence)}
+Is that study one of these papers the brief holds? Match on what the sentence says — design, journal
+(a "Cochrane review" is a Cochrane Database of Systematic Reviews paper), population, numbers, topic —
+not on an author's name alone.
+CANDIDATES: {json.dumps(cands, ensure_ascii=False)}
+Reply with ONLY {{"pmid": "<the matching pmid>"}} or {{"pmid": null}} when none of them is that study.""",
+                        timeout_s=600)
+        got = str((v or {}).get("pmid") or "").strip()
+        return not (got and got in pmids)
     for _round in range(3):
         edits = []
         for ps in _prose_passages(h):
@@ -4550,7 +4577,11 @@ Reply with ONLY {{"orphans": [{{"sentence": <number>, "study": "<how the sentenc
                 new = re.sub(r"\s+", " ", str(o.get("rewrite") or "")).strip()
                 if new and len(new) > len(sents[idx - 1][0]) + 60:
                     new = ""
-                edits.append((a, b, new, str(o.get("study", ""))[:80]))
+                study = str(o.get("study", ""))[:80]
+                if not confirm_orphan(sents[idx - 1][0], study):
+                    print(f"  KEEPING a sentence flagged for {study!r}: it is a paper the brief holds")
+                    continue
+                edits.append((a, b, new, study))
         if not edits:
             return h, total
         for a, b, new, study in sorted(edits, key=lambda e: -e[0]):
