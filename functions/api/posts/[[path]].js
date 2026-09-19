@@ -30,7 +30,7 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
-import { auditPostFormat, auditPublishable, healPaperCardPost, healPost, healPopoverSummaries, healAbstractCompleteness } from "../../_lib/post_format.js";
+import { auditPostFormat, auditPublishable, healPaperCardPost, healPost, healPopoverSummaries, ensurePopoverSourceLinks, healAbstractCompleteness } from "../../_lib/post_format.js";
 
 // Fetch the COMPLETE English abstract for a PMID from PubMed eutils. Returns
 // [{label, text}] of the AbstractText blocks, skipping any second-language
@@ -107,6 +107,15 @@ async function verifyPbkdf2(password, stored) {
 }
 
 async function isAdminRequest(request, env) {
+    // Path 0: the admin session cookie minted by admin/_middleware.js after
+    // a password check. Same reason as _lib/admin_api.js — the content
+    // pipeline is part of "the backend" and must not ask for credentials
+    // again once the operator has signed in.
+    try {
+        const sess = await import("../../_lib/admin_session.js");
+        if (await sess.verifyAdminSession(request, env)) return true;
+    } catch { /* fall through */ }
+
     // Path 1: Cloudflare Access JWT headers (set up via dashboard).
     const accessEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
     const accessJwt = request.headers.get("Cf-Access-Jwt-Assertion");
@@ -140,6 +149,36 @@ async function isAdminRequest(request, env) {
     }
     return false;
 }
+
+
+// ---------------------------------------------------------------------------
+// BRIEF-PIPELINE RECEIPT GATE (2026-09-15). Every brief is built, verified and
+// audited by scripts/brief_pipeline.py against the owner's standards S1-S14
+// (sequential numbered citations with hover summaries, every paper cited,
+// verbatim abstracts, grounding, no dosing, no advice, the editorial spine,
+// the trend format with no verdict, rendered contrast). The pipeline stores a
+// receipt on the post: the SHA-256 of the exact body it passed, and that the
+// standards audit and the sentence-level grounding audit passed. Nothing
+// publishes without a receipt that matches the stored body — not /approve,
+// not a PUT that flips status, not the format-heal re-render path. A weekly
+// generator can still create drafts; it cannot publish one that has not been
+// through the pipeline. {"force": true} remains the recorded admin escape.
+// ---------------------------------------------------------------------------
+async function sha256Hex(text) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text || ""));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+async function pipelineReceiptHolds(post) {
+    const r = post && post.pipeline_receipt;
+    if (!r || typeof r !== "object") return { ok: false, why: "no brief-pipeline receipt on the post" };
+    if (r.standards_passed !== true || r.grounding_passed !== true) {
+        return { ok: false, why: "the receipt does not record a passing standards audit and sentence-level grounding audit" };
+    }
+    const sha = await sha256Hex(post.body_html);
+    if (r.body_sha256 !== sha) return { ok: false, why: "the receipt is for a different body than the one stored" };
+    return { ok: true };
+}
+const RECEIPT_HINT = "Run scripts/brief_pipeline.py run <id> (standards S1-S14) and publish through it.";
 
 function isPipelineRequest(request, env) {
     const token = request.headers.get("X-Pipeline-Token");
@@ -281,6 +320,11 @@ async function autoHealBody(env, kind, bodyHtml) {
         if (pop.changed) { body = pop.healed; healed = true; heal_steps.push(`popover-summaries:${pop.changed}`); }
         heal_problems.push(...pop.problems);
     } catch (e) { heal_problems.push(`popover heal threw: ${String(e && e.message || e)}`); }
+    try {
+        // Every citation offers its source (owner directive 2026-09-02).
+        const src = ensurePopoverSourceLinks(body);
+        if (src.changed) { body = src.healed; healed = true; heal_steps.push(`popover-source-links:${src.changed}`); }
+    } catch (e) { heal_problems.push(`popover source-link heal threw: ${String(e && e.message || e)}`); }
     try {
         const abs = await healAbstractCompleteness(body, fetchPubmedAbstract, { maxFetch: 30 }); // PubMed
         if (abs.changed) { body = abs.healed; healed = true; heal_steps.push(`abstract-completion:${abs.changed}`); }
@@ -549,6 +593,9 @@ async function onRequestImpl({ request, env, params }) {
         // lands — including a stale re-render of a published id — is held
         // to the same standard as W20/W21. Provably lossless or it doesn't
         // apply (see _lib/post_format.js safety model).
+        // The receipt is the pipeline's signature over the body IT audited, so
+        // it is checked against what was submitted, before any server-side heal.
+        const submittedBody = body.body_html || "";
         const heal = await autoHealBody(env, body.kind, body.body_html || "");
         body.body_html = heal.body_html;
 
@@ -579,7 +626,8 @@ async function onRequestImpl({ request, env, params }) {
             // overwrite guard (422) and forces a proper re-render.
             const incomingPub = auditPublishable({ kind: body.kind, body_html: body.body_html || "" });
             const existingAudit = auditPostFormat(existing);
-            formatHeal = existing.status === "published" && !existingAudit.canonical && incomingPub.publishable;
+            formatHeal = existing.status === "published" && !existingAudit.canonical && incomingPub.publishable
+                && (await pipelineReceiptHolds({ body_html: submittedBody, pipeline_receipt: body.pipeline_receipt })).ok;
             const lockedStatuses = new Set(["published", "rejected"]);
             if (lockedStatuses.has(existing.status) && !formatHeal) {
                 return errorResponse(
@@ -624,6 +672,7 @@ async function onRequestImpl({ request, env, params }) {
             instagram_draft: body.instagram_draft || null,
             blog_html_path: body.blog_html_path || null,
             run_manifest_path: body.run_manifest_path || null,
+            pipeline_receipt: (body.pipeline_receipt && typeof body.pipeline_receipt === "object") ? body.pipeline_receipt : null,
             // Adversarial-review fix (2026-07-02): a re-POST of an existing id
             // preserves first-ingest time, so the freshness dead-man's draft
             // age can't be reset by the pipeline's weekly re-runs.
@@ -710,10 +759,18 @@ async function onRequestImpl({ request, env, params }) {
         // abstracts, adequate citation-popover summaries). This is the choke
         // point that keeps a substandard auto-draft from ever going live again.
         // Admin escape hatch: {"force": true} publishes anyway and records it.
+        let force = false;
+        try { const b = await request.json(); force = b && b.force === true; } catch {}
+        const receipt = await pipelineReceiptHolds(post);
+        if (!receipt.ok && !force) {
+            return errorResponse(
+                `approve refused — post ${id} has not been passed by the brief pipeline: ${receipt.why}. ${RECEIPT_HINT}`,
+                422,
+            );
+        }
+        if (!receipt.ok) post.receipt_force_published_at = new Date().toISOString();
         const pub = auditPublishable(post);
         if (!pub.publishable) {
-            let force = false;
-            try { const b = await request.json(); force = b && b.force === true; } catch {}
             if (!force) {
                 return errorResponse(
                     `approve refused — post ${id} fails one or more publish criteria and will not be published:\n` +
@@ -837,7 +894,7 @@ async function onRequestImpl({ request, env, params }) {
         // field, leaving 8 trend briefs with only 2-3/5 canonical fields.
         const editable = ["title", "summary", "body_html", "topics_covered", "pmids_cited",
                           "kb_entries_retrieved", "gaps_surfaced", "run_manifest_path",
-                          "verdict", "linkedin_draft", "instagram_draft", "kind", "status"];
+                          "verdict", "linkedin_draft", "instagram_draft", "kind", "status", "pipeline_receipt"];
         for (const key of editable) {
             if (patch[key] !== undefined) post[key] = patch[key];
         }
@@ -858,6 +915,13 @@ async function onRequestImpl({ request, env, params }) {
         // substandard body could be published by a raw status edit. Recompute
         // fresh and refuse unless the body is publishable (or {"force":true}).
         if (patch.status === "published") {
+            const rc = await pipelineReceiptHolds(post);
+            if (!rc.ok && patch.force !== true) {
+                return errorResponse(
+                    `PUT refused — cannot set status="published" on post ${id}: ${rc.why}. ${RECEIPT_HINT}`,
+                    422,
+                );
+            }
             const pub = auditPublishable(post);
             if (!pub.publishable && patch.force !== true) {
                 return errorResponse(

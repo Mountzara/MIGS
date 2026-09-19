@@ -54,6 +54,13 @@ const ALLOWED_OVERRIDE_KEYS = new Set([
     "title", "summary", "lede", "tagline", "tagline_body",
     // Verdict + audit trail
     "verdict", "verdict_label", "rationale",
+    // 2026-09-15: a brief may be approved on its evidence FRAMING alone —
+    // one plain label per item of the claim, from a fixed list — instead of
+    // a verdict. The published trend format presents the evidence in prose
+    // under headed subsections and carries no verdict gauge, because the
+    // reader may be the person who made the claim and the brief exists to
+    // inform them, not to score against them.
+    "evidence_framing",
     // §3.8 gold-standard body sections
     "bottom_line", "level_a_items", "pyramid_rows",
     "do_migs_lens", "gap_paragraphs", "counseling",
@@ -100,10 +107,15 @@ export async function onRequestPost(ctx) {
         const verdictLabel  = String(override.verdict_label || "").trim();
         const rationale     = String(override.rationale     || "").trim();
 
-        if (!verdict)       return jsonError("override.verdict required",       400);
-        if (!verdictLabel)  return jsonError("override.verdict_label required", 400);
+        const framing = Array.isArray(override.evidence_framing) ? override.evidence_framing : null;
+        const framingOk = framing && framing.length > 0
+            && framing.every((f) => f && typeof f.item === "string" && typeof f.framing === "string" && f.framing.trim());
+        if (!verdict && !framingOk) {
+            return jsonError("override.verdict or override.evidence_framing (non-empty [{item, framing}]) required", 400);
+        }
+        if (verdict && !verdictLabel) return jsonError("override.verdict_label required when a verdict is given", 400);
         if (!rationale)     return jsonError("override.rationale required",     400);
-        if (!ALLOWED_VERDICTS.has(verdict)) {
+        if (verdict && !ALLOWED_VERDICTS.has(verdict)) {
             return jsonError(
                 `override.verdict must be one of: ${Array.from(ALLOWED_VERDICTS).join(" | ")}`,
                 400,
@@ -146,7 +158,7 @@ export async function onRequestPost(ctx) {
                     "mz-trend-brief-id": id,
                     "mz-approved-by": admin.user,
                     "mz-approved-at": String(now),
-                    "mz-verdict": verdict,
+                    "mz-verdict": verdict || "evidence-framing",
                 },
             });
         } catch (e) {

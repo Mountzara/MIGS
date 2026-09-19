@@ -24,6 +24,7 @@
 import {
     TIERS, valueComparison, EVIDENCE, MODEL_COMPARISON,
     SELF_PAY_PRINCIPLES, MEMBERSHIP_VERSION, validateTierLegality,
+    PRACTICE_SCOPE,
 } from "../../_lib/membership.js";
 import { DELIVERABLES, PATIENT_DISCLAIMER, licensedStates, licenceWarnings } from "../../_lib/visit_prep.js";
 
@@ -95,6 +96,12 @@ export async function onRequestGet(ctx) {
             disclaimer: PATIENT_DISCLAIMER,
         },
         self_pay: SELF_PAY_PRINCIPLES,
+        // What the practice can and cannot do right now, served with the
+        // price rather than discovered after enrolment. A membership is
+        // charged monthly in advance; the one thing it must never do is
+        // let someone pay for months before finding out that the visit
+        // they were buying access to is a video visit.
+        practice_scope: PRACTICE_SCOPE,
         // Where a clinical consultation can actually be offered. Shown so
         // a patient outside those states is not sold an escalation path
         // that does not exist for them.
@@ -106,7 +113,8 @@ export async function onRequestGet(ctx) {
             .map((w) => w.message),
         disclosures: [
             "Membership is not insurance and does not pay for medical care.",
-            "Your visits and procedures continue to be billed to your health plan in the ordinary way.",
+            "Dr. Mabini is seeing patients by video only at this time. Membership buys access to him, not an in-person visit, an office procedure or surgery.",
+            "Your video visits continue to be billed to your health plan in the ordinary way.",
             "Membership buys access and convenience — never a covered medical service.",
             "You may cancel at any time. Unused prepaid months are refunded pro rata.",
         ],

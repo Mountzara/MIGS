@@ -14,7 +14,7 @@
 //      lets the patient open the wizard's "all-steps" panel whenever
 //      they want (also gives them the on/off toggle)
 //
-// §3.10 Apple-glass purple, mzRise animation, prefers-reduced-motion
+// Apple-glass purple, mzRise animation, prefers-reduced-motion
 // override, focus-trap, Escape closes, body scroll-lock while modal open.
 // =====================================================================
 (function () {
@@ -38,10 +38,10 @@
             display: inline-flex; align-items: center; gap: 9px;
             padding: 9px 14px 9px 11px;
             font: 500 12.5px/1 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
-            color: rgba(245, 245, 247, 0.92);
+            color: #1A1726;
             border: 1px solid rgba(167, 139, 250, 0.32);
             border-radius: 999px;
-            background: rgba(14, 14, 19, 0.78);
+            background: rgba(251, 250, 248, 0.86);
             backdrop-filter: blur(18px) saturate(180%);
             -webkit-backdrop-filter: blur(18px) saturate(180%);
             box-shadow: 0 10px 22px -10px rgba(0, 0, 0, 0.5);
@@ -51,7 +51,7 @@
         .mz-wz-chip:hover, .mz-wz-chip:focus-visible {
             transform: translateY(-1px);
             border-color: rgba(167, 139, 250, 0.6);
-            background: rgba(14, 14, 19, 0.88);
+            background: rgba(255, 255, 255, 0.92);
             outline: none;
         }
         .mz-wz-ring {
@@ -67,7 +67,7 @@
             position: absolute;
             inset: 3px;
             border-radius: 50%;
-            background: rgba(14, 14, 19, 0.95);
+            background: rgba(255, 255, 255, 0.96);
         }
         .mz-wz-ring .mz-wz-pct {
             position: relative; z-index: 1;
@@ -94,12 +94,12 @@
             background:
                 radial-gradient(ellipse 80% 60% at 50% -20%, rgba(167, 139, 250, 0.16), transparent 60%),
                 rgba(14, 14, 19, 0.96);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            border: 1px solid #E9E5EE;
             border-radius: 18px;
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
             box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(167, 139, 250, 0.18) inset;
-            color: rgba(245, 245, 247, 0.92);
+            color: #1A1726;
             font-family: 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
             transform: translateY(8px) scale(0.985);
             opacity: 0;
@@ -109,7 +109,7 @@
         .mz-wz-backdrop.mz-open .mz-wz-modal { transform: none; opacity: 1; }
         .mz-wz-modal header {
             padding: 18px 22px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid #E9E5EE;
         }
         .mz-wz-eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
@@ -126,7 +126,7 @@
         .mz-wz-modal h2 {
             margin: 0;
             font-size: 22px; font-weight: 300;
-            letter-spacing: -0.012em; color: #fff;
+            letter-spacing: -0.012em; color: #1A1726;
         }
         .mz-wz-modal h2 em {
             font-style: normal;
@@ -150,19 +150,19 @@
         .mz-wz-progress-text {
             margin-top: 8px;
             font-size: 11.5px;
-            color: rgba(245, 245, 247, 0.56);
+            color: #6E6A7C;
             letter-spacing: 0.06em;
         }
 
         .mz-wz-body { padding: 18px 22px; overflow-y: auto; }
         .mz-wz-blurb {
             font-size: 14.5px; line-height: 1.62;
-            color: rgba(245, 245, 247, 0.85);
+            color: #1A1726;
             margin: 0 0 12px;
         }
         .mz-wz-time {
             font-size: 11.5px;
-            color: rgba(245, 245, 247, 0.5);
+            color: #6E6A7C;
             margin-bottom: 18px;
         }
 
@@ -172,10 +172,10 @@
             align-items: center;
             padding: 10px 14px;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid #E9E5EE;
             border-radius: 10px;
             font-size: 13px;
-            color: rgba(245, 245, 247, 0.86);
+            color: #1A1726;
             cursor: pointer;
             transition: background 0.18s, border-color 0.18s, transform 0.18s;
         }
@@ -202,7 +202,7 @@
             font-weight: 700;
         }
         .mz-wz-steprow.skipped .dot {
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: #4A4658;
             background: rgba(255, 255, 255, 0.04);
         }
         .mz-wz-steprow.skipped .title { text-decoration: line-through; opacity: 0.55; }
@@ -210,10 +210,10 @@
             border-color: rgba(167, 139, 250, 0.6);
             background: rgba(167, 139, 250, 0.10);
         }
-        .mz-wz-steprow .title { font-weight: 500; color: #fff; }
+        .mz-wz-steprow .title { font-weight: 500; color: #1A1726; }
         .mz-wz-steprow .meta {
             font-size: 11.5px;
-            color: rgba(245, 245, 247, 0.55);
+            color: #6E6A7C;
             letter-spacing: 0.04em;
         }
         .mz-wz-steprow .arrow {
@@ -224,29 +224,29 @@
         .mz-wz-actions {
             display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
             padding: 14px 22px 18px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid #E9E5EE;
             background: rgba(7, 7, 10, 0.42);
         }
         .mz-wz-btn {
             font: inherit; font-size: 13px; font-weight: 500;
             padding: 9px 16px;
             border-radius: 9px; cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            border: 1px solid #E9E5EE;
             background: rgba(255, 255, 255, 0.04);
-            color: rgba(245, 245, 247, 0.84);
+            color: #4A4658;
             transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
         }
-        .mz-wz-btn:hover { transform: translateY(-1px); color: #fff; border-color: rgba(167, 139, 250, 0.45); }
+        .mz-wz-btn:hover { transform: translateY(-1px); color: #1A1726; border-color: rgba(167, 139, 250, 0.45); }
         .mz-wz-btn.primary {
             background: linear-gradient(180deg, rgba(167, 139, 250, 1), rgba(109, 40, 217, 1));
             border-color: rgba(167, 139, 250, 0.6);
-            color: #fff;
+            color: #1A1726;
             font-weight: 500;
             padding: 10px 22px;
         }
         .mz-wz-btn.primary:hover { box-shadow: 0 12px 28px -8px rgba(109, 40, 217, 0.5); }
-        .mz-wz-btn.subtle { background: transparent; border-color: transparent; color: rgba(245, 245, 247, 0.62); }
-        .mz-wz-btn.subtle:hover { color: #fff; }
+        .mz-wz-btn.subtle { background: transparent; border-color: transparent; color: #4A4658; }
+        .mz-wz-btn.subtle:hover { color: #1A1726; }
 
         body.mz-wz-locked { overflow: hidden; }
 
@@ -420,7 +420,7 @@
         if (!actions || !state) return;
         if (state.all_done) {
             actions.innerHTML = `
-                <span style="font-size:12.5px; color:rgba(245,245,247,0.65);">Nice work. The wizard will stop showing itself.</span>
+                <span style="font-size:12.5px; color: #4A4658;">Nice work. The wizard will stop showing itself.</span>
                 <span style="flex:1"></span>
                 <button class="mz-wz-btn" id="mz-wz-close">Close</button>
             `;

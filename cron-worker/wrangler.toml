@@ -25,6 +25,10 @@ workers_dev = false
 
 # Triggers:
 #   0 9 * * *     — nightly D1 -> R2 backup (09:00 UTC)
+#   0 * * * *     — triage auto-release: releases triage rows the
+#                   clinician has not reviewed within 4 hours, so a
+#                   patient is never blocked from booking indefinitely.
+#                   Urgent rows are NEVER auto-released.
 #   */15 * * * *  — Phase 18 R8 messaging-SLA breach sweep: flags
 #                   message_threads whose sla_due_at has passed
 #                   (sla_breached=1 + audit row); /admin/messages/
@@ -38,7 +42,7 @@ workers_dev = false
 #                   libs live there).
 #                   All routed by event.cron in index.js::scheduled().
 [triggers]
-crons = ["0 9 * * *", "*/15 * * * *", "0 11 * * *"]
+crons = ["0 9 * * *", "*/15 * * * *", "0 11 * * *", "0 * * * *"]
 
 # Same D1 binding as the Pages project so the Worker reads from the
 # canonical patient store.

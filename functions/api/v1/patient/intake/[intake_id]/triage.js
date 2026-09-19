@@ -28,7 +28,8 @@ import {
     recordLicensureBlock,
 } from "../../../../../_lib/licensure.js";
 
-const MANUAL_REVIEW_PLACEHOLDER = "manual_review_required";
+// Shared with the auto-release hold and the release validator — see _lib/visit_types.js.
+import { MANUAL_REVIEW_PLACEHOLDER } from "../../../../../_lib/visit_types.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -182,9 +183,26 @@ export async function triageForIntake(ctx, intake_id) {
         ai_urgency: "routine",
         ai_in_person_required: 0,
         ai_preferred_time_of_day: "any",
-        ai_rationale: queued_job_id
-            ? `Awaiting automated triage — ${fallback_reason}. Dr. Mabini can release slots now without waiting.`
-            : `AI triage unavailable — manual review required. Reason: ${fallback_reason || "unknown"}`,
+        // ai_rationale IS PATIENT-VISIBLE. It is returned by
+        // /api/v1/patient/triage/current and rendered on the booking page
+        // (portal/appointments/book/index.html). It used to carry the raw
+        // exception text and the bridge job id, so live rows read:
+        //
+        //   "AI triage unavailable — manual review required. Reason:
+        //    ANTHROPIC_API_KEY env secret not configured"
+        //   "Awaiting automated triage — queued for the local Claude CLI
+        //    bridge (job aij_c99ef609…). Dr. Mabini can release slots now
+        //    without waiting."
+        //
+        // That exposes an internal queue id, tells the patient the practice
+        // triages on a laptop, and shows her an instruction addressed to
+        // him. And it is not an edge case: with no ANTHROPIC_API_KEY set,
+        // EVERY intake takes this branch.
+        //
+        // One fixed, patient-safe sentence. The real reason still reaches
+        // him — logAudit below already receives `fallback_reason`, and the
+        // admin triage panel reads it from there.
+        ai_rationale: "Your intake is with Dr. Mabini for review. He will set your visit type and open booking times shortly.",
         ai_secondary_concerns_json: JSON.stringify([]),
     };
 
@@ -235,7 +253,9 @@ export async function triageForIntake(ctx, intake_id) {
         existing: false,
         triage_id,
         ai_used: !!decision,
-        fallback_reason,
+        // `fallback_reason` deliberately NOT returned — it is raw exception
+        // text and this response reaches the patient's browser. It is
+        // recorded in the audit row above, which is where it belongs.
         row: {
             id: triage_id,
             ...row,

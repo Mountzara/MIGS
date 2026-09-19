@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Patient charts · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <!-- =================================================================
+         /admin/cases/ — 2026-08-19
+         =================================================================
+         This URL 404'd while `_nav.js` highlighted a Patients group whose
+         match regex includes /admin/cases/*. Anyone trimming the URL from
+         a case page, or bookmarking the section, hit a dead end — and a
+         console with a dead link in its own navigation reads as broken
+         software no matter how well the rest works.
+         A case page needs a patient id; this index is the picker.
+         ================================================================= -->
+    <style>
+        :root { --bg-base:#FBFAF8; --border:#E9E5EE; --accent-soft:#7c3aed; --glow-purple:167,139,250; }
+        * { box-sizing:border-box; }
+        html, body { margin:0; padding:0; min-height:100vh; color:#1A1726;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple),.12), transparent 60%), var(--bg-base);
+            font-family:'Avenir Next','Avenir',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+            -webkit-font-smoothing:antialiased; }
+        a { color:var(--accent-soft); text-decoration:none; }
+        .wrap { max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
+        header.bar { font-size:12.5px; margin-bottom:20px; }
+        h1 { font-weight:200; font-size:clamp(26px,3.4vw,34px); letter-spacing:-.02em; margin:0 0 6px; }
+        .lede { font-size:14.5px; line-height:1.55; max-width:74ch; margin:0 0 22px; opacity:.85; }
+        .search { width:100%; max-width:420px; background:rgba(255,255,255,0.72); border:1px solid var(--border);
+            border-radius:10px; padding:10px 13px; color: #4A4658; font:inherit; font-size:14px; margin-bottom:16px; }
+        .search:focus { outline:none; border-color: #6d28d9; }
+        .roster-count { font-size:12px; opacity:.7; margin-left:10px; white-space:nowrap; }
+        .roster-count .warn { color:#92400E; opacity:1; }
+        .row { display:flex; align-items:center; gap:12px; padding:13px 15px; border:1px solid var(--border);
+            border-radius:11px; background:rgba(255,255,255,0.72); margin-bottom:8px; text-decoration:none; color: #4A4658; }
+        .row:hover { border-color: #6d28d9; background:rgba(var(--glow-purple),.07); }
+        .nm { font-size:14.5px; font-weight:600; }
+        .sub { font-size:12px; opacity:.6; margin-top:2px; }
+        .go { margin-left:auto; font-size:12px; color:var(--accent-soft); }
+        .empty { opacity:.7; font-size:14px; line-height:1.6; padding:22px 0; max-width:70ch; }
+        .empty a { text-decoration:underline; }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><a href="/admin/">Admin</a> &rsaquo; Patient charts</header>
+        <h1>Patient charts</h1>
+        <p class="lede">
+            A chart is everything about one patient on a single page — their health history, triage decision, visits,
+            messages, symptom diary and audit trail. Pick someone to open theirs.
+        </p>
+        <input class="search" id="q" type="search" placeholder="Search by name or email" autocomplete="off" autofocus><span class="roster-count" id="roster-count"></span>
+        <div id="list"><div class="empty">Loading the roster…</div></div>
+    </div>
+    <script>
+    (function () {
+        'use strict';
+        var all = [];
+        function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+        function render(rows, q) {
+            var el = document.getElementById('list');
+            if (rows.length === 0) {
+                el.innerHTML = q
+                    ? '<div class="empty">No patient matches &ldquo;' + esc(q) + '&rdquo;. Clear the search to see the full roster.</div>'
+                    : '<div class="empty">Open a patient&rsquo;s full chart — history, triage, visits, messages, symptoms and audit on one page. '
+                      + 'There are no patients yet, so start on the <a href="/admin/patients/">roster</a>.</div>';
+                return;
+            }
+            el.innerHTML = rows.map(function (p) {
+                var name = ((p.first_name || '') + ' ' + (p.last_name || '')).trim() || p.email || 'Unnamed patient';
+                return '<a class="row" href="/admin/cases/' + encodeURIComponent(p.id) + '/">'
+                    + '<span><span class="nm">' + esc(name) + '</span>'
+                    + '<div class="sub">' + esc(p.email || 'no email on file') + (p.dob ? ' · born ' + esc(p.dob) : '') + '</div></span>'
+                    + '<span class="go">Open chart →</span></a>';
+            }).join('');
+        }
+        fetch('/api/v1/admin/patients?limit=100', { credentials: 'include', cache: 'no-store' })
+            .then(function (r) {
+                if (r.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return null; }
+                return r.ok ? r.json() : null;
+            })
+            .then(function (d) {
+                if (!d) { document.getElementById('list').innerHTML =
+                    '<div class="empty">Could not load the roster. Reload the page, or open the <a href="/admin/patients/">roster</a> directly.</div>'; return; }
+                all = d.patients || [];
+                var countEl = document.getElementById('roster-count');
+                countEl.textContent = all.length === 1 ? '1 patient' : all.length + ' patients';
+                if (all.length >= 100) countEl.innerHTML += ' <span class="warn">— only the first 100 are shown; search the full <a href="/admin/patients/">roster</a> to find anyone else</span>';
+                render(all, '');
+            })
+            .catch(function () {
+                document.getElementById('list').innerHTML =
+                    '<div class="empty">Could not load the roster. Reload the page, or open the <a href="/admin/patients/">roster</a> directly.</div>';
+            });
+        document.getElementById('q').addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            var top = document.querySelector('#list a.row');
+            if (top) location.href = top.getAttribute('href');
+        });
+        document.getElementById('q').addEventListener('input', function (e) {
+            var q = e.target.value.trim().toLowerCase();
+            if (!q) { render(all, ''); return; }
+            render(all.filter(function (p) {
+                return ((p.first_name || '') + ' ' + (p.last_name || '') + ' ' + (p.email || '')).toLowerCase().indexOf(q) >= 0;
+            }), q);
+        });
+    })();
+    </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+</body>
+</html>
