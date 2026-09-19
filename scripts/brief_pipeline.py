@@ -704,7 +704,10 @@ def fetch_pubmed(pmids: list[str]) -> dict[str, dict]:
             au = re.findall(r"<Author[^>]*>[\s\S]*?<LastName>(.*?)</LastName>[\s\S]*?<Initials>(.*?)</Initials>", art)
             cite = ""
             if au:
-                cite = ", ".join(f"{a} {i}" for a, i in au[:3]) + (" et al." if len(au) > 3 else "")
+                # unescaped like the title: raw XML entities in a surname
+                # (Akku&#x15f;) were escaped again on the page and rendered
+                # as the literal "&#x15f;"
+                cite = ", ".join(f"{H.unescape(a)} {H.unescape(i)}" for a, i in au[:3]) + (" et al." if len(au) > 3 else "")
             if pm and (pm not in out or (title and journal)):
                 out[pm] = {"title": title, "abstract": H.unescape("\n".join(parts)).strip(),
                            "journal": journal, "year": year, "authors": cite}
@@ -4728,7 +4731,9 @@ def cite_every_card(W: str, h: str, real: dict) -> tuple:
     abstract, which is appended to the synthesis with its marker. Everything
     inserted here is reviewed by the same per-sentence review afterwards.
     Returns (h, cited_by_sentence, sentences_added)."""
-    cited_now = {_pmid_of(x) for x in SUP_RE.findall(h)}
+    # a marker inside a deep-dive dialog or a card is not a citation in the
+    # prose: W29's two uncited cards counted as cited that way
+    cited_now = {_pmid_of(x) for ps in _prose_passages(h) for x in SUP_RE.findall(ps.group(1))}
     by_sentence, added = 0, 0
     for t in _topic_sections(h):
         cards = list(dict.fromkeys(re.findall(CARD_ID_RE, t.group(0)) + re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))
@@ -4789,6 +4794,84 @@ Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
     return h, by_sentence, added
 
 
+def cite_missing_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
+    """A second look at every prose sentence WITH its current citations
+    visible: which study it reports is not yet cited on it? The placement
+    pass under-delivers on sentences that pack three or four studies (W29:
+    "one review… and another…" with two markers for three studies); seeing
+    what is already cited makes the gap explicit. Returns (h, inserted)."""
+    topic_spans = _topic_sections(h)
+    title_of = {q: (real.get(q) or {}).get("title", "")[:120] for q in pmids}
+    added, out, last = 0, [], 0
+    for ps in _prose_passages(h):
+        frag = ps.group(1)
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
+        if not sents:
+            out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
+            continue
+        own = set()
+        if ps.kind == "synthesis":
+            enc = next((t for t in topic_spans if t.a <= ps.a < t.b), None)
+            if enc:
+                own = set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
+        cands = [q for q in pmids if (not own or q in own)]
+        rows = []
+        for i, (t, e) in enumerate(sents):
+            s_start = _sentence_start(masked, sents[i - 1][1]) if i >= 1 else 0
+            on_it = [_pmid_of(x) for x in SUP_RE.findall(frag[s_start:e])]
+            run_end = e
+            while True:
+                mm = SUP_RE.match(frag, run_end)
+                if not mm:
+                    break
+                on_it.append(_pmid_of(mm.group(0)))
+                run_end = mm.end()
+            rows.append({"sentence": i + 1, "text": t, "already_cited": [title_of.get(q, q) for q in dict.fromkeys(on_it) if q]})
+        placements = {}
+        covered_json = json.dumps([{"pmid": q, "title": title_of.get(q, ""),
+                                    "gist": re.sub(r"\s+", " ", (real.get(q) or {}).get("abstract") or "")[-240:]}
+                                   for q in cands], ensure_ascii=False)[:60000]
+        for c0 in range(0, len(rows), 25):
+            v = _ask_cached(W, "place", f"""Each sentence below comes from a clinician-facing evidence brief and lists the papers ALREADY cited on
+it. Name every study the sentence reports that is NOT among those — a study named by an author or
+described by its design, population, numbers or findings ("a Korean protocol (LIFE-Repro, n=200)",
+"one review makes the case for…, and another catalogs…") — and give the covered paper it is. A
+sentence reporting three studies carries three citations. Match on what the sentence claims against
+each paper's title and abstract; give nothing for a sentence whose studies are all cited or that
+reports none.
+SENTENCES: {json.dumps(rows[c0:c0 + 25], ensure_ascii=False)}
+COVERED PAPERS: {covered_json}
+Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]}} (an empty list when nothing is missing).""",
+                            timeout_s=900)
+            if not v or not isinstance(v.get("additions"), list):
+                die("the citation completeness pass returned no verdict")
+            for r in v["additions"]:
+                try:
+                    idx = int(r.get("sentence"))
+                except Exception:
+                    continue
+                if not (1 <= idx <= len(sents)):
+                    continue
+                have = set(rows[idx - 1]["already_cited"])
+                for q in (r.get("pmids") or []):
+                    q = str(q).strip()
+                    if q in pmids and title_of.get(q, q) not in have:
+                        placements.setdefault(idx, []).append(q)
+        frag_out, shift = frag, 0
+        for idx in sorted(placements):
+            sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
+            if not sup:
+                continue
+            at = sents[idx - 1][1] + shift
+            frag_out = frag_out[:at] + sup + frag_out[at:]
+            shift += len(sup)
+            added += len(placements[idx])
+        out.append(h[last:ps.start(1)]); out.append(frag_out); last = ps.end(1)
+    out.append(h[last:])
+    return "".join(out), added
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -4823,6 +4906,10 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
         print(f"  every card cited: {by_sent} placed on the sentence that reports the paper, "
               f"{appended} sentence(s) written from the abstract into the synthesis")
     named += by_sent + appended
+    h, filled = cite_missing_studies(W, h, pmids, real)
+    if filled:
+        print(f"  completeness pass: {filled} citation(s) added on sentences that reported a study not yet cited on them")
+    named += filled
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn, unsupported = set(), []
