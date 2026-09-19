@@ -4034,8 +4034,30 @@ Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
         if best and _num_tokens(best) and re.search(r"[.!?][\"')\]]?\s*$", best):
             print(f"  keeping a {len(best)}-character summary for {pmid} rather than losing the citation")
             t = best
-        else:
-            return ""
+    if not t:
+        # A framework paper or a protocol reports no result to lead with, and
+        # three figure-first attempts were rejected for exactly that; the
+        # citation was then dropped silently (W29: two papers the completeness
+        # pass had placed; W34: a refusal). One relaxed attempt: what the
+        # paper is and what it concludes, figures only where the abstract has
+        # them, complete sentences.
+        v = _ask_cached(W, "findings", f"""Write the hover card a clinician sees when they hover a citation to this paper.
+PAPER: {json.dumps(title)}
+ABSTRACT (the only source):
+{abstract[:6000]}
+Two or three plain sentences: what the paper is (design and population, or what it proposes when it
+is a framework, protocol or review) and what it concludes. Use a figure only if the abstract states
+it; if the abstract reports no results, say so plainly. End with one short "Relevance:" line.
+240-600 characters, ending with a complete sentence. Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
+        r = (v or {}).get("finding", "").strip()
+        stray = [x for x in _num_tokens(r) if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in src]
+        if r and not stray:
+            t = r[:700]
+            if not re.search(r"[.!?][\"')\]]?\s*$", t):
+                t = t[:t.rfind(".") + 1] if "." in t else t
+            print(f"  hover card for {pmid} written without a leading figure (the abstract reports no result to lead with)")
+    if not t:
+        die(f"no hover card could be written for {pmid} ({title[:60]!r}) — the citation cannot be shown without one")
     store[pmid] = t
     json.dump(store, open(cache, "w"), ensure_ascii=False, indent=1)
     return t
@@ -4201,7 +4223,7 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
         for idx in sorted(placements):
             sup = "".join(_sup_markup(pm, real, W) for pm in dict.fromkeys(placements[idx]))
             if not sup:
-                continue
+                die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
             at = sents[idx - 1][1] + shift
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
@@ -4508,7 +4530,7 @@ object for EVERY item.""", timeout_s=900)
         for idx in sorted(placements):
             sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
             if not sup:
-                continue
+                die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
             at = sents[idx - 1][1] + shift
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
@@ -4769,11 +4791,12 @@ Reply with ONLY {{"sentence": <number or null>}}""", timeout_s=600)
                 idx = None
             if idx and 1 <= idx <= len(sents):
                 sup = _sup_markup(q, real, W)
-                if sup:
-                    at = base + sents[idx - 1][1]
-                    h = h[:at] + sup + h[at:]
-                    cited_now.add(q)
-                    by_sentence += 1
+                if not sup:
+                    die(f"no hover card could be written for {q}")
+                at = base + sents[idx - 1][1]
+                h = h[:at] + sup + h[at:]
+                cited_now.add(q)
+                by_sentence += 1
                 continue
             w = _ask_cached(W, "resynth", f"""Write ONE sentence for the opening paragraph of a section of a clinician-facing weekly evidence
 brief, in Dr. Mabini's first person (a DO and complex benign gynecology / minimally invasive
@@ -4862,7 +4885,7 @@ Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]
         for idx in sorted(placements):
             sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
             if not sup:
-                continue
+                die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
             at = sents[idx - 1][1] + shift
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
@@ -5279,6 +5302,9 @@ def normalize_legacy_markup(h: str) -> str:
         return (f'<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{num or pm}</a>'
                 f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">{"".join(parts)}</span></sup>')
     h = SUP_RE.sub(canon, h)
+    # an earlier generator escaped an already-escaped ampersand ("&amp;amp;"
+    # in W29's C-Section chip), which renders as the literal "&amp;"
+    h = re.sub(r"&amp;(amp;|#)", r"&\1", h)
     h = re.sub(r'<p class="mz-cite-design">([^<]*)</p>', r'<span class="mz-cite-design">\1</span>', h)
 
     def badge(m):
