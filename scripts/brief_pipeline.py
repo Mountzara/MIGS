@@ -3807,6 +3807,37 @@ def _paper_finding(abstract: str) -> str:
     return t
 
 
+
+def _end_of_sentence(html_frag: str, from_pos: int) -> int:
+    """Index just after the full stop that ends the sentence at from_pos.
+
+    Skips tags and abbreviations that are not sentence ends, and stops at a
+    closing block tag when the sentence runs to the end of its paragraph.
+    """
+    i, n = from_pos, len(html_frag)
+    ABBR = ("vs.", "e.g.", "i.e.", "et al.", "cf.", "Dr.", "no.", "Fig.", "approx.")
+    while i < n:
+        c = html_frag[i]
+        if c == "<":
+            close = html_frag.find(">", i)
+            if close < 0:
+                return n
+            if re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", html_frag[i:close + 1], re.I):
+                return i
+            i = close + 1
+            continue
+        if c in ".!?":
+            if any(html_frag[max(0, i - 9):i + 1].endswith(a) for a in ABBR):
+                i += 1
+                continue
+            if c == "." and re.match(r"\d", html_frag[i + 1:i + 2] or " "):
+                i += 1
+                continue
+            return i + 1
+        i += 1
+    return n
+
+
 def cite_named_authors(h: str, pmids: list, real: dict, W_dir: str = "") -> tuple:
     """Put a citation on every study the site's own prose names by author.
 
@@ -3883,11 +3914,12 @@ def cite_named_authors(h: str, pmids: list, real: dict, W_dir: str = "") -> tupl
             sup = sup_for(pm)
             if not sup:
                 continue
-            end = m.end()
-            # place it after the noun the possessive governs, else after the name
-            tail = out[end:end + 60]
-            nm = re.match(r"(?:&#x27;s|'s|’s)?\s+[a-z-]+(?:\s+[a-z-]+){0,2}", tail)
-            insert_at = end + (nm.end() if nm and out[end:end + 3] in ("&#x", "'s", "’s") else 0)
+            # PLACE IT AT THE END OF THE CLAIM, not mid-phrase. "Pan's¹ review
+            # of fixation techniques" breaks the noun phrase and is not how a
+            # citation is written; the marker belongs after the sentence the
+            # named study supports, following its full stop.
+            insert_at = _end_of_sentence(out, m.end())
+            out = out[:insert_at] + sup + out[insert_at:]
             out = out[:insert_at] + sup + out[insert_at:]
             done_here.add(pm)
             added += 1
