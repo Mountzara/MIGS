@@ -3962,7 +3962,9 @@ SENTENCES (numbered):
 PAPERS THIS BRIEF COVERS (the only ones you may cite):
 {json.dumps(cand, ensure_ascii=False)[:80000]}
 
-ALREADY CITED IN THIS PASSAGE (do not duplicate): {sorted(x for x in have if x)}
+ALREADY CITED SOMEWHERE IN THIS PASSAGE: {sorted(x for x in have if x)} — that does NOT excuse a
+later sentence resting on the same paper; cite it again there. Only never cite the same paper twice
+on the SAME sentence.
 
 CITE GENEROUSLY BUT ACCURATELY. Most sentences in a passage like this report something a study
 found, and each of those needs its citation. For EACH sentence that rests on a specific study — it
@@ -3987,8 +3989,19 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
                 continue
             for pm in (r.get("pmids") or []):
                 pm = str(pm).strip()
-                if pm in pmids and pm not in have:
-                    placements.setdefault(idx, []).append(pm)
+                if pm not in pmids:
+                    continue
+                # A paper already cited earlier in the passage still needs its
+                # citation on the NEXT claim that rests on it. Skipping any
+                # paper already present anywhere in the passage is what left a
+                # nine-paragraph brief with five citations. Only a repeat on
+                # the SAME sentence is a duplicate.
+                s_text, s_end = sents[idx - 1]
+                s_start = sents[idx - 2][1] if idx >= 2 else 0
+                already = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:s_end])}
+                if pm in already:
+                    continue
+                placements.setdefault(idx, []).append(pm)
         frag_out, shift = frag, 0
         for idx in sorted(placements):
             sup = "".join(_sup_markup(pm, real, W) for pm in dict.fromkeys(placements[idx]))
