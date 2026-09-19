@@ -49,6 +49,7 @@ invalidates them, so nothing wrong ships — but the work is simply wasted.
 Stages are independent and idempotent; run `prepare` and `curate` before any agent work.
 """
 from __future__ import annotations
+from typing import NoReturn
 import html as H
 import datetime
 import json
@@ -92,7 +93,7 @@ class Refused(SystemExit):
         self.msg = msg
 
 
-def die(msg: str) -> "NoReturn":
+def die(msg: str) -> NoReturn:
     print(f"REFUSED: {msg}", file=sys.stderr)
     raise Refused(msg)
 
@@ -1051,8 +1052,17 @@ A HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Thera
 menopause section: a yoga trial in climacteric women, osteoporosis risk after menopause, acupuncture
 for vasomotor symptoms, coffee and vasomotor severity, a menopause questionnaire, a menopause
 education programme — all belong there. "C-Section Scar" is caesarean scar and its sequelae.
-"Chronic Pelvic Pain" is pelvic pain in women. Judge each paper against that AREA as a gynecologist
-reading a weekly brief would.
+"Chronic Pelvic Pain" is pelvic pain in women AND ITS CAUSES. Judge each paper against that AREA as
+a gynecologist reading a weekly brief would, using the area description from the practice's own
+reference library where one is given.
+
+CLINICAL AREAS OVERLAP, AND A PAPER CAN BELONG UNDER TWO HEADINGS AT ONCE. Adenomyosis and
+endometriosis are causes of chronic pelvic pain and dysmenorrhoea, so a paper on treating
+adenomyosis-related pain belongs under "Adenomyosis" AND under "Chronic Pelvic Pain"; endometriosis,
+adenomyosis and fibroids bear on infertility; fibroids and adenomyosis on abnormal uterine bleeding.
+That a paper also fits — or already sits under — another heading in this brief is NEVER a reason to
+remove it from this one. (Owner, 2026-09-19, on a removal made for exactly that reason:
+"adenomyosis can cause pelvic pain — you should know this.")
 
 A PAPER BELONGS when it is about the heading's clinical area in women's health — including
 non-pharmacological management, epidemiology, diagnostics, education, health services, basic science
@@ -1063,7 +1073,10 @@ section costs the reader nothing, and removing a paper they should have seen doe
 A PAPER DOES NOT BELONG only when one of these is true, and the reason must say which:
   (a) it is about a different organ, specialty, sex or population — prostate cancer, breast surgery
       or breast oncology, a brain tumour, an eyelid, a male cohort, a paediatric cohort;
-  (b) it plainly belongs under a DIFFERENT heading in this same brief — name that heading;
+  (b) it is NOT ABOUT THIS HEADING'S AREA AT ALL and belongs under a different heading in this brief
+      instead — a keyword collision, such as "HRT" meaning IVF endometrial preparation under a
+      menopause heading. Name that heading exactly. This never applies when the two areas overlap:
+      the paper then belongs under both;
   (c) it has no clinical or scientific content for this audience at all — a market analysis,
       hospital administration, a commerce piece.
 """
@@ -3613,9 +3626,12 @@ def verify_rendered(route: str, post_id: str) -> None:
     print("  rendered checks: passed")
 
 
-def cmd_publish(post_id: str) -> None:
+def cmd_publish(post_id: str, dry: bool = False) -> None:
+    """dry=True proves the body passes every gate, including the browser, and
+    writes nothing. (`dry` was once read here without being a parameter: the
+    NameError would have crashed every `run` at the moment it went to publish.)"""
     if is_trend(post_id):
-        return cmd_publish_trend(post_id)
+        return cmd_publish_trend(post_id, dry=dry)
     W = work_dir(post_id)
     require_spec_review()
     require_standards(W)
@@ -3636,7 +3652,7 @@ def cmd_publish(post_id: str) -> None:
     record(W, "publish", {"published": True})
 
 
-def cmd_publish_trend(post_id: str) -> None:
+def cmd_publish_trend(post_id: str, dry: bool = False) -> None:
     W = work_dir(post_id)
     require_spec_review()
     require_standards(W)
@@ -3645,6 +3661,9 @@ def cmd_publish_trend(post_id: str) -> None:
     require(W, "apply");   require_review(W, "apply")
     man = json.load(open(W + "manifest.json")); trend = man["trend"]
     preview_and_verify(W, post_id, "/trending/")
+    if dry:
+        print(f"DRY RUN OK — {post_id} passes every check; nothing was written to the site")
+        return
     body = open(W + "body.applied.html", encoding="utf-8").read()
     parts = json.load(open(W + "narrative.json"))["parts"]
     syn = {i["tid"]: i for i in json.load(open(W + "syntheses.json"))["items"]}
@@ -4243,6 +4262,111 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
 # re-running after fixing a regex costs nothing for work already judged.
 
 
+# A card's id is its PMID, or its PMID with a dedupe suffix when the same paper
+# is carded under a second heading (W33: mz-cite-42563413 under Adenomyosis and
+# mz-cite-42563413-2 under Chronic Pelvic Pain). A pattern that stops at the
+# digits saw three cards in a section that held seven, and recounted its chip
+# to 3.
+CARD_ID_RE = r'id="mz-(?:cite|ref)-(\d{5,9})(?:-\d+)?"'
+SECTION_END = r'(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
+
+
+def _section_span(h: str, tid: str):
+    """The match for one topic section: group(1) its opening tag, group(2) the rest."""
+    return re.search(r'(<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[^>]*>)([\s\S]*?)' % re.escape(tid)
+                     + SECTION_END, h)
+
+
+def _card_in(seg: str, pmid: str):
+    """The first cite card for this paper inside a fragment, or None."""
+    for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', seg):
+        a = m.group(0)
+        if f"mz-cite-{pmid}" in a or f"openDeepDive('dd-{pmid}')" in a or f"/{pmid}/" in a:
+            return m
+    return None
+
+
+def _has_card(h: str, pmid: str) -> bool:
+    return _card_in(h, pmid) is not None
+
+
+def excise_paper_from_section(h: str, tid: str, pmid: str) -> str:
+    """Remove one paper's card(s) from ONE section and nothing else.
+
+    The paper's card under any other heading, its deep-dive dialog and its
+    reference entry stay; `curate_live` removes those only when no card is
+    left anywhere. Excising by PMID took W33's LNG-IUS-for-adenomyosis card
+    out of Adenomyosis because its copy under Chronic Pelvic Pain was judged."""
+    while True:
+        sec = _section_span(h, tid)
+        if not sec:
+            return h
+        m = _card_in(sec.group(0), pmid)
+        if not m:
+            break
+        h = h[:sec.start() + m.start()] + h[sec.start() + m.end():]
+    sec = _section_span(h, tid)
+    seg = re.sub(r'<button[^>]*openDeepDive\(.dd-%s.[^>]*>[\s\S]*?</button>' % re.escape(pmid), "", sec.group(0))
+    return h[:sec.start()] + seg + h[sec.end():]
+
+
+def move_card(h: str, pmid: str, from_tid: str, to_tid: str) -> str:
+    """Move one paper's card from one section to the end of another's cards.
+
+    A first-pass (b) — "not about this heading, belongs under X" — names where
+    the paper goes. Dropping it instead loses a paper the reader should have
+    seen under X; moving it keeps the brief whole."""
+    src = _section_span(h, from_tid)
+    if not src:
+        die(f"move_card: no section {from_tid}")
+    m = _card_in(src.group(0), pmid)
+    if not m:
+        die(f"move_card: no card for {pmid} under {from_tid}")
+    card = m.group(0)
+    h = h[:src.start() + m.start()] + h[src.start() + m.end():]
+    dst = _section_span(h, to_tid)
+    if not dst:
+        die(f"move_card: no section {to_tid}")
+    seg = dst.group(0)
+    last = None
+    for a in re.finditer(r"</article>", seg):
+        last = a
+    at = dst.start() + (last.end() if last else seg.rfind("</section>"))
+    return h[:at] + card + h[at:]
+
+
+def kb_area_context(W: str, title: str) -> str:
+    """What a heading's clinical area covers, from the practice's own
+    reference library (823 ACOG / AAGL / FMIGS / UpToDate documents in D1,
+    served by /api/v1/internal/kb/ground). The curator reads this before
+    judging a paper against the heading, so "Chronic Pelvic Pain" is judged
+    as the library defines it — with its causes — and not as two words.
+    Owner, 2026-09-19: "you have the knowledge from my KB to know this."
+    Cached per heading; three attempts, then refuse: a curation that could
+    not consult the library is not the curation the owner specified."""
+    import hashlib as _h
+    q = f"{title}: definition, causes, related conditions and differential diagnosis in gynecology"
+    key = _h.sha256(q.encode("utf-8")).hexdigest()[:24]
+    hit = _cache_get(W, "kb", key)
+    if hit is not None:
+        return hit
+    path = W + "_kbq.json"
+    json.dump({"query": q, "kind": "brief_curation", "topK": 6, "maxChars": 3500}, open(path, "w"))
+    last = None
+    for attempt in range(3):
+        try:
+            r = curl_json(f"{BASE}/api/v1/internal/kb/ground", "POST", auth=True, data_file=path)
+            if isinstance(r, dict) and r.get("ok"):
+                ctx = re.sub(r"\n{3,}", "\n\n", str(r.get("context") or "")).strip()
+                _cache_put(W, "kb", key, ctx)
+                return ctx
+            last = json.dumps(r)[:200]
+        except Exception as e:  # noqa: BLE001 — the reason is reported below
+            last = str(e)[:200]
+        time.sleep(2 * (attempt + 1))
+    die(f"the practice's reference library could not be consulted for {title!r}: {last}")
+
+
 def _cache_get(W: str, kind: str, key: str):
     path = W + f"cache.{kind}.json"
     if not os.path.exists(path):
@@ -4279,17 +4403,30 @@ def _ask_cached(W: str, kind: str, prompt: str, timeout_s: int = 900):
 
 
 def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
-    """Judge every paper against the heading it sits under, twice.
+    """Judge every (heading, paper) placement twice, and act on ONE placement.
 
-    First pass: does this paper belong under this heading, for gynecologic
-    surgeons? Second, independent pass: given only the abstracts and the list
-    of this brief's headings, where does it belong? A paper both passes keep
-    stays. A paper either pass rejects goes. Two judgements agreeing is the
-    rule; disagreement resolves toward removal, because a keyword collision on
-    the page costs more than a paper the reader can still reach in PubMed.
+    First pass: does this paper belong under THIS heading — by TOPIC_FIT_RULE
+    and the area's description from the practice's reference library? Second,
+    independent pass: from the abstracts and the brief's headings alone, is
+    there ANY heading it belongs under? A placement the first pass rejects is
+    removed from THAT SECTION ONLY; the paper's card under any other heading
+    is untouched, and its dialog and reference entry go only when no card is
+    left anywhere. A paper the second pass finds no home for ((a)/(c)) leaves
+    every section. A first-pass (b) naming a heading the paper is not yet
+    under MOVES the card there instead of losing the paper.
+
+    Why per placement: W33's LNG-IUS-for-adenomyosis paper sat under both
+    Adenomyosis and Chronic Pelvic Pain. One pass judged the pelvic-pain copy
+    "belongs under Adenomyosis", and excising by PMID removed the Adenomyosis
+    card too — the copy nobody disputed. Owner: "adenomyosis can cause pelvic
+    pain — you should know this."
+
+    Returns (h, removed, moved, emptied): removed = [(tid, pmid, why)],
+    moved = [(from_tid, to_tid, pmid, why)], emptied = [tid].
     """
-    drops, reasons = {}, {}
+    removed, moved = [], []
     titles = {tid: t["title"] for tid, t in topics.items()}
+    by_title = {t["title"].strip().lower(): tid for tid, t in topics.items()}
     # A PAPER IS NEVER DROPPED FOR MISSING DATA. When a fetch failed, the model
     # is asked to judge a blank and correctly answers that it cannot — and the
     # paper vanished from the brief for a reason that has nothing to do with
@@ -4316,6 +4453,9 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
         return [{"pmid": q, "title": (papers.get(q) or {}).get("title", ""),
                  "abstract": ((papers.get(q) or {}).get("abstract") or "")[:2200]} for q in pmids]
 
+    # the practice's own definition of each area, read before any judgement
+    area = {tid: kb_area_context(W, t["title"]) for tid, t in topics.items()}
+
     for tid, t in topics.items():
         pmids = [q for q in t["pmids"] if q in papers and q not in unjudgeable]
         if not pmids:
@@ -4325,10 +4465,15 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
             v = _ask_cached(W, "curate", f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
 minimally invasive gynecologic surgery practice. Its readers are practising gynecologic surgeons.
 SECTION HEADING: {json.dumps(t["title"])}
+WHAT THIS AREA COVERS, from the practice's own reference library (ACOG / AAGL / FMIGS / UpToDate):
+{area.get(tid) or "(no library entry retrieved — judge from the rule alone)"}
+OTHER HEADINGS IN THIS BRIEF: {json.dumps([x for k, x in titles.items() if k != tid], ensure_ascii=False)}
 {TOPIC_FIT_RULE}
 For EACH paper: does it belong under THAT heading, by the rule above?
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
-Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false, "why": "<one clause>"}}, ...]}}
+Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false,
+  "why": "<one clause; when false it names (a), (b) or (c) and what the paper is actually about>",
+  "elsewhere": "<for (b) only: one heading copied exactly from OTHER HEADINGS IN THIS BRIEF; otherwise null>"}}, ...]}}
 with one object for EVERY paper given.""", timeout_s=900)
             if not v or not isinstance(v.get("verdicts"), list):
                 die(f"curation of {tid} returned no verdict")
@@ -4337,49 +4482,74 @@ with one object for EVERY paper given.""", timeout_s=900)
             if missing:
                 die(f"curation of {tid} skipped {missing[:5]}")
             for x in v["verdicts"]:
+                pm = str(x.get("pmid"))
                 why = str(x.get("why", ""))[:200]
-                if not x.get("belongs"):
-                    if re.search(r"no (?:title|abstract)|not provided|cannot (?:verify|assess)|insufficient",
-                                 why, re.I):
-                        print(f"  KEEPING {x['pmid']}: the judgement was 'cannot tell', not 'does not belong'")
-                        continue
-                    drops[str(x["pmid"])] = tid
-                    reasons[str(x["pmid"])] = why
+                if x.get("belongs"):
+                    continue
+                if re.search(r"no (?:title|abstract)|not provided|cannot (?:verify|assess)|insufficient", why, re.I):
+                    print(f"  KEEPING {pm}: the judgement was 'cannot tell', not 'does not belong'")
+                    continue
+                other = str(x.get("elsewhere") or "").strip()
+                to_tid = by_title.get(other.lower()) if other else None
+                if to_tid and to_tid != tid and pm not in topics[to_tid]["pmids"]:
+                    moved.append((tid, to_tid, pm, why))
+                else:
+                    removed.append((tid, pm, why))
 
-    # independent corroboration, given only the abstracts and the headings
-    keeps = [q for tid, t in topics.items() for q in t["pmids"]
-             if q in papers and q not in drops and q not in unjudgeable]
-    for i in range(0, len(keeps), 10):
-        batch = keeps[i:i + 10]
+    # independent corroboration, given only the abstracts and the headings:
+    # is there ANY heading in this brief the paper belongs under?
+    gone = {(tid, pm) for tid, pm, _ in removed} | {(f, pm) for f, _, pm, _ in moved}
+    distinct = list(dict.fromkeys([q for tid, t in topics.items() for q in t["pmids"]
+                                   if q in papers and q not in unjudgeable and (tid, q) not in gone]
+                                  + [pm for _, _, pm, _ in moved]))
+    def _flat(x):
+        return re.sub(r"\s+", " ", x or "")[:400]
+    area_brief = "\n".join(f"- {titles[tid]}: {_flat(area.get(tid))}" for tid in topics)
+    for i in range(0, len(distinct), 10):
+        batch = distinct[i:i + 10]
         v = _ask_cached(W, "curate", f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
 audience of gynecologic surgeons reading a weekly literature brief.
 {TOPIC_FIT_RULE}
 Put each paper under the heading whose area it belongs to, even when the fit is broad. Answer "NONE"
 ONLY for a paper that does not belong in a gynecology brief at all under (a) or (c) above — never
 because no heading is a perfect match.
-HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
+HEADINGS, each with what its area covers per the practice's reference library:
+{area_brief}
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} for EVERY paper given.""",
-                    timeout_s=900)
+                        timeout_s=900)
         if not v or not isinstance(v.get("assignments"), dict):
             die("corroboration returned no verdict")
         missing = [q for q in batch if q not in v["assignments"]]
         if missing:
             die(f"corroboration skipped {missing[:5]}")
         for q in batch:
-            got = str(v["assignments"].get(q, "")).strip()
-            if got == "NONE":
-                drops[q] = next((tid for tid, t in topics.items() if q in t["pmids"]), "?")
-                reasons[q] = "an independent classification found no heading in this brief it belongs under"
+            if str(v["assignments"].get(q, "")).strip() != "NONE":
+                continue
+            why = "an independent classification found no heading in this brief it belongs under"
+            moved = [m for m in moved if m[2] != q]
+            for tid, t in topics.items():
+                if q in t["pmids"] and (tid, q) not in gone:
+                    removed.append((tid, q, why))
+                    gone.add((tid, q))
 
-    for pm in drops:
-        h = excise_paper(h, pm)
+    for from_tid, to_tid, pm, _ in moved:
+        h = move_card(h, pm, from_tid, to_tid)
+    for tid, pm, _ in removed:
+        h = excise_paper_from_section(h, tid, pm)
+    # a paper with no card left anywhere takes its dialog, reference entry and
+    # any marker with it; one that survives elsewhere keeps all three
+    for pm in dict.fromkeys(pm for _, pm, _ in removed):
+        if not _has_card(h, pm):
+            h = excise_paper(h, pm)
+
     emptied = []
     for tid, t in topics.items():
-        if all(q in drops for q in t["pmids"]) and t["pmids"]:
+        if t["pmids"] and not _survivors(topics, tid, removed, moved):
             emptied.append(tid)
-            h = re.sub(r'<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
-                       % re.escape(tid), "", h)
+            sec = _section_span(h, tid)
+            if sec:
+                h = h[:sec.start()] + h[sec.end():]
             # the reader's jump list must not offer a heading that is gone
             h = re.sub(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#%s"[\s\S]*?</a>' % re.escape(tid), "", h)
             h = re.sub(r'<a[^>]*href="#%s"[^>]*class="[^"]*mz-toc-chip[^"]*"[\s\S]*?</a>' % re.escape(tid), "", h)
@@ -4387,18 +4557,25 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
     for tid, t in topics.items():
         if tid in emptied:
             continue
-        sec = re.search(r'<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
-                        % re.escape(tid), h)
+        sec = _section_span(h, tid)
         if not sec:
             continue
-        left = len(set(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', sec.group(0))))
+        left = len(set(re.findall(CARD_ID_RE, sec.group(0))))
         h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(tid),
                    lambda m: m.group(1) + str(left) + m.group(2), h)
-    return h, drops, reasons, emptied
+    return h, removed, moved, emptied
+
+
+def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
+    """The papers a section holds after curation: its own minus what left it, plus what moved in."""
+    out = [q for q in topics[tid]["pmids"]
+           if (tid, q) not in {(t, pm) for t, pm, _ in removed}
+           and (tid, q) not in {(f, pm) for f, _, pm, _ in moved}]
+    return out + [pm for _, to, pm, _ in moved if to == tid and pm not in out]
 
 
 
-def audit_transform(W: str, before: str, after: str, dropped: dict, emptied: list) -> None:
+def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None) -> None:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -4431,13 +4608,15 @@ def audit_transform(W: str, before: str, after: str, dropped: dict, emptied: lis
             "dialogs": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "toc_chips": len(re.findall(r'class="[^"]*mz-toc-chip', after)),
             "topic_sections": len(re.findall(r'class="[^"]*topic-section', after)),
-            "papers_removed": len(dropped),
+            "placements_removed": len(dropped),
+            "papers_moved_between_headings": len(moved or []),
             "headings_removed": emptied,
             "chars_before": len(before), "chars_after": len(after),
         },
     }
     v = _ask_cached(W, "transform", f"""You are the last editor to see a clinical brief before it publishes. A program has just
-transformed it: removed papers that were not about their heading, removed headings left empty,
+transformed it: removed papers from headings they were not about (a paper carded under two headings
+may rightly remain under one), moved a paper to the heading it belongs under, removed headings left empty,
 inserted citations on studies the prose names, renumbered every citation marker in order of first
 appearance, rebuilt the reference list in that order, and de-duplicated element ids.
 
@@ -4469,25 +4648,24 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
 
 
 
-def rewrite_affected_syntheses(W: str, h: str, topics: dict, drops: dict, real: dict) -> tuple:
+def rewrite_affected_syntheses(W: str, h: str, topics: dict, removed: list, moved: list, real: dict) -> tuple:
     """Rewrite the synthesis of any heading whose papers changed.
 
-    Curation removes papers; the paragraph above the cards still describes the
-    set that existed before. W33's adenomyosis synthesis opened "Three
-    adenomyosis papers this week" above two cards, and the jump-list chip —
-    correctly recounted — said 2. A brief that miscounts its own contents in
-    its own prose is worse than one with an extra paper, so the prose is
-    rewritten against what survives rather than patched.
+    Curation removes and moves papers; the paragraph above the cards still
+    describes the set that existed before. W33's adenomyosis synthesis opened
+    "Three adenomyosis papers this week" above two cards, and the jump-list
+    chip — correctly recounted — said 2. A brief that miscounts its own
+    contents in its own prose is worse than one with an extra paper, so the
+    prose is rewritten against what the section now holds rather than patched.
     """
     rewritten = 0
     for tid, t in topics.items():
-        lost = [q for q in t["pmids"] if q in drops]
-        kept = [q for q in t["pmids"] if q not in drops]
-        if not lost or not kept:
+        now = _survivors(topics, tid, removed, moved)
+        lost = [q for q in t["pmids"] if q not in now]
+        gained = [q for q in now if q not in t["pmids"]]
+        if (not lost and not gained) or not now:
             continue
-        sec = re.search(r'(<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[^>]*>)([\s\S]*?)'
-                        r'(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
-                        % re.escape(tid), h)
+        sec = _section_span(h, tid)
         if not sec:
             continue
         seg = sec.group(2)
@@ -4496,28 +4674,30 @@ def rewrite_affected_syntheses(W: str, h: str, topics: dict, drops: dict, real: 
             continue
         old_text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", pm.group(2))))
         old_flat = re.sub(r"\s+", " ", old_text).strip()[:3000]
-        n_before, n_lost, n_kept = len(t["pmids"]), len(lost), len(kept)
         papers = [{"pmid": q, "title": (real.get(q) or {}).get("title", ""),
-                   "abstract": ((real.get(q) or {}).get("abstract") or "")[:1400]} for q in kept]
+                   "abstract": ((real.get(q) or {}).get("abstract") or "")[:1400]} for q in now]
         papers_json = json.dumps(papers, ensure_ascii=False)[:40000]
+        change = (f"{len(lost)} of them have since been removed for not being about this heading"
+                  if lost else "")
+        if gained:
+            change += (", and " if change else "") + f"{len(gained)} paper(s) moved here from another heading"
         v = _ask_cached(W, "resynth", f"""Rewrite one section-opening paragraph of a clinician-facing weekly evidence brief.
 HEADING: {json.dumps(t["title"])}
-The paragraph below was written when this section held {n_before} papers. {n_lost} of them have
-since been removed for not being about this heading, so the paragraph now describes papers that are
-no longer here — including its own count.
+The paragraph below was written when this section held {len(t["pmids"])} papers. {change}, so the
+paragraph no longer describes what is here — including its own count.
 
-THE PAPERS THAT REMAIN (all of them, and only these):
+THE PAPERS THE SECTION NOW HOLDS (all of them, and only these):
 {papers_json}
 
 THE PARAGRAPH AS IT STANDS:
 {json.dumps(old_flat)}
 
-Rewrite it so it is true of the papers that remain: the right count, no reference to a removed paper,
-and the same voice — Dr. Mabini's first person, a DO and complex benign gynecology / minimally
-invasive gynecologic surgery surgeon reading the week. Keep what still holds; change only what the
-removals made wrong. Report each remaining paper's actual finding with its own numbers. 900-2000
-characters. Plain HTML: <em> and <strong> only, no headings, no citation markup (citations are added
-afterwards). Escape & < >.
+Rewrite it so it is true of the papers now present: the right count, no reference to a removed paper,
+every paper present discussed, and the same voice — Dr. Mabini's first person, a DO and complex
+benign gynecology / minimally invasive gynecologic surgery surgeon reading the week. Keep what still
+holds; change only what the changes made wrong. Report each paper's actual finding with its own
+numbers. 900-2000 characters. Plain HTML: <em> and <strong> only, no headings, no citation markup
+(citations are added afterwards). Escape & < >.
 Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
         new_text = (v or {}).get("paragraph", "").strip()
         if not new_text or len(new_text) < 400:
@@ -4526,7 +4706,7 @@ Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
         at = sec.start(2) + pm.start(2)
         h = h[:at] + new_text + h[sec.start(2) + pm.end(2):]
         rewritten += 1
-        print(f"  rewrote the synthesis for {t['title']!r} — {len(lost)} paper(s) removed, {len(kept)} remain")
+        print(f"  rewrote the synthesis for {t['title']!r} — {len(lost)} removed, {len(gained)} moved in, {len(now)} now")
     return h, rewritten
 
 
@@ -4545,8 +4725,14 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     # complaint sitting on the live site while the auditor refined wording.
     W = os.path.join(SCRATCH, "renumber", post_id) + "/"
     os.makedirs(W + "papers", exist_ok=True)
-    os.makedirs(W + ".ledger", exist_ok=True)
+    lock = hold_work_lock(W, post_id)
+    try:
+        _renumber(post_id, W, dry)
+    finally:
+        release_work_lock(lock)
 
+
+def _renumber(post_id: str, W: str, dry: bool) -> None:
     post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
     post = post.get("post", post)
     h = post["body_html"]
@@ -4574,9 +4760,14 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     for i, mg in enumerate(starts):
         seg_end = starts[i + 1].start() if i + 1 < len(starts) else len(h)
         seg = h[mg.end():seg_end]
+        # the last section's segment would otherwise run through the reference
+        # list and every dialog, and claim every paper in the brief as its own
+        cut = re.search(r'<section class="[^"]*mz-references|<dialog', seg)
+        if cut:
+            seg = seg[:cut.start()]
         tid = mg.group(1) or mg.group(2) or f"group-{i + 1}"
         tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
-        pm_here = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', seg)
+        pm_here = list(dict.fromkeys(re.findall(CARD_ID_RE, seg)
                                      + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
         if pm_here:
             topics[tid] = {"title": H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()[:90] if tt else tid,
@@ -4584,22 +4775,26 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
                        "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
     if topics:
-        h, dropped_map, drop_why, emptied = curate_live(h, topics, papers_ctx, W)
-        if dropped_map:
-            print(f"  curation removed {len(dropped_map)} paper(s) that are not about their heading:")
-            for pm, tid in list(dropped_map.items())[:12]:
-                print(f"    {pm} from {topics.get(tid, {}).get('title', tid)!r}: {drop_why.get(pm, '')[:100]}")
-            if len(dropped_map) > 12:
-                print(f"    … and {len(dropped_map) - 12} more")
+        h, removed, moved, emptied = curate_live(h, topics, papers_ctx, W)
+        tt = lambda tid: topics.get(tid, {}).get("title", tid)  # noqa: E731
+        if removed:
+            print(f"  curation removed {len(removed)} placement(s) not about their heading:")
+            for tid, pm, why in removed:
+                print(f"    {pm} from {tt(tid)!r}: {why[:110]}")
+        for f, to, pm, why in moved:
+            print(f"  curation moved {pm} from {tt(f)!r} to {tt(to)!r}: {why[:110]}")
         if emptied:
             print(f"  removed {len(emptied)} heading(s) left with nothing under them: {emptied}")
-        pmids_all = [x for x in pmids_all if x not in dropped_map]
-        pmids = [x for x in pmids if x not in dropped_map]
-        h, resynth = rewrite_affected_syntheses(W, h, topics, dropped_map, real)
+        gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not _has_card(h, pm)]
+        if gone:
+            print(f"  {len(gone)} paper(s) left the brief entirely; {len(set(pm for _, pm, _ in removed)) - len(gone)} remain under another heading")
+        pmids_all = [x for x in pmids_all if x not in gone]
+        pmids = [x for x in pmids if x not in gone]
+        h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
         if resynth:
             print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
     else:
-        dropped_map, emptied = {}, []
+        removed, moved, emptied = [], [], []
     meta = {}
     for pm in pmids:
         r = real.get(pm) or {}
@@ -4693,7 +4888,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
 
-    audit_transform(W, before_html, h, dropped_map, emptied if topics else [])
+    audit_transform(W, before_html, h, removed, emptied if topics else [], moved)
 
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
@@ -4729,12 +4924,14 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     print(f"{post_id}: {len(order)} citation(s) renumbered 1-{len(order)}, references in citation order")
 
 
-def cmd_run(post_id: str) -> None:
-    W = work_dir(post_id)
-    # ONE RUN PER BRIEF. Two runs on the same work directory fight over the
-    # ledger and the topic files: an older process recreated the very topics a
-    # newer one had just removed, so a fix that worked looked like it had not,
-    # and both paid for the same authoring twice.
+def hold_work_lock(W: str, post_id: str) -> str:
+    """ONE PASS PER WORK DIRECTORY. Two passes on the same directory fight over
+    the ledger, the topic files and the verdict caches: an older `run`
+    recreated the very topics a newer one had just removed, so a fix that
+    worked looked like it had not, and both paid for the same authoring twice;
+    two `renumber` passes interleaved writes to `cache.curate.json` and one
+    read a half-written file. Returns the lock path; release with
+    `release_work_lock`."""
     os.makedirs(W + ".ledger", exist_ok=True)
     lock = W + ".ledger/run.lock"
     if os.path.exists(lock):
@@ -4750,18 +4947,28 @@ def cmd_run(post_id: str) -> None:
             except OSError:
                 alive = False
         if alive:
-            die(f"another run for {post_id} is already working here (pid {other}) — "
+            die(f"another pass for {post_id} is already working here (pid {other}) — "
                 f"stop it, or wait for it, before starting a second")
         os.remove(lock)
     open(lock, "w").write(str(os.getpid()))
+    return lock
+
+
+def release_work_lock(lock: str) -> None:
+    if os.path.exists(lock) and open(lock).read().strip() == str(os.getpid()):
+        os.remove(lock)
+
+
+def cmd_run(post_id: str, dry: bool = False) -> None:
+    W = work_dir(post_id)
+    lock = hold_work_lock(W, post_id)
     try:
-        _run_chain(post_id, W)
+        _run_chain(post_id, W, dry)
     finally:
-        if os.path.exists(lock) and open(lock).read().strip() == str(os.getpid()):
-            os.remove(lock)
+        release_work_lock(lock)
 
 
-def _run_chain(post_id: str, W: str) -> None:
+def _run_chain(post_id: str, W: str, dry: bool = False) -> None:
     print(f"RUN {post_id}")
     try:
         require(W, "prepare"); require_review(W, "prepare")
@@ -4779,8 +4986,8 @@ def _run_chain(post_id: str, W: str) -> None:
                     print(f"  {st}: receipt current")
                 except Refused:
                     globals()["cmd_" + st](post_id)
-            cmd_publish(post_id)
-            print(f"RUN {post_id}: published (round {rnd})")
+            cmd_publish(post_id, dry=dry)
+            print(f"RUN {post_id}: {'dry run passed' if dry else 'published'} (round {rnd})")
             return
         except Refused as e:
             last = e.msg
@@ -4804,7 +5011,7 @@ if __name__ == "__main__":
            "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(_cmd)
     if not _fn:
         die(f"unknown stage {_cmd}")
-    if _cmd == "renumber":
+    if _cmd in ("renumber", "run", "publish"):
         _fn(sys.argv[2], dry=_dry)
     else:
         _fn(sys.argv[2])

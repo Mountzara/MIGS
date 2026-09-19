@@ -152,6 +152,8 @@ export const GROUNDING_POLICY = {
                         why: "triage routes a booking; he reviews every row before release" },
     prom_recommender: { max_uncited: 3, min_support: 0.2, min_docs: 1, block_on_failure: false,
                         why: "selection is constrained to a fixed instrument catalogue" },
+    brief_curation:   { max_uncited: 0, min_support: 0.2, min_docs: 1, block_on_failure: false,
+                        why: "defines a clinical area for the brief's curator; a model reads it, no patient does" },
 };
 
 export function policyFor(kind) {

@@ -2058,6 +2058,72 @@ are errors?"*
 
 ---
 
+### 8.0.0.0l `renumber` — repairing a PUBLISHED brief: the model decides, the code applies, a dry run proves it (2026-09-19)
+
+**Owner, verbatim:** *"if AI pass is better first and would cut down on wasting
+time on processes that have been proven to be shitty and not work, then do that
+first"* · *"YOU ARE RESPONSIBLE TO MAKE SURE YOUR DUMBASS REGEX AND HEURISTIC
+CODE DIDN'T MAKE MISTAKES"* · *"fix your code so that you do these this way from
+now on — no memory, MAKE IT CODE"* · *"the hover summary better be derived from
+the actual abstract, not echoing your output"*.
+
+Nine briefs were already live with PMIDs as visible markers, uncited narrative
+prose, off-topic papers under headings they merely keyword-matched, and hover
+cards written from my own deep-dive text. `run` cannot fix them: it authors
+from a draft, and these are published bodies whose prose is already written.
+`brief_pipeline.py renumber <post-id> [--dry]` is the path for a published body,
+and every step in it is one an earlier version got wrong:
+
+| Step | What it does | Why it is shaped this way |
+|---|---|---|
+| inventory | collects every PMID from markers, `mz-cite-`/`mz-ref-` ids (`\d{5,9}` — W21's `mz-ref-1` was harvested as a PMID) and dialogs; `fetch_pubmed` for all | the popover's title/journal/year are rewritten from PubMed, never from the stored card |
+| **`curate_live`** | judges every **(heading, paper) placement**, not every paper: first pass "does it belong under THIS heading" with **`TOPIC_FIT_RULE`** (the single constant `CURATE_PROMPT` also reads) AND the heading's area as the practice's own KB defines it (`kb_area_context` → `/api/v1/internal/kb/ground`, kind `brief_curation`, cached in `cache.kb.json`); second, independent pass "is there ANY heading here it belongs under"; missing abstracts refetched, "cannot tell" = keep. A rejected placement is removed from THAT SECTION ONLY (`excise_paper_from_section`); dialog + reference go only when no card is left anywhere (`_has_card`); a (b) naming a heading the paper is not yet under **moves** the card (`move_card`); emptied headings and their TOC chips removed; surviving chips recounted with `CARD_ID_RE` (suffixed ids count) | one pass judged "Menopausal Hormone Therapy" literally and dropped 18 of 22 menopause papers; a second pass with its own wording dropped 13; then a pass judged the pelvic-pain copy of an adenomyosis paper "belongs under Adenomyosis" and excision-by-PMID removed the Adenomyosis copy too — owner: *"adenomyosis can cause pelvic pain — you should know this — you have the knowledge from my KB."* Areas overlap; a paper can belong under two headings; the rule says so and the KB tells the judge what each area covers |
+| `rewrite_affected_syntheses` | rewrites the synthesis paragraph above any heading that lost or gained papers (`_survivors`) | "Three papers…" sat above two cards |
+| **`cite_prose`** | the model reads the section's numbered sentences (popover text masked so it cannot be mistaken for prose — 58 fake sentences once were) plus each candidate paper's title and abstract, and returns `{sentence, pmids}`; code inserts `_sup_markup` at the sentence end; only same-sentence repeats skipped | the surname-regex placer (possessives, "Li and Ye", paragraph starts, ambiguous surnames) was deleted, not patched: 5 citations placed vs ~200 decided by the model |
+| `review_inserted_citations` | a per-citation model check, withdrawing **by position** | withdrawing by PMID removed fifteen correct instances of a paper cited once wrongly |
+| **`_plain_finding`** | the hover card is written FROM the PubMed abstract: first sentence carries the figures when the abstract has any, every number must exist in the abstract, ends on a complete sentence, 240–700 chars; three attempts with the reason fed back; keeps the best rather than losing the citation | verbatim abstract paste is refused by the site; my own deep-dive text is not the paper; "general language that doesn't say the RESULTS" was the owner's exact complaint |
+| `number_citations` → `build_references` → `dedupe_element_ids` | numbers by first appearance, references in that order, ids deduped against ids that already exist | the dedupe once minted `-2` suffixes the numbering had already used |
+| post-conditions | no PMID marker left, sequence unbroken, refs == order, no missing ref, no duplicate id; a named-but-uncited study is REPORTED (the model may have refused it for cause), not faulted | a post-condition that contradicts a reviewer's considered refusal is a bug in the post-condition |
+| **`audit_transform`** (S16) | a model reads before/after with the drop and heading lists and returns a verdict; blocking ⇒ refuse | every one of the code-level bugs above passed the deterministic checks of its day |
+| `auditPublishable` (node) → `preview_and_verify` (Playwright, every marker, hover + tap) | the site's own gate and a browser, BEFORE anything is written | |
+| `--dry` stops here: **`DRY RUN OK`**, nothing written | receipt → PUT → approve → `verify_rendered` on the live route, otherwise | |
+
+**The verdict cache is what makes the dry loop affordable.** `_ask_cached(W,
+kind, prompt)` stores every model reply under `<work>/cache.<kind>.json` keyed
+by the SHA-256 of the prompt, for kinds `curate`, `place`, `cites`, `findings`,
+`resynth`, `transform`, plus `kb` for the heading-area lookups. A regex fix after a failed check reruns the whole
+transformation in seconds with every verdict replayed; only a prompt that
+changed is asked again. Twelve deterministic defects on W33 were found and fixed
+this way with the site untouched. **Delete `cache.curate.json` (and
+`cache.resynth.json`) whenever `TOPIC_FIT_RULE` or a curate prompt changes** —
+a cached verdict is a verdict on the OLD question.
+
+Rules that came out of building it:
+* **Heuristics that decide meaning are deleted, not tuned.** Where a judgement
+  is semantic (does this paper belong; which sentence does this paper support;
+  what did this paper find) the model makes it and code applies it. Regex is
+  for structure: ids, marker syntax, sequence, references.
+* **A withdrawal, a drop, an insertion acts on ONE instance.** By position,
+  never by PMID or by surname — and a curation drop is one (heading, paper)
+  placement, never the paper wherever it appears.
+* **A heading is judged as the KB defines the area.** The curator reads the
+  practice's own reference material for "Chronic Pelvic Pain" (its causes:
+  endometriosis, adenomyosis…) before deciding what belongs under it; the
+  rule states that areas overlap and a paper can sit under two headings.
+* **Never drop for missing data.** Refetch; if still missing, keep and report.
+* **Everything reversible is proved in `--dry` first**, then the real pass
+  replays the cached verdicts. Two concurrent passes on one work dir corrupt
+  it; `run` and `renumber` hold a pid lock.
+* `claude -p` under `nohup` has no stdin: every `_claude` call passes
+  `stdin=subprocess.DEVNULL`, or it hangs silently.
+* Model replies are parsed with `_extract_json` (fence-stripping, brace-aware,
+  truncation-tolerant), never `\{[\s\S]*\}`.
+
+`renumber` does NOT require the `standards-check` receipt (it authors nothing;
+its gates are the post-conditions, the site audit and the browser). `run` does.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are

@@ -95,6 +95,14 @@ export const TASK_FIELDS = {
     prom_recommender: [
         "clinicalTopics", "keyPoints", "clinicalSummary",
     ],
+
+    // The brief pipeline's curator asks what a heading's clinical AREA
+    // covers — its causes and related conditions — before judging whether
+    // a paper belongs under it (scripts/brief_pipeline.py kb_area_context).
+    // Topical and background fields answer that; counseling points do not.
+    brief_curation: [
+        "clinicalTopics", "clinicalSummary", "backgroundSummary", "keyPoints", "abstract",
+    ],
 };
 
 /** Fields for a task, falling back to a sane general set. */
