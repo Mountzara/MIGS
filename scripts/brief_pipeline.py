@@ -4291,13 +4291,26 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
             v = _ask_cached(W, "curate", f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
 minimally invasive gynecologic surgery practice. Its readers are practising gynecologic surgeons.
 SECTION HEADING: {json.dumps(t["title"])}
-For EACH paper: does it belong under THAT heading for THAT audience?
-KEEP a paper about the heading's subject in women's health, including basic-science, preclinical and
-adjacent gynecologic work. Breadth within the subject is fine.
-DROP a paper that landed here by keyword collision or is about a different organ, specialty, sex or
-population — a dermatology paper sharing the word "cicatricial", a prostate study under pelvic pain,
-breast or prostate imaging under a gynecologic-surgery heading, hospital administration under a
-surgical heading. Being merely tangential is not enough to drop; being about something else is.
+
+THE HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Therapy" is the week's
+menopause section; "C-Section Scar" is caesarean scar and its sequelae; "Chronic Pelvic Pain" is
+pelvic pain in women. Judge each paper against that AREA as a gynecologist reads it.
+
+KEEP a paper that belongs to the heading's clinical area in women's health. That includes
+non-pharmacological management, epidemiology, diagnostics, education, health services, basic science
+and preclinical work — a yoga trial in climacteric women, an osteoporosis-risk study in
+postmenopausal women, acupuncture for vasomotor symptoms and migraine burden after menopause all
+belong in a menopause section. Breadth within the area is the point of a weekly brief.
+
+DROP a paper only when one of these is true, and say which:
+  (a) it is about a different organ, specialty, sex or population — prostate cancer, breast surgery,
+      a brain tumour, an eyelid, a male cohort;
+  (b) it plainly belongs under a DIFFERENT heading in this same brief — name that heading;
+  (c) it has no clinical or scientific content for this audience at all — market analysis, hospital
+      administration, a commerce piece.
+A paper that is merely adjacent to the heading's exact words is NOT a drop. When in doubt, keep it:
+a slightly broad section costs the reader nothing, and removing a paper they should have seen does.
+
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false, "why": "<one clause>"}}, ...]}}
 with one object for EVERY paper given.""", timeout_s=900)
