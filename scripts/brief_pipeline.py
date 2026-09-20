@@ -7093,7 +7093,7 @@ def _escalate_numeric_contradictions(defects: list) -> list:
     return raised
 
 
-def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 3) -> str:
+def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 5) -> str:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -7229,6 +7229,9 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
     if blocking and _repair > 0:
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
         if n and repaired != after:
+            # bank it: a later round may refuse, and a resume must not start
+            # again from the body these repairs have already corrected
+            _snap_update_body(W, "numbered", repaired)
             print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
                   f"({_repair - 1} round(s) left)")
             return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1)
@@ -7343,6 +7346,26 @@ def _snap_get(W: str, name: str) -> dict:
     if not os.path.exists(path):
         die(f"no checkpoint '{name}' in {W} — run without --from, or from an earlier stage: {RENUMBER_STAGES}")
     return json.load(open(path))
+
+
+def _snap_update_body(W: str, name: str, h: str) -> None:
+    """Keep a checkpoint's body in step with a repair already made to it.
+
+    The audit repairs what it names, the next round finds something else and
+    the run refuses — and `--from=<name>` then replayed the body as it stood
+    BEFORE any of those repairs. Every resume redid the same work and stopped
+    at the same wall. Only the body changes; every other value the later
+    stages read stays as the checkpoint recorded it. A missing checkpoint (the
+    weekly authoring path has none by this name) is a silent no-op."""
+    path = W + f"snap.{name}.json"
+    if not os.path.exists(path):
+        return
+    try:
+        d = json.load(open(path))
+    except (json.JSONDecodeError, OSError):
+        return
+    d["h"] = h
+    json.dump(d, open(path, "w"), ensure_ascii=False)
 
 
 def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> None:
