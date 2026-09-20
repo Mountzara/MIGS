@@ -4217,6 +4217,28 @@ def _after_run(frag: str, pos: int) -> int:
         pos = mm.end()
 
 
+def _own_papers_for(h: str, ps, topic_spans: list) -> set:
+    """The papers a passage may cite when it belongs to one section: a
+    synthesis cites its section's cards; the deep-dive intro ("Three papers
+    worth a careful read") cites the deep-dive cards below it (W20's intro
+    was cited to a different anaesthesia paper than the card it introduced).
+    Empty means the whole brief."""
+    if ps.kind == "synthesis":
+        enc = next((t for t in topic_spans if t.a <= ps.a < t.b), None)
+        if enc:
+            return set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
+        return set()
+    jc = re.search(r'<section class="[^"]*mz-journal-club[^"]*"[^>]*>', h)
+    if jc:
+        jb = _element_end(h, "section", jc.end())
+        if jc.start() <= ps.a < jb:
+            seg = h[jc.start():jb]
+            own = set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg)) | set(re.findall(r'id="dd-(\d+)"', seg))
+            if own:
+                return own
+    return set()
+
+
 def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
     """The model decides which sentence cites which paper; the code inserts it.
 
@@ -4261,11 +4283,7 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         # the cards of the section that CONTAINS it — found by walking to the
         # enclosing topic section, not by guessing a byte window, which took
         # the wrong papers and left the passage almost uncited.
-        own = set()
-        if m.kind == "synthesis":
-            enc = next((t for t in topic_spans if t.a <= m.a < t.b), None)
-            if enc:
-                own = set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
+        own = _own_papers_for(h, m, topic_spans)
         cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
         # CHUNKED: a 50-sentence narrative with a clause per placement came
         # back truncated three times running. Numbering stays global.
@@ -4992,11 +5010,7 @@ def cite_missing_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
         if not sents:
             out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
             continue
-        own = set()
-        if ps.kind == "synthesis":
-            enc = next((t for t in topic_spans if t.a <= ps.a < t.b), None)
-            if enc:
-                own = set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
+        own = _own_papers_for(h, ps, topic_spans)
         cands = [q for q in pmids if (not own or q in own)]
         rows = []
         for i, (t, e) in enumerate(sents):
