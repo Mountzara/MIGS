@@ -8564,7 +8564,8 @@ and {{"defects": []}} when every figure agrees.""", timeout_s=900)
 _MISSING_CITE_RE = re.compile(
     r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b"
     # "cites only 6 distinct", "never receives an inline citation", "not cited anywhere"
-    r"|\bcites?\s+only\b|\bonly\s+\d+\s+(?:distinct|of\s+(?:the\s+)?\d+)|\bnever\s+(?:receives?|gets?|carries)\b[^.]{0,30}\b(?:citation|marker)"
+    r"|\bcites?\s+only\b|\bonly\s+(?:names?\S*\s+|cites?\s+)?\d+\s+(?:distinct|of\s+(?:the\s+)?\d+)"
+    r"|\b(?:names?|cites?)\S*\s+\d+\s+distinct\b|\bnever\s+(?:receives?|gets?|carries)\b[^.]{0,30}\b(?:citation|marker)"
     r"|\bnot\s+cited\s+(?:in|anywhere|by)\b|\bfewer\s+(?:papers|citations|markers)\b", re.I)
 # a marker on the wrong sentence, or a paper credited to the wrong marker
 _WRONG_CITE_RE = re.compile(r"\b(?:marker|citation)\b[^.]{0,80}\b(?:wrong|misplaced|displaced|attached to|attributed to|points? (?:at|to)|different (?:paper|study|author))"
