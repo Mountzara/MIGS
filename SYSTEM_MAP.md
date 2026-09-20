@@ -2089,6 +2089,13 @@ and every step in it is one an earlier version got wrong:
 | **`bind_legacy_cards`** → **`renumber_card_badges`** | a 2026-05 trend card carried `id="mz-ref-1"` — a per-section index, not a paper — so nothing downstream knew which paper it was for, two cards claimed the same id as a real reference anchor, and the badge's `[1]` named a different paper once the citations were renumbered. The card prints the title and PubMed has the title, so that is the join; the badge number then comes from the document's citation order, in cards and dialogs alike | a no-op for every weekly brief, whose cards already carry `mz-cite-<pmid>` |
 | **`numeric_consistency_defects`** | every sentence stating a figure, from every passage and synthesis, as ONE list beside the page's measured facts — so two sentences ten thousand characters apart sit next to each other. Evidence quotes BOTH, which is what the reconciling repair needs. Knows what is not a contradiction: two different studies, a different rounding, and a study's whole-cohort and subgroup estimates when each sentence says which it means | the read-back audit found W21's contradictions two at a time over five rounds; this found six in one. It also caught one already published in W33 |
 | **`audit_transform`** (S16) | a model reads before/after with the drop and heading lists and returns a verdict; blocking ⇒ refuse. Only three defects may be cosmetic — a placement judged differently, a reference title that disagrees with its own abstract, and the order of markers stacked at one full stop. `_escalate_numeric_contradictions` re-files any other note that reports one number contradicting another (the auditor filed W21's two-odds-ratios-for-one-Cochrane-finding as cosmetic, which is to say it would have published a brief that contradicts itself) | every one of the code-level bugs above passed the deterministic checks of its day |
+| **`writer_reject`** | ONE rejection list every sentence-writing pass shares: damaged prose, invented experience, raw abstract text, an absolutist clinical claim, patient-directed advice, bare MIGS. Each pass used to hold its own subset, so a rewrite could satisfy the pass that made it and fail the reader gate at the end | W23 and W24 each spent a whole run and then refused over one word a correction had written |
+| **`absolute_claim`** | "no never/always" means an absolutist CLINICAL claim — "always excise", "never offer", "always safe" — not the two words. Hedged forms are ordinary prose | it refused W23 over "not always the safest" and W24 over "never reaches gyn care" and "never substantively responded" |
+| **`_replace_span`** / `_usable_span` | the one place prose is replaced. A closer whose opener precedes the span is re-emitted AFTER the new text, an opener inside it is re-opened rather than answered with a second closer, and a span that is empty or begins or ends inside a tag is refused outright | an empty `<span class="mz-rec-text">` with its text stranded beside it; two `</em>` and one `<em>`; and a whole sentence spliced between an attribute's quote and its own `>` |
+| **`fix_claimed_absences`** + the repair's own guard | a sentence may not say a paper is absent while carrying a marker to it. The mirror of `remove_orphan_studies`, which only ever asked the other question | W21's bottom line read "…never made this brief's final list" with the marker still on it, and each repair reworded it rather than resolving it |
+| **`narrow_to_abstract`** | last resort before refusing: keep only what the abstract supports, drop every clause it does not, delete the sentence if nothing survives | a sentence naming three specialties beside a paper that discusses none of them survived two rewrites and a fresh citation |
+| **`fix_card_attribution`** | a card's editorial text credits its own paper's authors. "X et al." must be in THIS card's byline; "X YEAR" only has to author something in the brief. Articles, months and publication-type words are not surnames | one card read "Mahmoud et al." above a byline of Daniels, Champaneria and Shah, and another cross-referenced "Mahmoud 2016" |
+| **uncarded citations** (in `_renumber`, after curation) | a marker must point at a paper the brief cards; one that does not leaves the held set like a paper curation removed, and the prose arguing from it is rewritten | W21 carried 21 markers to a Cochrane review with no card anywhere; 15 of 17 published briefs have none of these |
 | **`repair_from_defects`** | rewrites EVERY sentence the evidence quotes, in one decision so they end up agreeing, with those sentences' PubMed abstracts and the page's measured counts in hand; applies from the end of the document; a round whose rewrites all come back identical does not re-read the page | fixing one side of a contradiction left the other standing, and the identical prompt was then served from cache — W21 burned three repair rounds changing nothing |
 | `auditPublishable` (node) → `preview_and_verify` (Playwright, every marker, hover + tap) | the site's own gate and a browser, BEFORE anything is written | |
 | `--dry` stops here: **`DRY RUN OK`**, nothing written | receipt → PUT → approve → `verify_rendered` on the live route, otherwise | |
@@ -2276,6 +2283,19 @@ popover cost fifteen seconds. Routes are striped across `--workers=3`
 processes (the sync Playwright API is not thread-safe, so processes); a
 worker that dies fails the gate with a named route rather than vanishing.
 Every marker is still checked, in both viewports.
+
+**PROSE NO PASS COULD SEE (2026-09-20).** `_prose_passages` yielded the
+narrative, the non-topic sections and each section's synthesis — and not
+the opening `<p class="mz-post-lede">` or a `<p class="mz-section-intro">`.
+Those paragraphs carry citations and a reader reads them first, so they
+were never citation-checked, never corrected against their papers and
+never read back. The gap surfaced as a false alarm twice: a paper first
+cited in a lede carried the SUFFIXED popover id on every marker the
+auditor could see, so it reported the numbering as broken on pages where
+it was right. Both now come through, skipping anything already inside a
+passage. `_mask_noprose` masks the evidence pyramid, the shape chart, the
+stat counters and the table of contents alongside markers and verbatim
+abstracts, because a rewrite that reaches into a data widget corrupts it.
 
 **MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
 · `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`
