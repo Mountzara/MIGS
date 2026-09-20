@@ -7960,7 +7960,11 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         "prose_passages": [{"id": ps.tid or ps.kind, "html": strip_pops(ps.group(1))[:20000]}
                            for ps in _prose_passages(after) if ps.kind != "synthesis"],
         "sections": sections,
-        "popovers": slice_of(after, r'<sup class="mz-ref">[\s\S]*?</sup>', 2, 1600, pops=True),
+        # named for what it is: two examples, not the list. The audit compared
+        # its length against the popover COUNT and reported 23 popovers
+        # missing from a page that had all 23.
+        "two_example_popovers_not_the_whole_list": slice_of(
+            after, r'<sup class="mz-ref">[\s\S]*?</sup>', 2, 1600, pops=True),
         "references_head": slice_of(after, r'<ol class="mz-references-list">[\s\S]{0,2500}', 1, 2500),
         "cite_card": slice_of(after, r'<article class="mz-cite-card[\s\S]*?</article>', 1, 2500),
         "counts": {
@@ -8009,8 +8013,10 @@ narrative first, then each section in order, AND THEN the deep-dive dialogs, who
 the same sequence. "marker_sequence_in_document_order" lists the prose and section markers only, so
 the highest number in it is normally LOWER than the reference count: the difference is the papers
 cited inside deep dives (counted separately in counts). That difference is not an orphan reference
-and is not a defect. Judge numbering and sequence from that list — the prose excerpts are partial. Popover text has been removed from the prose excerpts; judge popover completeness from
-"popovers". A paper that belongs under two headings is carded under both — two cite cards, the
+and is not a defect. Judge numbering and sequence from that list — the prose excerpts are partial. Popover text has been removed from the prose excerpts; judge whether a popover is COMPLETE — title, journal
+line, finding, link — from "two_example_popovers_not_the_whole_list", which is exactly two examples
+and never the whole list: its length says nothing about how many popovers the page has, and the
+count in "counts" does. Never report popovers as missing by comparing those two against a count. A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
 by design, not a defect, and duplicate ids are measured and reported in counts. This holds whether or
 not the brief has topic headings: "extra_cards_for_papers_carded_twice" is exactly how far
