@@ -656,7 +656,16 @@ export function auditDosingLanguage(post) {
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
         .replace(/<[^>]+>/g, " ");
-    const INSTRUCTION = /\b(?:take|start|stop|begin|switch to|increase to|reduce to|titrate to)\b[^.]{0,40}?\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|IU)\b/gi;
+    // An INSTRUCTION is addressed to someone: an imperative opening a clause
+    // ("Take 300 mg twice daily"), or "you/she/patients should take …". A
+    // study's own reported figure is not one — W21's "suppressing movement at
+    // cervical dilation … 3.70 µg" is an ED50, and the older rule refused the
+    // brief for it because "stop" happened to sit within forty characters.
+    const INSTRUCTION = new RegExp(
+        String.raw`(?:^\s*|[.;:!?]["')\]]?\s+|\n\s*|\b(?:you|she|he|they|patients?|women|readers?)\s+(?:should|must|can|may)\s+)`
+        + String.raw`(?:take|start|stop|begin|switch to|increase to|reduce to|titrate to)\b[^.]{0,40}?`
+        + String.raw`\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|IU)\b`,
+        "gi");
     const found = [...new Set((h.match(INSTRUCTION) || []).map((x) => x.trim()))];
     if (found.length) {
         problems.push(`prose instructs a reader to take a dose (${found.slice(0, 4).join(", ")}) — a brief reports what a study administered; it does not tell anyone what to take.`);
