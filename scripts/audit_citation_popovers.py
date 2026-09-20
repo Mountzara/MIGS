@@ -107,7 +107,13 @@ def check_marker(page, sup, route, i, mode):
             sup.evaluate("el => el.scrollIntoView({block: 'center', inline: 'nearest'})")
             page.wait_for_timeout(250 if attempt == 0 else 700)
             if mode == "hover":
-                sup.hover(timeout=15000)
+                # markers stack in runs, and the PREVIOUS marker's popover sits
+                # over the next one: hovering there lands on the popover and the
+                # next marker never opens (W20's markers 8 and 20). Park the
+                # pointer away first so no popover is under it.
+                page.mouse.move(1, 1)
+                page.wait_for_timeout(120)
+                sup.hover(timeout=15000, force=(attempt == 2))
             else:
                 sup.click(timeout=15000, force=(attempt == 2))
             page.wait_for_timeout(350)
