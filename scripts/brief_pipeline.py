@@ -2403,6 +2403,41 @@ def breakable_marker_runs(h: str) -> str:
     return re.sub(r'</sup>(?=<sup class="mz-ref")', "</sup>&#8203;", h)
 
 
+# An opening tag whose ">" ended up after the text that should follow it:
+#   <li><span class="mz-rec-text"Laparoscopic excision improves …pain.><sup…
+# A sentence was written at an offset that fell between the attribute's
+# closing quote and the tag's own ">", so the tag never closed and its ">"
+# now sits at the end of the sentence. The shape is unambiguous — a quoted
+# attribute followed directly by text, with the stray ">" before the next tag
+# — and the repair is exact: put the ">" back where it belongs.
+_SPLIT_TAG_RE = re.compile(r'(<[a-z][a-z0-9]*(?:\s+[a-z-]+="[^"]*")+)(?=[^\s/>])([^<>]{0,900})>')
+
+
+def repair_split_tags(h: str) -> tuple:
+    """Close an opening tag whose ">" was pushed past the text. (h, repaired)."""
+    n = 0
+
+    def one(m):
+        nonlocal n
+        n += 1
+        return m.group(1) + ">" + m.group(2)
+
+    return _SPLIT_TAG_RE.sub(one, h), n
+
+
+def malformed_tag_faults(h: str) -> list:
+    """Opening tags a browser cannot read, named with their text.
+
+    The read-back audit found these, which means a model call and a whole run
+    stood between the damage and anyone hearing about it. This is a string
+    check: it costs nothing and says exactly where.
+    """
+    out = []
+    for m in _SPLIT_TAG_RE.finditer(h):
+        out.append(f"an opening tag never closed, its '>' pushed past the text: {m.group(0)[:90]!r}")
+    return out[:6]
+
+
 def renumber_list_labels(h: str) -> str:
     """Inline enumerations "(1) … (2) … (3) …" inside one paragraph are
     consecutive: a removed item left "(1) … (3)" (W24)."""
@@ -3015,7 +3050,7 @@ def reader_prose_faults(h: str) -> list:
     placeholder or AI-provenance language, no internal path, no bare MIGS, no
     never/always. Shared by the authoring path (prose_faults) and by
     `renumber`, which published without them until standards-check said so."""
-    faults = []
+    faults = list(malformed_tag_faults(h))
     prose = " ".join(prose_fragments(h))
     text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
     vis = _vis_text(h)
@@ -5237,7 +5272,8 @@ not a figure, not a clause, not the voice. If a name belongs to a DIFFERENT stud
 for contrast, leave that name alone and reply with the text unchanged.
 Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
-        if not new or _looks_broken(new) or _invents_experience(new):
+        _bad = writer_reject(new)
+        if _bad:
             continue
         if abs(len(new) - len(ftxt.strip())) > max(120, int(len(ftxt) * 0.4)):
             print(f"  attribution rewrite rejected for {pm} (it rewrote more than the name)")
@@ -5645,7 +5681,7 @@ Reply with ONLY {{"rewrites": [{{"sentence": <number>, "text": "<the corrected s
                 except (TypeError, ValueError):
                     continue
                 new = re.sub(r"\s+", " ", str(r.get("text") or "")).strip()
-                if idx not in per or not new or _looks_broken(new) or _invents_experience(new):
+                if idx not in per or writer_reject(new):
                     continue
                 a, b = per[idx]
                 if len(new) > max(400, int((b - a) * 1.4)):
@@ -6139,7 +6175,7 @@ as the original, ending with a full stop. Plain text, no markup.
 THE SENTENCE: {json.dumps(sentence)}
 Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if ABSTRACT_LABEL_RE.search(new) or _looks_broken(new) or _invents_experience(new):
+        if writer_reject(new):
             new = ""
         if not new:
             # unusable: drop the pasted sentence, keep its citations
@@ -7340,6 +7376,36 @@ def _invents_experience(t: str) -> bool:
     return bool(EXPERIENCE_RE.search(t))
 
 
+def writer_reject(new: str) -> str:
+    """Why this sentence may not go on the page, or "" when it may.
+
+    Every pass that writes a sentence had its own subset of the checks, so a
+    rewrite could satisfy the pass that made it and fail the reader gate that
+    runs at the end. W24 spent a full run — curation, citation, review, two
+    correction rounds, numbering — and then refused because a correction had
+    written the word "never", which S10 forbids. The gate was right; finding
+    out at the gate was the waste. One list, applied wherever a sentence is
+    written.
+    """
+    if not new:
+        return "empty"
+    if _looks_broken(new):
+        return "damaged prose"
+    if _invents_experience(new):
+        return "invented experience"
+    if ABSTRACT_LABEL_RE.search(new):
+        return "raw abstract text"
+    m = re.search(r"\b(never|always)\b", new, re.I)
+    if m:
+        return f"an absolute the standards forbid ({m.group(0)!r})"
+    m = ADVICE_RE.search(new)
+    if m:
+        return f"patient-directed advice ({m.group(0)[:40]!r})"
+    if re.search(r"(?<!CBG/)\bMIGS\b", new):
+        return "bare 'MIGS' — write CBG/MIGS"
+    return ""
+
+
 def _looks_broken(t: str) -> bool:
     """A rewritten sentence that would read as damage: a stop after a function
     word ("developed in the. Department of…"), no terminal stop, a lowercase
@@ -7474,8 +7540,9 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
             new_s = out[i]
             if not new_s or new_s == sentence:
                 continue
-            if len(new_s) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new_s) or _invents_experience(new_s):
-                print(f"  audit repair rejected ({'invented experience' if _invents_experience(new_s) else 'damaged prose'}): {new_s[:90]!r}")
+            _bad = writer_reject(new_s) or ("too long" if len(new_s) > max(400, int(len(sentence) * 1.5)) else "")
+            if _bad:
+                print(f"  audit repair rejected ({_bad}): {new_s[:90]!r}")
                 continue
             keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
             # A repair may not resolve a defect by denying the brief holds a
@@ -8054,6 +8121,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, bars = fix_pyramid_bars(h)
         if bars:
             print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
+        h, split = repair_split_tags(h)
+        if split:
+            print(f"  {split} opening tag(s) whose '>' had been pushed past their text closed")
         h = renumber_list_labels(h)
         h = tidy_prose_spacing(h)
         h = breakable_marker_runs(h)
