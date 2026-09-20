@@ -8626,6 +8626,12 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
             # that difference as a missing citation on a brief that had none
             "distinct_papers_carded": len({(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
                                            for c in re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', after)} - {None}),
+            # cards live outside the topic sections too (the journal-club
+            # deep-dive cards), so the page-wide count exceeds the sum over
+            # "sections" — the audit once read that as the counts lying
+            "distinct_papers_carded_in_topic_sections": len({q for t in _topic_sections(after)
+                                                             for q in re.findall(CARD_ID_RE, t.group(0))
+                                                             + re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))}),
             "extra_cards_for_papers_carded_twice": (
                 len(re.findall(r'<article class="mz-cite-card', after))
                 - len({(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
@@ -8667,7 +8673,10 @@ by design, not a defect, and duplicate ids are measured and reported in counts. 
 not the brief has topic headings. Three counts close the arithmetic and none of them is guesswork:
 "cite_cards" minus "distinct_papers_carded" is "extra_cards_for_papers_carded_twice", and
 "distinct_papers_carded" minus "distinct_papers_cited" is how many carded papers carry no marker —
-THAT is the number to report, and it should be zero. Do not subtract "distinct_papers_cited" from
+THAT is the number to report, and it should be zero. "distinct_papers_carded" counts the whole page
+and "sections" lists only the topic sections; cards also stand outside them (the journal-club deep
+dives), so "distinct_papers_carded_in_topic_sections" is the number the section lists add up to, and
+the page-wide count exceeding it is construction, not a discrepancy. Do not subtract "distinct_papers_cited" from
 "cite_cards" and compare the result to the double-carding figure; those measure different things. For the same reason
 the per-heading counts a reader could add up sum to MORE than the brief's paper total, which counts
 each paper ONCE: "sum_of_topic_section_counts" exceeding "distinct_papers_cited" is that design and
