@@ -4393,7 +4393,7 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         # fragments, the model could not place against them, and the markers
         # it did place landed mid-phrase. Masking each <sup> with spaces keeps
         # every index valid against the fragment while hiding its content.
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         if not sents:
             continue
@@ -4529,7 +4529,7 @@ def relocate_mid_sentence_markers(h: str) -> tuple:
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
         for _ in range(400):
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             hit = None
             for sm in SUP_RE.finditer(frag):
                 before = H.unescape(re.sub(r"<[^>]+>", "", masked[:sm.start()])).rstrip(" \t\r\n\xa0")
@@ -4760,7 +4760,7 @@ def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
     for m in _prose_passages(h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         asks = []
         for i, (t, e) in enumerate(sents):
@@ -4916,7 +4916,7 @@ Reply with ONLY {{"pmid": "<the matching pmid>"}} or {{"pmid": null}} when none 
         for ps in _prose_passages(h):
             frag = ps.group(1)
             base = ps.start(1)
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             sents = _sentences_of(masked)
             if not sents:
                 continue
@@ -5055,7 +5055,7 @@ def cite_every_card(W: str, h: str, real: dict, force_new: set | None = None) ->
             pm = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
             frag = pm.group(1)
             base = sec.start() + pm.start(1)
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             sents = _sentences_of(masked)
             r = real.get(q) or {}
             listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
@@ -5124,7 +5124,7 @@ def cite_missing_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
     added, out, last = 0, [], 0
     for ps in _prose_passages(h):
         frag = ps.group(1)
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         if not sents:
             out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
@@ -5254,7 +5254,7 @@ def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
             continue
         frag = pm_.group(1)
         base = sec.start() + pm_.start(1)
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         if not sents:
             continue
@@ -5273,7 +5273,7 @@ def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
             pm_ = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
             frag = pm_.group(1)
             base = sec.start() + pm_.start(1)
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             sents = _sentences_of(masked)
         listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
         by_design = __import__("collections").Counter(re.sub(r"\s*·.*$", "", c["design"]).strip() for c in cards if c["design"])
@@ -5351,7 +5351,7 @@ def resolve_embedded_markers(W: str, h: str, real: dict) -> tuple:
     out, last = [], 0
     for ps in _prose_passages(h):
         frag = ps.group(1)
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         if not sents:
             out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
@@ -5602,7 +5602,7 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
         frag = ps.group(1)
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         # a heading is not a sentence to rewrite ("Three papers worth a careful
         # read" became "Zero papers…" on W20)
         masked = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
@@ -5675,7 +5675,7 @@ def strip_verbatim_abstract_sentences(h: str, real: dict) -> tuple:
         target = None
         for ps in _prose_passages(h):
             frag = ps.group(1)
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             sents = _sentences_of(masked)
             for i, (t, e) in enumerate(sents):
                 n = norm(t)
@@ -5718,7 +5718,7 @@ def rewrite_pasted_abstract_text(W: str, h: str) -> tuple:
         target = None
         for ps in _prose_passages(h):
             frag = ps.group(1)
-            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            masked = _mask_noprose(frag)
             sents = _sentences_of(masked)
             for i, (t, e) in enumerate(sents):
                 if ABSTRACT_LABEL_RE.search(t):
@@ -5936,7 +5936,7 @@ def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
         # judged this citation against it, and withdrew 27 correct citations
         # in a chain each "one paper behind". Popovers are masked with spaces,
         # so every index stays valid, and the sentence is located by its end.
-        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        masked = _mask_noprose(frag)
         sents = _sentences_of(masked)
         for sm in SUP_RE.finditer(frag):
             pm = _pmid_of(sm.group(0))
@@ -6238,6 +6238,13 @@ def _topic_sections(h: str) -> list:
     return [t for t in out if not any(o is not t and t.a < o.a < t.b for o in out)]
 
 
+def _mask_noprose(frag: str) -> str:
+    """Markers and any verbatim-abstract block masked with spaces: indices stay
+    valid against the fragment, and nothing is inserted inside them."""
+    out = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+    return re.sub(r"<details[\s\S]*?</details>", lambda x: " " * len(x.group(0)), out)
+
+
 def _prose_passages(h: str) -> list:
     """Every passage that carries inline citations, in document order: the
     opening narrative (mz-post-narrative or W20's mz-narrative), every other
@@ -6257,7 +6264,11 @@ def _prose_passages(h: str) -> list:
             continue
         b = _element_end(h, "section", m.end())
         inner = h[m.end():b - len("</section>")]
-        if "mz-cite-card" in inner or "<section" in inner:
+        if ("mz-cite-card" in inner or "<section" in inner
+                or "mz-jc-card" in inner or '<details class="mz-abstract"' in inner):
+            # W20's journal-club section holds deep-dive cards whose verbatim
+            # abstracts sit in <details>/<summary>; treating it as prose put
+            # citation markers and repairs INSIDE a paper's abstract
             continue
         if '<div class="mz-shape-chart"' in inner:
             # a chart section: its captions are prose, its bar rows are not
@@ -6891,7 +6902,7 @@ def repair_from_defects(W: str, h: str, defects: list) -> tuple:
             needle = re.sub(r"\s+", " ", run)[:60]
             for ps in _prose_passages(h):
                 frag = ps.group(1)
-                masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+                masked = _mask_noprose(frag)
                 flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
                 if needle not in flat:
                     continue
