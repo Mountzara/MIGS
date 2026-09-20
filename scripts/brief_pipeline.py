@@ -5655,7 +5655,11 @@ def strip_verbatim_abstract_sentences(h: str, real: dict) -> tuple:
                 n = norm(t)
                 if len(n) < 60:
                     continue
-                if any(n[:60] in ab or n[-60:] in ab or (len(n) > 120 and n[60:120] in ab) for ab in pool):
+                # the sentence must BEGIN in the abstract's words (pasted
+                # source), or repeat two separate long stretches of it. A
+                # sentence that merely ends by describing the study is the
+                # surgeon's own framing and stays.
+                if any(n[:60] in ab or (len(n) > 200 and n[60:120] in ab and n[-60:] in ab) for ab in pool):
                     a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
                     target = (a, ps.start(1) + e, t)
                     break
