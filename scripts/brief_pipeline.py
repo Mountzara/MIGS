@@ -5085,7 +5085,11 @@ Reply with ONLY {{"orphans": [{{"sentence": <number>, "study": "<how the sentenc
                     if not mm:
                         break
                     end = mm.end()
-                h = h[:a] + h[end:]
+                # through the balanced replacer, not a raw splice: cutting the
+                # text of a sentence that filled a wrapper took the wrapper's
+                # closing tag with it and left `<li><span class="mz-rec-text">`
+                # hanging open
+                h = _replace_span(h, a, end, "")
                 print(f"  removed a sentence that reported {study!r}, a study the brief does not hold")
             total += 1
         last_orphans = [e[3] for e in edits]
@@ -5637,6 +5641,28 @@ def fix_pyramid_bars(h: str) -> tuple:
         return "".join(out)
 
     return re.sub(r'<div class="[^"]*mz-evidence-pyramid[^"]*"[\s\S]*?</div>\s*</div>', pyramid, h), n
+
+
+def drop_empty_list_items(h: str) -> tuple:
+    """A list item left with nothing in it is a blank bullet a reader sees.
+
+    Removing a sentence that was the whole of a recommendation emptied its
+    <li>, and the read-back audit refused the brief for it. The item goes, and
+    a list left with no items goes with it. Returns (h, items_dropped).
+    """
+    def blank(inner: str) -> bool:
+        t = H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub("", inner)))
+        return not re.sub(r"[\s\u00a0]|&nbsp;", "", t)
+
+    n = 0
+    while True:
+        m = next((x for x in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h) if blank(x.group(1))), None)
+        if not m:
+            break
+        h = h[:m.start()] + h[m.end():]
+        n += 1
+    h = re.sub(r"<(ol|ul)\b[^>]*>\s*</\1>", "", h)
+    return h, n
 
 
 def refresh_shape_chart(h: str) -> str:
@@ -7842,6 +7868,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print(f"  {bound} card(s) bound to the paper they name (they carried a section index, not a paper)")
         h = normalize_card_ids(h)
         h = refresh_shape_chart(h)
+        h, blanks = drop_empty_list_items(h)
+        if blanks:
+            print(f"  {blanks} list item(s) left empty by a removed sentence dropped")
         h, bars = fix_pyramid_bars(h)
         if bars:
             print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
