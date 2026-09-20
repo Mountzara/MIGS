@@ -6611,24 +6611,37 @@ def _sentence_start(masked: str, from_pos: int) -> int:
 
 def _replace_span(h: str, a: int, b: int, new_text: str) -> str:
     """Replace the prose in h[a:b] with escaped text, keeping the inline
-    markup balanced: a closing tag inside the span whose opener lies before
-    it is re-emitted first, an opener left unclosed is closed after."""
+    markup balanced.
+
+    A closing tag inside the replaced span whose opener lies BEFORE it is
+    re-emitted AFTER the new text, and an opener left unclosed is closed after
+    that. Emitting the orphan closer first put the new text outside the element
+    it began in: a recommendation list item came out
+    `<li><span class="mz-rec-text"></span>Hormonal suppressive therapy…</li>`,
+    an empty wrapper with its own text stranded beside it, and the read-back
+    audit refused the brief for structurally broken markup. The replacement
+    belongs inside whatever element it started in.
+    """
     old = h[a:b]
     # a sentence that opened an enumerated list item keeps its label
     lab = re.match(r"\s*(\(\d+\)\s+|\d+\.\s+)", re.sub(r"<[^>]+>", "", old))
     if lab and not re.match(r"\s*(\(\d+\)|\d+\.)\s", new_text):
         new_text = lab.group(1).strip() + " " + new_text
-    stack, prefix = [], ""
+    stack, closers = [], ""
     for t in re.finditer(r"<(/?)(em|strong|i|b|a|span)\b[^>]*>", old):
         if t.group(1):
-            if stack and stack[-1] == t.group(2):
+            if stack and stack[-1][0] == t.group(2):
                 stack.pop()
             else:
-                prefix += t.group(0)
+                closers += t.group(0)      # closes an element opened before `a`
         else:
-            stack.append(t.group(2))
-    suffix = "".join(f"</{n}>" for n in reversed(stack))
-    return h[:a] + prefix + H.escape(new_text, quote=False) + suffix + h[b:]
+            stack.append((t.group(2), t.group(0)))
+    # an opener inside the replaced span has its closer AFTER b, and that
+    # closer survives the replacement — so the opener must be re-emitted, not
+    # answered with a second closing tag, which is what left the document with
+    # two </em> and one <em>
+    reopen = "".join(tag for _, tag in stack)
+    return h[:a] + H.escape(new_text, quote=False) + closers + reopen + h[b:]
 
 
 def _card_in(seg: str, pmid: str):
