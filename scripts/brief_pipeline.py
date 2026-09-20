@@ -2443,33 +2443,51 @@ def drop_bracket_residue(h: str) -> tuple:
     return out, n
 
 
+def _marker_runs(h: str) -> list:
+    """Every run of adjacent markers as (start, end, [matches]) — adjacent
+    meaning only zero-width break opportunities stand between one marker's
+    end and the next one's start. Built from the marker matches themselves,
+    by position. A pattern that tried to match a whole run in one go
+    backtracked its non-greedy marker body forward through everything
+    between two non-adjacent markers, cards included, to satisfy "two or
+    more" — and the run it then rebuilt dropped sixty-four of W21's cards.
+    The invariant gate refused the page; this is why the pattern is gone."""
+    runs, cur = [], []
+    for m in SUP_RE.finditer(h):
+        if cur:
+            gap = h[cur[-1].end():m.start()]
+            if gap == "" or _RUN_BREAK_RE.fullmatch(gap):
+                cur.append(m)
+                continue
+            runs.append(cur)
+        cur = [m]
+    if cur:
+        runs.append(cur)
+    return [(r[0].start(), r[-1].end(), r) for r in runs if len(r) >= 2]
+
+
 def dedupe_run_markers(h: str) -> tuple:
     """Within one run of markers, a paper is cited once.
 
-    Two placement passes walked a run with their own loops that stopped at
-    the zero-width break a published run carries between markers, saw one
-    marker of a stack, decided the paper was uncited, and appended it again:
-    "…translation.⁵ ⁵". A reader sees the same number twice. Whatever puts a
-    duplicate in a run, it comes out here. (h, removed)."""
-    n = 0
-    out, last = [], 0
-    for m in re.finditer(r"(?:<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>(?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*){2,}", h):
-        run = m.group(0)
-        seen, parts, pos = set(), [], 0
-        for sm in re.finditer(r"(<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>)((?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*)", run):
-            q = _pmid_of(sm.group(1))
+    Two placement passes walked a run with loops that stopped at the break
+    between markers, saw one marker of a stack, decided the paper was
+    uncited, and appended it again: "…translation.⁵ ⁵". Whatever puts a
+    duplicate in a run, it comes out here — by removing the later marker
+    and the break before it, and touching nothing else. (h, removed)."""
+    cuts = []
+    for a, b, ms in _marker_runs(h):
+        seen = set()
+        for i, m in enumerate(ms):
+            q = _pmid_of(m.group(0))
             if q and q in seen:
-                n += 1
-                continue
-            seen.add(q)
-            parts.append(sm.group(1) + sm.group(2))
-        new = "".join(parts)
-        if new != run:
-            out.append(h[last:m.start()]); out.append(new); last = m.end()
-    if not n:
-        return h, 0
-    out.append(h[last:])
-    return "".join(out), n
+                # the marker, plus the break that separated it from the one before
+                cut_from = ms[i - 1].end() if i else m.start()
+                cuts.append((cut_from, m.end()))
+            else:
+                seen.add(q)
+    for a, b in sorted(cuts, reverse=True):
+        h = h[:a] + h[b:]
+    return h, len(cuts)
 
 
 def repair_split_tags(h: str) -> tuple:
@@ -3145,8 +3163,8 @@ def body_invariant_faults(h: str) -> list:
         out.append(f"{len(pmid_like)} of {len(marks)} citation marker(s) show a PMID, not a number")
     out += malformed_tag_faults(h)[:2]
     dup_runs = 0
-    for m in re.finditer(r"(?:<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>(?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*){2,}", h):
-        qs = [_pmid_of(x) for x in SUP_RE.findall(m.group(0))]
+    for a, b, ms in _marker_runs(h):
+        qs = [_pmid_of(m.group(0)) for m in ms]
         dup_runs += len(qs) != len(set(qs))
     if dup_runs:
         out.append(f"{dup_runs} run(s) of markers cite the same paper twice")
