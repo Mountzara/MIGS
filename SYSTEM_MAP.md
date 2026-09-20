@@ -2132,8 +2132,11 @@ journal lines), `snap.cited.json` (after the citation chain) and
 resume command for the latest checkpoint; `renumber <id> --from=<stage>`
 continues from there, so a fix to a later stage costs that stage plus the
 final audits — never a replay. (`run` resumes from its `.ledger/` receipts
-the same way.) The first two briefs published through this chain were
-W29 and W33 on 2026-09-20; the refusals on the way there (each fixed in
+the same way.) The pre-publish preview is built per work directory
+(`<work>/_preview/`), and `audit_citation_popovers.py` gives each marker
+three attempts with any open popover closed and the marker centred first —
+W34 was unpublished for one intercepted tap. The first briefs published
+through this chain were W29, W33, W34, W25 and W28 on 2026-09-20; the refusals on the way there (each fixed in
 the code, never by hand) were: a decided citation dropped silently
 because `_plain_finding` had no card for a review or protocol without
 figures — now a relaxed attempt, then refuse loudly; a review reply that
@@ -2152,7 +2155,8 @@ cited, reviewed and corrected by the same code:
 |---|---|---|
 | `TOPIC_FIT_RULE` + `kb_area_context` | `cmd_curate` — first pass and corroboration | `curate_live` — both passes |
 | `refresh_popovers_from_abstracts` (every hover card from the PubMed abstract via `_plain_finding`, whatever the author stage typed) | `finish_and_audit`, before numbering | (`_sup_markup` writes them that way) |
-| **`cite_and_review`** = `refresh_card_abstracts` → `remove_orphan_studies` (confirmed against the most similar covered papers) → `relocate_mid_sentence_markers` → `verify_design_tags` → `cite_prose` (every study a sentence reports, 30-sentence chunks) → `cite_named_studies` → `cite_every_card` (every card cited in ITS section's synthesis, or one sentence written from its abstract) → `cite_missing_studies` (a second look at each sentence with its citations visible; a stated count is honoured) → `review_inserted_citations` (omitted items re-asked) → `correct_unsupported_sentences` (two rounds) → re-review | `finish_and_audit`, before numbering | `_renumber` |
+| **`cite_and_review`** = `refresh_card_abstracts` → `remove_orphan_studies` (confirmed against the most similar covered papers) → `relocate_mid_sentence_markers` → `verify_design_tags` → `cite_prose` (every study a sentence reports, 30-sentence chunks) → `cite_named_studies` → `cite_every_card` (every card cited in ITS section's synthesis, or one sentence written from its abstract) → `cite_missing_studies` (a second look at each sentence with its citations visible; a stated count is honoured) → `fix_stated_counts` ("N ⟨topic⟩ papers" = every card the section holds; "two reviews" = by kind; a rewrite that leaves the count unchanged is re-asked, then refused) → `review_inserted_citations` (omitted items re-asked; a wrong description of the paper's subject is unsupported) → `correct_unsupported_sentences` (two rounds, the second a different question; the ABSTRACT is the authority when a title disagrees with it, and the discrepancy is named) → re-review | `finish_and_audit`, before numbering | `_renumber` |
+| `normalize_card_ids` → `breakable_marker_runs` (a zero-width space between consecutive markers so a fifteen-marker run wraps on a phone instead of falling off the clipped edge; stripped again by `normalize_legacy_markup`) | `finish_and_audit`, before numbering | stage 2 of `_renumber` |
 | `rewrite_affected_syntheses` · `rewrite_narrative_for_removed` | (apply assembles from curated topic files; the narrative is authored after curation) | after `curate_live` |
 | `number_citations` → `build_references` → `dedupe_element_ids` → `audit_transform` (S16) | `finish_and_audit` | `_renumber` |
 
