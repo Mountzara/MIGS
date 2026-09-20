@@ -5241,21 +5241,44 @@ def fix_card_attribution(W: str, h: str, real: dict) -> tuple:
     Returns (h, cards_corrected).
     """
     n = 0
+    all_authors = set()
+    for f in (real or {}).values():
+        all_authors |= set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", (f or {}).get("authors", "")))
+    roster = [{"first_author": ((f or {}).get("authors") or "").split(",")[0].strip(),
+               "year": str((f or {}).get("year", "") or ""), "title": ((f or {}).get("title") or "")[:110]}
+              for f in (real or {}).values()]
     out, last = [], 0
     for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
         card = m.group(0)
-        pm = (re.search(CARD_ID_RE, card) or [None, None])[1]
+        # the same fallbacks refresh_card_abstracts uses: this runs BEFORE
+        # bind_legacy_cards, so a trend card still carries a section index as
+        # its id and only its deep-dive trigger names the paper. Reading the
+        # id alone meant the pass skipped every card on every trend brief.
+        pm = ((re.search(CARD_ID_RE, card) or re.search(r"openDeepDive\('dd-(\d+)'", card)
+               or re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})/", card) or [None, None])[1])
         meta = re.search(r'<p class="mz-cite-meta">([\s\S]*?)</p>', card)
         find = re.search(r'<p class="mz-cite-finding">([\s\S]*?)</p>', card)
         r = real.get(pm) if pm else None
         if not (pm and meta and find and r):
             continue
+        # the card's lead-in ("Read through the lens of the claim:") is markup,
+        # not prose to rewrite: sending it and then re-adding it duplicated it
+        lead = re.match(r"\s*<strong>[\s\S]*?</strong>\s*", find.group(1))
+        body_html = find.group(1)[lead.end():] if lead else find.group(1)
         byline = H.unescape(re.sub(r"<[^>]+>", " ", meta.group(1))).split("\u00b7")[0]
         known = set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", byline))
         known |= set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", r.get("authors", "")))
-        ftxt = H.unescape(re.sub(r"<[^>]+>", " ", find.group(1)))
-        wrong = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", ftxt))
-                 if x not in known]
+        ftxt = H.unescape(re.sub(r"<[^>]+>", " ", body_html))
+        # A name is cited two ways: "Daniels et al." and "Daniels 2016". The
+        # first must be one of THIS paper's authors. The second may point at
+        # another paper the brief holds, so it only has to be an author
+        # SOMEWHERE in the brief — one card read "beyond Mahmoud 2016" of a
+        # review written by Daniels, and Mahmoud authors nothing here.
+        named = re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", ftxt)
+        cross = re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", ftxt)
+        wrong = [x for x in dict.fromkeys(named) if x not in known]
+        wrong += [x for x in dict.fromkeys(cross) if x not in known and x not in all_authors]
+        wrong = list(dict.fromkeys(wrong))
         if not wrong:
             continue
         flat = re.sub(r"\s+", " ", ftxt).strip()[:1200]
@@ -5267,9 +5290,12 @@ JOURNAL: {json.dumps(r.get("journal", ""))} {json.dumps(str(r.get("year", "") or
 
 THE CARD'S TEXT: {json.dumps(flat)}
 
-Correct ONLY the attribution so the text credits this paper's actual authors. Change nothing else —
-not a figure, not a clause, not the voice. If a name belongs to a DIFFERENT study the text mentions
-for contrast, leave that name alone and reply with the text unchanged.
+EVERY PAPER THIS BRIEF HOLDS: {json.dumps(roster, ensure_ascii=False)[:8000]}
+
+Correct ONLY the attribution so each name credits the paper it actually belongs to — this paper for
+the text's own subject, and for a "Surname YEAR" cross-reference, whichever paper in the list above
+it means. Change nothing else: not a figure, not a clause, not the voice. If a name belongs to a
+study that is genuinely outside this brief and the text says so, leave it and reply unchanged.
 Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
         _bad = writer_reject(new)
@@ -5281,7 +5307,6 @@ Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
         if _numbers_in(new) - _numbers_in(ftxt):
             print(f"  attribution rewrite rejected for {pm} (it introduced a figure)")
             continue
-        lead = re.match(r"\s*<strong>[\s\S]*?</strong>\s*", find.group(1))
         body = (lead.group(0) if lead else "") + H.escape(new, quote=False)
         card = card[:find.start(1)] + body + card[find.end(1):]
         print(f"  card for {pm} credited {wrong[:2]} — corrected to the paper's own authors")
