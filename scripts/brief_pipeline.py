@@ -5388,6 +5388,15 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
              "papers_by_study_design": dict(designs),
              "deep_dive_papers": deep, "papers_not_deep_dived": max(total - deep, 0)}
     allowed = {total, len(per), deep, max(total - deep, 0)} | {x["papers"] for x in per} | set(facts["percent_of_total"].values()) | set(designs.values())
+    # numbers a writer derives from the facts: "the remaining 14 papers across
+    # seven other topics" is the total minus the four largest topics
+    from itertools import combinations
+    counts = [x["papers"] for x in per]
+    for k in range(1, min(4, len(counts)) + 1):
+        for combo in combinations(counts, k):
+            allowed.add(sum(combo)); allowed.add(max(total - sum(combo), 0))
+    allowed |= {max(len(per) - k, 0) for k in range(len(per) + 1)}
+    allowed |= {sum(v) for v in [list(designs.values())]} | {max(total - v, 0) for v in designs.values()}
     changed = 0
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
