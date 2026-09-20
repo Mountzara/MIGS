@@ -5591,8 +5591,25 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                         print(f"  {n2} sentence(s) corrected a second time — reviewing again")
                         again_wrong, again_unsupported = review_inserted_citations(W, h, real)
                 if again_unsupported:
-                    die("after two corrections, sentence(s) still misstate their papers: "
-                        + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in again_unsupported[:4]))
+                    # The sentence is not about this paper and rewriting it
+                    # twice did not make it so (W21: a summary sentence about
+                    # "two French" studies carrying a Chinese cohort's
+                    # marker). Take the citation off that sentence and give
+                    # the paper its own sentence instead.
+                    pos = {u["_at"] for u in again_unsupported}
+                    for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                        if m.start() in pos:
+                            h = h[:m.start()] + h[m.end():]
+                    print(f"  withdrew {len(pos)} citation(s) from sentences that are not about them")
+                    h, by4, app4 = cite_every_card(W, h, real)
+                    if by4 or app4:
+                        print(f"  gave {by4 + app4} paper(s) a citation of their own")
+                        named += by4 + app4
+                    wrong4, unsup4 = review_inserted_citations(W, h, real)
+                    if unsup4:
+                        die("after two corrections and a re-citation, sentence(s) still misstate their papers: "
+                            + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in unsup4[:4]))
+                    again_wrong = wrong4
                 if again_wrong:
                     for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
                         if m.start() in again_wrong:
