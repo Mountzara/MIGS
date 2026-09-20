@@ -4902,7 +4902,42 @@ containing ONLY the paragraphs you changed.""", timeout_s=900)
             return h, n
         reason = (f"\nA previous attempt left these removed papers' authors still named: {still}; every mention "
                   f"of a removed paper must go.")
-    die(f"the narrative still discusses removed paper(s) after rewriting: {still}")
+    # Two rewrites could not get a removed paper's author out of the prose, so
+    # stop rewriting and cut. Deleting the sentence that names them is a
+    # smaller question than composing a paragraph around the hole, and it is
+    # the one action that is always available — W21 refused a finished brief
+    # over one surname the writer would not drop.
+    cut = 0
+    out, last = [], 0
+    for pm in paras:
+        inner = pm.group(1)
+        masked = _mask_noprose(inner)
+        sents = _sentences_of(masked)
+        keep_parts, prev = [], 0
+        for k, (t, e) in enumerate(sents):
+            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            if any(re.search(r"(?<![\w-])" + re.escape(x) + r"(?:['\u2019]s)?(?![\w-])", t) for x in still):
+                end = _after_run(inner, e)
+                keep_parts.append(inner[prev:s0]); prev = end
+                cut += 1
+        if not cut or prev == 0:
+            continue
+        keep_parts.append(inner[prev:])
+        kept = re.sub(r"\s{2,}", " ", "".join(keep_parts)).strip()
+        out.append(frag[last:pm.start()])
+        if text_of(kept):
+            out.append(f'<p>{kept}</p>')
+        last = pm.end()
+    if cut:
+        out.append(frag[last:])
+        new_frag = "".join(out)
+        leftover = [k for k in still
+                    if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", text_of(new_frag))]
+        if not leftover:
+            print(f"  {cut} narrative sentence(s) naming a removed paper deleted (rewriting them twice did not)")
+            h = h[:m.start(2)] + new_frag + h[m.end(2):]
+            return h, cut
+    die(f"the narrative still discusses removed paper(s) after rewriting and cutting: {still}")
 
 
 def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
