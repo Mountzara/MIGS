@@ -5320,6 +5320,18 @@ def _leading_count(text: str):
 _NUM_TO_WORD = {v: k for k, v in _NUM_WORDS.items()}
 
 
+def _num_word(k: int) -> str:
+    """The word form of a small number, "sixty-five" for 65, the digits when
+    there is no natural word. Lifted out of _set_leading_count so the stats
+    line can keep a sentence's own notation when it rebuilds its figures."""
+    if k in _NUM_TO_WORD:
+        return _NUM_TO_WORD[k]
+    tens = {v: kk for kk, v in _TENS.items()}
+    if k < 100 and (k // 10) * 10 in tens:
+        return tens[(k // 10) * 10] + ("-" + _NUM_TO_WORD[k % 10] if k % 10 else "")
+    return str(k)
+
+
 def _set_leading_count(text: str, n: int) -> str:
     """"Three chronic-pelvic-pain papers…" with n=1 → "One chronic-pelvic-pain
     paper…"; digits stay digits, words stay words, the noun agrees."""
@@ -5327,14 +5339,7 @@ def _set_leading_count(text: str, n: int) -> str:
     if not m:
         return text
     w = m.group(2)
-    def words(k):
-        if k in _NUM_TO_WORD:
-            return _NUM_TO_WORD[k]
-        tens = {v: kk for kk, v in _TENS.items()}
-        if k < 100 and (k // 10) * 10 in tens:
-            return tens[(k // 10) * 10] + ("-" + _NUM_TO_WORD[k % 10] if k % 10 else "")
-        return str(k)
-    word = str(n) if w.isdigit() else (words(n).capitalize() if w[0].isupper() else words(n))
+    word = str(n) if w.isdigit() else (_num_word(n).capitalize() if w[0].isupper() else _num_word(n))
     noun = m.group(4)
     if noun.lower().startswith("paper"):
         noun = "paper" if n == 1 else "papers"
@@ -5658,6 +5663,18 @@ def rewrite_stats_line(h: str, designs: dict, total: int, n_topics: int) -> tupl
                 return f"{n_topics} topics"
             word = _NUM_TO_WORD.get(n_topics, str(n_topics))
             return (word.capitalize() if w[0].isupper() else word) + " topics"
+        # "72 papers across 9 topics this week" captions the shape chart: BOTH
+        # figures are what the page holds, not a number a writer chose. W23
+        # published saying 72 while holding 65, and W24 said 32 while holding
+        # 31, because only the topic half was ever rebuilt.
+        def fix_papers_across(mm):
+            wp, wt = mm.group(1), mm.group(3)
+            np_ = str(total) if wp.isdigit() else (_num_word(total).capitalize() if wp[0].isupper() else _num_word(total))
+            nt = str(n_topics) if wt.isdigit() else (_num_word(n_topics).capitalize() if wt[0].isupper() else _num_word(n_topics))
+            return f"{np_}{mm.group(2)}{nt}{mm.group(4)}"
+        new = re.sub(r"\b(\d+|[A-Za-z]+(?:-[a-z]+)?)(\s+papers?\s+(?:across|spanning|over|in)\s+)"
+                     r"(\d+|[A-Za-z]+(?:-[a-z]+)?)(\s+topics?\b)",
+                     fix_papers_across, new) if total else new
         new2 = re.sub(r"\b(\d+|[a-z]+)\s+topics\b", fix_topics, new, flags=re.I)
         if new2 != frag:
             changed += 1
