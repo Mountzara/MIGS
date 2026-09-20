@@ -3106,6 +3106,8 @@ def body_invariant_faults(h: str) -> list:
     out += malformed_tag_faults(h)[:2]
     if _STRANDED_RE.search(h):
         out.append("a recommendation's wrapper is empty with its own text stranded beside it")
+    if re.search(r"\[\s*[A-Z][A-Za-z\u00e0-\u017f' \u2019-]{1,40}?,\s*<sup class=\"mz-ref\"", h):
+        out.append("a surname is bracketed around a citation marker, the pre-marker way of naming a paper")
     blanks = [m for m in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h)
               if not re.sub(r"[\s\u00a0]|&nbsp;", "",
                             H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub("", m.group(1)))))]
@@ -7381,6 +7383,13 @@ def normalize_legacy_markup(h: str) -> str:
         return (f'<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{num or pm}</a>'
                 f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">{"".join(parts)}</span></sup>')
     h = SUP_RE.sub(canon, h)
+    # "[Tian, <marker>]" — a surname bracketed around a real marker, the way a
+    # paper was named before the marker carried its citation. The marker IS
+    # the citation; the bracket and the name are the artifact, and in W21 the
+    # name was wrong twice (Tian, for a paper by Lv). No pass read it: it is
+    # neither a marker nor an "et al.", and the narrative cut refused the
+    # brief over it. The reader keeps the number and loses the bracket.
+    h = re.sub(r"\s*\[\s*[A-Z][A-Za-z\u00e0-\u017f' \u2019-]{1,40}?,\s*(<sup class=\"mz-ref\">[\s\S]*?</sup>)\s*\]", r"\1", h)
     # the break opportunities `breakable_marker_runs` adds are removed here so
     # every run walker in the chain sees adjacent markers
     h = re.sub(r"</sup>(?:&#8203;|\u200b|<wbr>)+(?=<sup class=\"mz-ref\")", "</sup>", h)
