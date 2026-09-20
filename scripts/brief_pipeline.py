@@ -2787,6 +2787,22 @@ def card_texts(h: str) -> list:
     return out
 
 
+# Lancet-family journals write decimals with a MIDDLE DOT: "-1.87" appears in
+# the abstract as "-1·87", "p<0.001" as "p<0·001". Every figure in such an
+# abstract therefore read as two separate small numbers, so a hover card that
+# correctly reported "2.39 fewer episodes a day" was rejected three times for
+# inventing a figure and fell back to the no-figures card. SKYLIGHT 2, whose
+# abstract is nothing but results, published a summary that stated none of
+# them — exactly the complaint the standard exists to prevent.
+_FIG_NORM_RE = re.compile(r"(?<=\d)[\u00b7\u2027\u2219\u22c5](?=\d)")
+
+
+def _normalize_figures(text: str) -> str:
+    """Put a source's figures into one notation before any of them is read."""
+    t = (text or "").replace("\u2212", "-").replace("\u2013", "-")   # minus sign, en dash
+    return _FIG_NORM_RE.sub(".", t)
+
+
 def _pool_tokens(text: str) -> set:
     """Every number a source text contains — the permissive side of the check.
 
@@ -2798,7 +2814,11 @@ def _pool_tokens(text: str) -> set:
     # permissive side: a number missing from it reports a real figure as
     # invented, which is how a confidence interval written "80.6-97.5" in the
     # abstract failed against a synthesis that quoted it correctly.
-    pool = {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+    text = _normalize_figures(text)
+    pool = {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+    # both "1.87" and its parts, so neither notation can report a real figure
+    # as invented
+    pool |= {p for t in list(pool) for p in t.split(".") if p}
     # "eleven tertiary hospitals" is 11; "33 5/7 weeks" tokenises as 335 —
     # both reported a correct figure as invented and cost the citation
     words = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7",
@@ -2824,7 +2844,7 @@ def _num_tokens(text: str) -> set:
     claims, and treating them as ones flagged sound cards and deep dives — a
     gate that cries wolf gets worked around, which is worse than no gate.
     """
-    t = text or ""
+    t = _normalize_figures(text)
     t = re.sub(r"\b10\.\d{4,}/\S+", " ", t)                      # DOI
     t = re.sub(r"\bPMID:?\s*\d{5,9}\b", " ", t, flags=re.I)      # PMID
     t = re.sub(r"\b\d{4}-\d{3}[\dXx]\b", " ", t)                 # ISSN
