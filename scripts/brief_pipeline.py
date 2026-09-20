@@ -8673,6 +8673,15 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
             after, n_name = cite_named_unique(after, real, W)
             if n_cite or n_name:
                 print(f"  the audit named a missing citation: {n_cite + n_name} citation(s) supplied before the next read")
+                # every citation the chain places is judged against its
+                # paper's abstract and withdrawn when it is the wrong paper;
+                # a citation supplied here gets the same judgement, not a pass
+                wrong_a, _unsup_a = review_inserted_citations(W, after, real)
+                if wrong_a:
+                    for mm in sorted(SUP_RE.finditer(after), key=lambda x: -x.start()):
+                        if mm.start() in wrong_a:
+                            after = after[:mm.start()] + after[mm.end():]
+                    print(f"  {len(wrong_a)} supplied citation(s) withdrawn as the wrong paper for their sentence")
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
         if n and repaired != after:
             # bank it: a later round may refuse, and a resume must not start
