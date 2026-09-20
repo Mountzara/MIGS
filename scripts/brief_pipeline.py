@@ -2895,10 +2895,12 @@ def reader_prose_faults(h: str) -> list:
         faults.append(f"patient-directed advice in the site's own prose: {m.group(0)!r}")
     if re.search(r"Pending[^<]{0,40}review", vis):
         faults.append("a reader-visible 'Pending review' placeholder remains")
-    # "ETHODS:" — W21 carried the label with its first letter lost
-    m = re.search(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?|P?URPOSE|F?INDINGS)\s*:", vis)
+    # In the site's OWN prose an abstract label is pasted text ("ETHODS:" —
+    # W21 carried it with its first letter lost). Inside a card's verbatim
+    # abstract the same label is PubMed's own structure and belongs there.
+    m = re.search(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?|P?URPOSE|F?INDINGS)\s*:", text)
     if m:
-        faults.append(f"raw abstract text a reader can see: {m.group(0)!r}")
+        faults.append(f"raw abstract text in the site's own prose: {m.group(0)!r}")
     if re.search(r"\[Awaiting|\[\s*pending\s*\]|\[TODO", vis, re.I):
         faults.append("an authorship placeholder remains")
     m = PROVENANCE_RE.search(text)
