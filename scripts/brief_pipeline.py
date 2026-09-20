@@ -4899,6 +4899,19 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
         sents = _sentences_of(masked)
         edits = []
         for k, (t, e) in enumerate(sents):
+            # A sentence that states a PMID of its own is deliberately naming a
+            # paper outside the brief — W24 explains an Expression of Concern
+            # by naming the 2013 paper it concerns, "Minozzi et al., …, PMID
+            # 23467955". That is the writer being precise, not careless.
+            # Naming a paper outside the brief is the whole point of a
+            # sentence that states its PMID, or that reports an editorial
+            # notice ON another paper — W24's synthesis explains an Expression
+            # of Concern by naming the 2013 Minozzi paper it concerns. That is
+            # the writer being precise, not careless.
+            if re.search(r"\bPMID\s*:?\s*\d{5,9}", t) or re.search(
+                    r"\b(?:expression\s+of\s+concern|retract(?:ion|ed|s)|correction\s+to|erratum|corrigendum"
+                 r"|comment(?:ary)?\s+on|repl(?:y|ies)\s+to|response\s+to|withdrawn)\b", t, re.I):
+                continue
             names = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
                      if x not in _NOT_A_SURNAME and x not in everyone and not _near_surname(x, everyone)]
             if not names:

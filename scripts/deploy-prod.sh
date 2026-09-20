@@ -459,6 +459,31 @@ fi
 # prove any of that. Set DEPLOY_SKIP_CITATION_RENDER=1 only for a failure that
 # is pre-existing and explicitly accepted.
 # ---------------------------------------------------------------------------
+# PUBLISHED-BRIEF gate. Every rule in it is a defect that reached readers
+# once: a marker showing a PMID, a tag that never closed, a blank bullet, a
+# card no sentence cites, a citation to a paper the brief does not card, a
+# deep dive numbered differently from its own marker, prose crediting a paper
+# to someone who did not write it. The pipeline prevents all of them now, but
+# prevention only covers briefs built after the fix — this says whether one is
+# still on the site. It reads rows, not files, and needs no model.
+# Set DEPLOY_SKIP_BRIEF_AUDIT=1 only for a failure that is pre-existing and
+# explicitly accepted.
+# ---------------------------------------------------------------------------
+if [ "${DEPLOY_SKIP_BRIEF_AUDIT:-0}" != "1" ] && [ -f scripts/audit_published_briefs.py ]; then
+    echo ""
+    echo "📄 published-brief gate — defects that have shipped before..."
+    if python3 scripts/audit_published_briefs.py > /tmp/_brief_audit.log 2>&1; then
+        tail -1 /tmp/_brief_audit.log
+        echo "   ✅ published-brief gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a published brief carries a defect that has shipped before:"
+        grep -E "✗|      " /tmp/_brief_audit.log | head -25
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 if [ "${DEPLOY_SKIP_CITATION_RENDER:-0}" != "1" ] && [ -f scripts/audit_citation_popovers.py ]; then
     echo ""
     echo "🔗 rendered-citation gate — markers numbered, hoverable, resolving..."
