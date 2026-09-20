@@ -6700,10 +6700,7 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     # old generator had stacked menopause papers onto infertility sentences;
     # eighteen went). Every card is cited again, and what that adds is reviewed.
     h, by3, app3 = cite_every_card(W, h, real)
-    h, flat = cite_uncited_cards(W, h, real)
-    if flat:
-        print(f"  {flat} carded paper(s) cited nowhere given a sentence of their own")
-        app3 += flat
+
     if by3 or app3:
         print(f"  after the review, every card cited again: {by3} placed, {app3} sentence(s) written")
         named += by3 + app3
@@ -6741,6 +6738,17 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, n_end = rewrite_pasted_abstract_text(W, h)
     if n_end or n_verb2:
         print(f"  after the chain: {n_verb2} copied sentence(s) removed, {n_end} pasted-abstract sentence(s) rewritten")
+    # LAST OF ALL: the card backstop, after every withdrawal has happened.
+    # It ran earlier and found nothing to do, because the placement pass had
+    # put a citation on a sentence that is not about that paper — W21's
+    # UK-wide ART survey landed on a sentence describing a 19-woman interview
+    # study. The review then withdrew it, three rounds running, and the brief
+    # reached the gate with a card no sentence cites. A backstop that runs
+    # before the last withdrawal is not a backstop.
+    h, flat2 = cite_uncited_cards(W, h, real)
+    if flat2:
+        print(f"  {flat2} carded paper(s) left uncited by a withdrawal given a sentence of their own")
+        named += flat2
     return h, named, declined
 
 
