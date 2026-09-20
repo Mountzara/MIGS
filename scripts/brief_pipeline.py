@@ -5554,6 +5554,13 @@ def _leading_count(text: str):
 
 
 _NUM_TO_WORD = {v: k for k, v in _NUM_WORDS.items()}
+# "N topics" means a NUMBER before "topics". Matching any word there made
+# "9 subspecialty topics" read "subspecialty" as the count and rewrite it to
+# "seven", which is how a corrected total came out "7 seven topics".
+_NUM_WORD_ALT = "|".join(sorted((re.escape(w) for w in list(_NUM_WORDS)
+                                 + ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+                                    "hundred"]), key=len, reverse=True))
+_COUNT_WORD = rf"(?:\d+|(?:{_NUM_WORD_ALT})(?:-(?:{_NUM_WORD_ALT}))?)"
 
 
 def _num_word(k: int) -> str:
@@ -6045,14 +6052,15 @@ def rewrite_stats_line(h: str, designs: dict, total: int, n_topics: int) -> tupl
             listed = ", ".join(f"{n} {_plural(d, n)}" for d, n in items)
             new = new[:m.start()] + f"Study designs represented (n = {total}): {listed}" + new[m.end():]
         def fix_topics(mm):
-            n = _numbers_in(mm.group(1))
-            if n and next(iter(n)) == n_topics:
-                return mm.group(0)
+            """Just the count; the caller keeps whatever words follow it."""
             w = mm.group(1)
+            n = _numbers_in(w)
+            if n and next(iter(n)) == n_topics:
+                return w
             if w.isdigit():
-                return f"{n_topics} topics"
-            word = _NUM_TO_WORD.get(n_topics, str(n_topics))
-            return (word.capitalize() if w[0].isupper() else word) + " topics"
+                return str(n_topics)
+            word = _num_word(n_topics)
+            return word.capitalize() if w[0].isupper() else word
         # "72 papers across 9 topics this week" captions the shape chart: BOTH
         # figures are what the page holds, not a number a writer chose. W23
         # published saying 72 while holding 65, and W24 said 32 while holding
@@ -6062,10 +6070,15 @@ def rewrite_stats_line(h: str, designs: dict, total: int, n_topics: int) -> tupl
             np_ = str(total) if wp.isdigit() else (_num_word(total).capitalize() if wp[0].isupper() else _num_word(total))
             nt = str(n_topics) if wt.isdigit() else (_num_word(n_topics).capitalize() if wt[0].isupper() else _num_word(n_topics))
             return f"{np_}{mm.group(2)}{nt}{mm.group(4)}"
-        new = re.sub(r"\b(\d+|[A-Za-z]+(?:-[a-z]+)?)(\s+papers?\s+(?:across|spanning|over|in)\s+)"
-                     r"(\d+|[A-Za-z]+(?:-[a-z]+)?)(\s+topics?\b)",
+        # "41 peer-reviewed papers across 9 subspecialty topics" is the same
+        # sentence with adjectives in it; the audit had to catch that one by
+        # reading, which is exactly the work this is meant to save
+        new = re.sub(r"\b(\d+|[A-Za-z]+(?:-[a-z]+)?)((?:\s+[a-z]+(?:-[a-z]+)?){0,2}\s+papers?\s+"
+                     r"(?:across|spanning|over|in|from)\s+)"
+                     r"(\d+|[A-Za-z]+(?:-[a-z]+)?)((?:\s+[a-z]+(?:-[a-z]+)?){0,2}\s+topics?\b)",
                      fix_papers_across, new) if total else new
-        new2 = re.sub(r"\b(\d+|[a-z]+)\s+topics\b", fix_topics, new, flags=re.I)
+        new2 = re.sub(rf"\b({_COUNT_WORD})((?:\s+[a-z]+(?:-[a-z]+)?){{0,2}}\s+topics\b)",
+                      lambda mm: fix_topics(mm) + mm.group(2), new, flags=re.I)
         if new2 != frag:
             changed += 1
         out.append(h[last:ps.start(1)]); out.append(new2); last = ps.end(1)
