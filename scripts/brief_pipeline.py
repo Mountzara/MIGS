@@ -4840,8 +4840,14 @@ def refresh_popovers_from_abstracts(W: str, h: str, real: dict) -> tuple:
             fresh[pm] = pop.group(1) if pop else None
         if not fresh[pm]:
             return m.group(0)
+        sup = m.group(0)
+        if 'class="mz-ref-pop"' not in sup:
+            # a legacy marker with no popover at all: the browser gate refuses
+            # the page for it (W20's markers 8 and 20). Give it one.
+            n += 1
+            return sup.replace("</sup>", f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">{fresh[pm]}</span></sup>', 1)
         out, k = re.subn(r'(<span class="mz-ref-pop"[^>]*>)[\s\S]*?(</span>)(?=\s*</sup>)',
-                         lambda x: x.group(1) + fresh[pm] + x.group(2), m.group(0), count=1)
+                         lambda x: x.group(1) + fresh[pm] + x.group(2), sup, count=1)
         n += k
         return out
     return SUP_RE.sub(swap, h), n
