@@ -5023,6 +5023,21 @@ Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]
     return "".join(out), added
 
 
+_NUM_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+              "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
+              "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20}
+
+
+def _leading_count(text: str):
+    """The count a synthesis opens with — "Three fibroid papers…", "15
+    infertility papers…", "Only two PCOS entries…" — or None."""
+    m = re.match(r"\s*(?:only\s+|just\s+)?(\d+|[a-z]+)\s+(?:[\w&/-]+\s+){0,4}?(?:papers?|entries|studies)\b", text, re.I)
+    if not m:
+        return None
+    w = m.group(1).lower()
+    return int(w) if w.isdigit() else _NUM_WORDS.get(w)
+
+
 def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
     """Every count a synthesis states — "four papers", "five qualitative
     studies", "two reviews" — must match what its section holds. W34's
@@ -5078,6 +5093,11 @@ stated count is right.""", timeout_s=600)
             new = re.sub(r"\s+", " ", str(c.get("rewrite") or "")).strip()
             if not (1 <= idx <= len(sents)) or len(new) < 20 or len(new) > len(sents[idx - 1][0]) + 80:
                 continue
+            # a whole-section count the model returns must equal the cards;
+            # W23's "Three chronic-pelvic-pain papers" came back as "One"
+            lead = _leading_count(new)
+            if idx == 1 and lead is not None and lead != len(cards):
+                die(f"the count rewrite for {t.tid} says {lead} where the section holds {len(cards)}: {new[:90]!r}")
             if re.sub(r"\s+", " ", sents[idx - 1][0]).strip() == new:
                 # the model flagged the count and then handed the sentence
                 # back unchanged (W28: "Two fibroid papers" over three cards)
@@ -5753,6 +5773,12 @@ def _prose_passages(h: str) -> list:
         b = _element_end(h, "section", m.end())
         inner = h[m.end():b - len("</section>")]
         if "mz-cite-card" in inner or "<section" in inner:
+            continue
+        if '<div class="mz-shape-chart"' in inner:
+            # a chart section: its captions are prose, its bar rows are not
+            # (a totals rewrite once turned a row into "Infertility & ART26")
+            for pm in re.finditer(r"<p\b[^>]*>([\s\S]*?)</p>", inner):
+                out.append(_Span(h, m.end() + pm.start(), m.end() + pm.start(1), m.end() + pm.end(1), m.end() + pm.end(), sid, "prose"))
             continue
         out.append(_Span(h, m.start(), m.end(), b - len("</section>"), b, sid, "prose"))
     for m in re.finditer(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
