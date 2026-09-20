@@ -5466,6 +5466,50 @@ def _numbers_in(text: str) -> set:
     return out
 
 
+def _plural(label: str, n: int) -> str:
+    l = label.lower()
+    if n == 1:
+        return l
+    if l.endswith("y") and not l.endswith(("ay", "ey", "oy", "uy")):
+        return l[:-1] + "ies"
+    if l.endswith(("s", "sis")):
+        return l
+    return l + "s"
+
+
+def rewrite_stats_line(h: str, designs: dict, total: int, n_topics: int) -> tuple:
+    """Two figures in a brief's own stats prose are data, not prose: the
+    study-design tally and the topic count. W20's line read "Study designs
+    represented (n = 52): 13 retrospective cohorts, 10 cross-sectional…" —
+    categories summing to 42 — because a model rewrite fixed the total and
+    left the list. Both are rebuilt from what the page holds."""
+    changed = 0
+    out, last = [], 0
+    for ps in _prose_passages(h):
+        frag = ps.group(1)
+        new = frag
+        m = re.search(r"Study designs represented\s*\(n\s*=\s*\d+\)\s*:[^.<]*", new)
+        if m and designs:
+            items = sorted(designs.items(), key=lambda kv: (-kv[1], kv[0]))
+            listed = ", ".join(f"{n} {_plural(d, n)}" for d, n in items)
+            new = new[:m.start()] + f"Study designs represented (n = {total}): {listed}" + new[m.end():]
+        def fix_topics(mm):
+            n = _numbers_in(mm.group(1))
+            if n and next(iter(n)) == n_topics:
+                return mm.group(0)
+            w = mm.group(1)
+            if w.isdigit():
+                return f"{n_topics} topics"
+            word = _NUM_TO_WORD.get(n_topics, str(n_topics))
+            return (word.capitalize() if w[0].isupper() else word) + " topics"
+        new2 = re.sub(r"\b(\d+|[a-z]+)\s+topics\b", fix_topics, new, flags=re.I)
+        if new2 != frag:
+            changed += 1
+        out.append(h[last:ps.start(1)]); out.append(new2); last = ps.end(1)
+    out.append(h[last:])
+    return "".join(out), changed
+
+
 def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     """Prose that states document-wide totals — "Eighty-four papers, eleven
     topics", "Female infertility (25 papers, 35%)" — says what the page now
@@ -5509,7 +5553,10 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
             allowed.add(sum(combo)); allowed.add(max(total - sum(combo), 0))
     allowed |= {max(len(per) - k, 0) for k in range(len(per) + 1)}
     allowed |= {sum(v) for v in [list(designs.values())]} | {max(total - v, 0) for v in designs.values()}
-    changed = 0
+    h, n_stats = rewrite_stats_line(h, dict(designs), total, len(per))
+    if n_stats:
+        print(f"  {n_stats} stats line(s) rebuilt from what the brief holds")
+    changed = n_stats
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
         frag = ps.group(1)
