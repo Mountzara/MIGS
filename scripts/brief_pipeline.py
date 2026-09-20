@@ -3826,7 +3826,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
 
     # S16: the output is read back before it is written anywhere
     h = audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
-                    {q: "" for q in dropped}, [])
+                    {q: "" for q in dropped}, [], real=real, pmids=list(man["pmids"]))
 
     post["body_html"] = h
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
@@ -5013,7 +5013,10 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
             cand = [x for x in dict.fromkeys(
                 re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t)
                 + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})['\u2019]s\s+(?:OR|HR|RR|aOR|AOR|n\b|cohort|trial|review|study|series|data|finding|result|analysis|meta)", t)
-                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", t))
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", t)
+                # "the Yang cohort", "this Guzelbag study" — the form the
+                # deep-dive pass already read and this one did not
+                + re.findall(r"\b(?:[Tt]he|[Tt]his|[Tt]hat)\s+([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:cohort|trial|study|series|paper|review|analysis|data|RCT)\b", t))
                 if x not in _NOT_A_SURNAME]
             if not cand:
                 continue
@@ -8471,7 +8474,11 @@ and {{"defects": []}} when every figure agrees.""", timeout_s=900)
     return out
 
 
-def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 5) -> str:
+_MISSING_CITE_RE = re.compile(r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b", re.I)
+
+
+def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None,
+                    _repair: int = 5, real: dict | None = None, pmids: list | None = None) -> str:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -8642,6 +8649,16 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
     if blocking and _repair > 0:
+        # A defect that names a MISSING citation cannot be repaired by
+        # rewriting the sentence — the repair loop only writes prose — so it
+        # burned every round and refused the brief. Supply the citation: the
+        # placement pass that reads each sentence with its citations visible
+        # runs again before the next read, when the papers are in hand.
+        if real and pmids and any(_MISSING_CITE_RE.search(f"{d.get('what', '')} {d.get('evidence', '')}") for d in blocking):
+            after, n_cite = cite_missing_studies(W, after, pmids, real)
+            after, n_name = cite_named_unique(after, real, W)
+            if n_cite or n_name:
+                print(f"  the audit named a missing citation: {n_cite + n_name} citation(s) supplied before the next read")
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
         if n and repaired != after:
             # bank it: a later round may refuse, and a resume must not start
@@ -8649,7 +8666,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
             _snap_update_body(W, "numbered", repaired)
             print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
                   f"({_repair - 1} round(s) left)")
-            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1)
+            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1, real=real, pmids=pmids)
         if n:
             # every rewrite came back identical to what it replaced. Re-reading
             # the same page asks the same question and is served the same
@@ -9075,7 +9092,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
 
-    h = audit_transform(W, before_html, h, removed, emptied, moved)
+    h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids)
     faults = reader_prose_faults(h)
     if faults:
         die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
