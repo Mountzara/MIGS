@@ -3699,7 +3699,9 @@ def preview_and_verify(W: str, post_id: str, kind_route: str) -> None:
             + styles + "</head><body><main class=\"container\"><div id=\"detailContent\" "
             "data-mz-post-scope><div class=\"brief-detail-body\">" + body
             + "</div></div></main>" + light + "</body></html>")
-    d = os.path.join(SCRATCH, "_preview")
+    # per work directory: three briefs running at once shared one preview
+    # file, so a gate could render another brief's body and judge this one by it
+    d = os.path.join(W, "_preview")
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "preview.html"), "w", encoding="utf-8").write(page)
 
