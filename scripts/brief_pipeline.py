@@ -6349,7 +6349,15 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                         named += by4 + app4
                     wrong4, unsup4 = review_inserted_citations(W, h, real)
                     if unsup4:
-                        die("after two corrections and a re-citation, sentence(s) still misstate their papers: "
+                        # stop composing and start cutting: keep only what the
+                        # abstract supports, and delete a sentence that has
+                        # nothing left
+                        h, nn, nr = narrow_to_abstract(W, h, unsup4, real)
+                        if nn or nr:
+                            print(f"  {nn} sentence(s) narrowed to their abstracts, {nr} removed — reviewing again")
+                            wrong4, unsup4 = review_inserted_citations(W, h, real)
+                    if unsup4:
+                        die("after two corrections, a re-citation and a narrowing, sentence(s) still misstate their papers: "
                             + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in unsup4[:4]))
                     again_wrong = wrong4
                 if again_wrong:
@@ -6535,6 +6543,65 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
           + (f"; {len(rejected)} withdrawn as the wrong paper for that claim" if rejected else "")
           + (f"; {len(unsupported)} sentence(s) to correct against the abstract" if unsupported else ""))
     return rejected, unsupported
+
+
+def narrow_to_abstract(W: str, h: str, unsupported: list, real: dict) -> tuple:
+    """Last resort: cut from a sentence every claim its paper does not make.
+
+    Rewriting asks for a sentence that says the right thing, and a sentence
+    whose subject is simply wider than any one paper cannot be rewritten into
+    one — the MCAS/POTS/hEDS brief had a sentence naming rheumatology,
+    cardiology and allergy-immunology beside a paper that discusses none of
+    them, and two rewrites and a fresh citation all came back overstating it
+    again. Deleting is a smaller question than composing, and the answer is
+    always available: keep only what the abstract supports, and if that is
+    nothing, the sentence goes. Returns (h, narrowed, removed).
+    """
+    narrowed = removed = 0
+    by_span = {}
+    for u in unsupported:
+        by_span.setdefault(u["_span"], []).append(u)
+    for (a, b), us in sorted(by_span.items(), key=lambda x: -x[0][0]):
+        if not (0 <= a < b <= len(h)):
+            continue
+        papers = [{"pmid": u["pmid"], "what_the_reviewer_says_is_wrong": u["why"],
+                   "abstract": ((real.get(u["pmid"]) or {}).get("abstract") or "")[:3000]} for u in us]
+        v = _ask_cached(W, "narrow", f"""One sentence of a clinician-facing evidence brief claims more than the paper it cites supports. It
+has been rewritten twice and re-cited, and a reviewer still rejects it, so do not try to rewrite it
+into something true. CUT instead.
+
+THE SENTENCE: {json.dumps(us[0]["sentence"])}
+THE PAPER(S) IT CITES, AND WHAT THE REVIEWER SAYS IS WRONG: {json.dumps(papers, ensure_ascii=False)}
+
+Return the sentence with every clause, list item, condition and specialty the abstract does not
+support removed, and nothing added. Keep the grammar clean — no dangling "and", no empty
+parenthesis, no doubled full stop. If what remains would say nothing the abstract supports, return
+an empty string and the sentence will be deleted.
+Reply with ONLY {{"sentence": "<what survives, or empty>"}}""", timeout_s=600)
+        cand = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+        if cand:
+            bad = writer_reject(cand)
+            if bad or len(cand) > len(us[0]["sentence"]) + 20:
+                print(f"  narrowing rejected ({bad or 'it grew instead of shrinking'}): {cand[:80]!r}")
+                continue
+            keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+            h = _replace_span(h, a, b, cand)
+            at = _after_run(h, a + len(H.escape(cand, quote=False)))
+            if keep and keep not in h[a:at + len(keep)]:
+                h = h[:at] + keep + h[at:]
+            narrowed += 1
+            print(f"  narrowed a sentence to what its paper supports: {cand[:96]!r}")
+        else:
+            end = b
+            while True:
+                mm = SUP_RE.match(h, end)
+                if not mm:
+                    break
+                end = mm.end()
+            h = _replace_span(h, a, end, "")
+            removed += 1
+            print(f"  removed a sentence no abstract supports: {us[0]['sentence'][:96]!r}")
+    return h, narrowed, removed
 
 
 def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict, round_no: int = 1) -> tuple:
