@@ -5757,6 +5757,25 @@ Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
     return h, done
 
 
+def strip_markers_in_abstracts(h: str) -> tuple:
+    """A verbatim abstract carries no citations of ours. W20 had markers
+    inside <details class="mz-abstract"> blocks: collapsed by default, so a
+    reader can never hover them and the rendered gate refuses the page.
+    Returns (h, removed)."""
+    n = 0
+
+    def clean(m):
+        nonlocal n
+        inner = m.group(0)
+        k = len(SUP_RE.findall(inner))
+        if not k:
+            return inner
+        n += k
+        return SUP_RE.sub("", inner)
+    h = re.sub(r"<details[^>]*>[\s\S]*?</details>", clean, h)
+    return h, n
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -5769,6 +5788,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     its abstract (wrong paper: withdrawn by position; misstated: the sentence
     is rewritten from the abstract and reviewed again; still wrong: refuse).
     Returns (h, citations_added, names_declined)."""
+    h, n_inab = strip_markers_in_abstracts(h)
+    if n_inab:
+        print(f"  {n_inab} citation marker(s) removed from verbatim abstract blocks (a reader cannot open them)")
     h, n_verb = strip_verbatim_abstract_sentences(h, real)
     if n_verb:
         print(f"  {n_verb} sentence(s) copied from abstracts removed from the site's prose")
