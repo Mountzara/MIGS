@@ -6920,86 +6920,116 @@ def _looks_broken(t: str) -> bool:
     return not t[:1].isupper() and not t[:1].isdigit() and t[:1] not in "\u201c\"("
 
 
+def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
+    """Every sentence the audit's evidence quotes, as (start, end, text).
+
+    The evidence for a contradiction quotes BOTH sides — prose passage 1
+    "…OR 1.08…" AND the bottom line "…OR 1.44…" — and rewriting only the
+    first leaves the page still contradicting itself. The audit then names the
+    same defect again, the identical prompt is served from cache, and three
+    repair rounds change nothing. Find them all.
+    """
+    runs = sorted((x.strip() for x in re.findall(r"[A-Za-z][A-Za-z0-9 ,'\u2019()%=.–-]{30,}", ev)),
+                  key=len, reverse=True)
+    sites: list = []
+    for run in runs[:8]:
+        needle = re.sub(r"\s+", " ", run)[:60]
+        for ps in _prose_passages(h):
+            masked = _mask_noprose(ps.group(1))
+            flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
+            if needle[:40] not in flat:
+                continue
+            sents = _sentences_of(masked)
+            for i, (t, e) in enumerate(sents):
+                if needle[:40] not in re.sub(r"\s+", " ", t):
+                    continue
+                a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                b = ps.start(1) + e
+                if any(a < y and x < b for x, y, _ in sites):
+                    continue          # already have this sentence
+                sites.append((a, b, t))
+                break
+        if len(sites) >= limit:
+            break
+    return sites
+
+
 def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = None) -> tuple:
-    """Fix what the read-back audit named, in the sentence it quoted.
+    """Fix what the read-back audit named, in every sentence it quoted.
 
     Owner, from the beginning: "this code has a way to automatically correct
     this when there are errors." The audit found stale counts, a pasted
     abstract, a self-contradicting sentence — and every one of them stopped
-    the brief instead of being repaired, so a person had to intervene. Each
-    blocking defect whose evidence quotes prose is now rewritten in place,
-    with the sentence's citations preserved, and the page is read again.
+    the brief instead of being repaired, so a person had to intervene.
 
-    A repair is only as good as what it knows. Asked to fix "the same Cochrane
-    finding is given two different odds ratios" with nothing but the sentence
-    in hand, a writer can only guess which figure is the true one. So the
-    sentence's own papers come with it — the PubMed abstracts the brief was
-    built from settle which number is right — and, for a claim about how many
-    papers or topics the brief holds, the page's measured counts do.
+    A repair is only as good as what it knows, and as wide as the defect. A
+    contradiction lives in two places at once: W21 reported one Cochrane
+    finding as OR 1.08 in the infertility section and differently in the
+    bottom line, and a repair that rewrote one of them left the page saying
+    both. Every quoted sentence is now rewritten together, in one decision, so
+    they come out agreeing — and the papers they cite travel with them, since
+    only the PubMed abstract settles which figure is the real one. A disputed
+    count of papers or topics is settled by what the page measurably holds.
     Returns (h, repaired_count)."""
     done = 0
     for d in defects:
         ev = H.unescape(re.sub(r"<[^>]+>", " ", str(d.get("evidence") or "")))
         ev = H.unescape(re.sub(r"<[^>]+>", " ", ev))
-        runs = sorted((x.strip() for x in re.findall(r"[A-Za-z][A-Za-z ,'\u2019-]{30,}", ev)), key=len, reverse=True)
-        if not runs:
+        sites = _quoted_sites(h, ev)
+        if not sites:
             continue
-        hit = None
-        for run in runs[:4]:
-            needle = re.sub(r"\s+", " ", run)[:60]
-            for ps in _prose_passages(h):
-                frag = ps.group(1)
-                masked = _mask_noprose(frag)
-                flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
-                if needle not in flat:
-                    continue
-                sents = _sentences_of(masked)
-                for i, (t, e) in enumerate(sents):
-                    if needle[:40] in re.sub(r"\s+", " ", t):
-                        a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
-                        b = ps.start(1) + e
-                        hit = (a, b, t)
-                        break
-                if hit:
-                    break
-            if hit:
-                break
-        if not hit:
-            continue
-        a, b, sentence = hit
-        keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
-        # the papers this very sentence cites, as PubMed has them: the only
-        # thing that can settle which of two contradicting figures is real
-        cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(keep)) if q]
+        cited = [q for q in dict.fromkeys(
+            _pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:b])) if q]
         papers = real_from_work(W, cited)
         src = "\n".join(
             f"PAPER {q} — {papers[q].get('title', '')}\nABSTRACT: {(papers[q].get('abstract') or '')[:2600]}"
             for q in cited if q in papers)
-        ctx = f"\n\nTHE PAPERS THIS SENTENCE CITES:\n{src}" if src else ""
+        ctx = f"\n\nTHE PAPERS THESE SENTENCES CITE:\n{src}" if src else ""
         if counts:
             ctx += ("\n\nWHAT THE PAGE ACTUALLY HOLDS (measured, not claimed): "
                     + json.dumps({k: counts[k] for k in (
                         "citations", "distinct_papers_cited", "reference_entries", "cite_cards",
                         "topic_sections", "toc_chips") if k in counts}))
-        v = _ask_cached(W, "audit_fix", f"""An editor reading a clinician-facing evidence brief found this defect in one sentence:
+        numbered = json.dumps([{"index": i, "sentence": t} for i, (_, _, t) in enumerate(sites)],
+                              ensure_ascii=False)
+        v = _ask_cached(W, "audit_fix", f"""An editor reading a clinician-facing evidence brief found this defect:
 DEFECT: {json.dumps(str(d.get('what'))[:600])}
-THE SENTENCE: {json.dumps(sentence)}{ctx}
-Rewrite the sentence so the defect is gone and everything it still says is true, in the same
-first-person surgeon's voice, the same length or shorter. Change nothing the defect does not
-concern; drop a clause that is no longer true rather than inventing a replacement fact. Plain text,
-no citation markup, ending with a full stop.
-If the defect is that a number here contradicts a number elsewhere on the page, the abstracts above
-settle it: keep the figure the abstract actually reports and correct or drop the other. Where a
-count of papers, topics or references is in dispute, the measured figures above are the truth. Never
-carry a figure no source shown here supports — drop the clause instead.
-Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
-        new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new) or _invents_experience(new):
-            print(f"  audit repair rejected ({'invented experience' if _invents_experience(new) else 'damaged prose'}): {new[:90]!r}")
-            continue
-        h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
-        done += 1
-        print(f"  audit repair: {new[:110]!r}")
+
+THE SENTENCES IT QUOTES, every place on the page the defect shows:
+{numbered}{ctx}
+
+Rewrite EVERY sentence so the defect is gone from all of them and everything they still say is true,
+in the same first-person surgeon's voice, each the same length or shorter. Return one entry per
+index, including any sentence you would leave word-for-word unchanged. Change nothing the defect
+does not concern; drop a clause that is no longer true rather than inventing a replacement fact.
+Plain text, no citation markup, each ending with a full stop.
+If the defect is that one figure contradicts another, the sentences must END UP AGREEING: the
+abstracts above say which figure the paper actually reports — keep that one everywhere and correct
+the others. Where a count of papers, topics or references is in dispute, the measured figures above
+are the truth. Never carry a figure no source shown here supports; drop the clause instead.
+Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sentence>"}}, ...]}}""",
+                        timeout_s=900)
+        out = {}
+        for e in ((v or {}).get("sentences") or []):
+            try:
+                out[int(e.get("index"))] = re.sub(r"\s+", " ", str(e.get("sentence") or "")).strip()
+            except (TypeError, ValueError):
+                continue
+        # apply from the END so an earlier rewrite cannot move a later offset
+        for i in sorted(out, reverse=True):
+            if i >= len(sites):
+                continue
+            a, b, sentence = sites[i]
+            new_s = out[i]
+            if not new_s or new_s == sentence:
+                continue
+            if len(new_s) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new_s) or _invents_experience(new_s):
+                print(f"  audit repair rejected ({'invented experience' if _invents_experience(new_s) else 'damaged prose'}): {new_s[:90]!r}")
+                continue
+            keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+            h = h[:a] + H.escape(new_s, quote=False) + keep + h[b:]
+            done += 1
+            print(f"  audit repair: {new_s[:110]!r}")
     return h, done
 
 
@@ -7178,10 +7208,15 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
     if blocking and _repair > 0:
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
-        if n:
+        if n and repaired != after:
             print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
                   f"({_repair - 1} round(s) left)")
             return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1)
+        if n:
+            # every rewrite came back identical to what it replaced. Re-reading
+            # the same page asks the same question and is served the same
+            # cached answer; W21 burned three rounds doing exactly that.
+            print("  the repair rewrote nothing that changed the page — the defect needs a different fix")
     if blocking:
         die(f"the transform audit found {len(blocking)} blocking defect(s) in the output")
     print(f"  transform audit: the output reads correctly"
