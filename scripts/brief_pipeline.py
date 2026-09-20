@@ -4813,6 +4813,78 @@ def _first_surnames(pmids: list, real: dict) -> dict:
     return out
 
 
+def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
+    """Prose credits the paper it cites, by that paper's own authors.
+
+    W21's narrative read "Tian et al., J Obstet Gynaecol Res, n = 255, show
+    opioid-free anesthesia…" on a marker pointing at a paper by Lv, Li and
+    Liu. A reader searches for a paper that does not exist under that name.
+    It also broke something else: curation removed a paediatric paper whose
+    first author IS Tian, so the narrative rewriter kept insisting the name
+    had to go, while the sentence it sat in was about a paper that stays.
+
+    A name is wrong when it is credited with "et al." on a sentence whose own
+    citations are all to papers that name nobody by that surname, and no paper
+    the brief holds does either. Returns (h, sentences_corrected).
+    """
+    held = list(dict.fromkeys(re.findall(CARD_ID_RE, h) + re.findall(r"openDeepDive\('dd-(\d+)'", h)))
+    everyone = set()
+    for q in held:
+        everyone |= set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", (real.get(q) or {}).get("authors", "")))
+    fixed = 0
+    for ps in list(_prose_passages(h))[::-1]:
+        frag = ps.group(1)
+        masked = _mask_noprose(frag)
+        sents = _sentences_of(masked)
+        edits = []
+        for k, (t, e) in enumerate(sents):
+            names = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
+                     if x not in _NOT_A_SURNAME and x not in everyone]
+            if not names:
+                continue
+            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            cites = [q for q in dict.fromkeys(_pmid_of(m.group(0))
+                                              for m in SUP_RE.finditer(frag, s0, _after_run(frag, e))) if q]
+            if not cites:
+                continue
+            papers = [{"pmid": q, "authors": (real.get(q) or {}).get("authors", ""),
+                       "title": ((real.get(q) or {}).get("title") or "")[:130],
+                       "journal": (real.get(q) or {}).get("journal", ""),
+                       "year": str((real.get(q) or {}).get("year", "") or "")} for q in cites]
+            edits.append((ps.start(1) + s0, ps.start(1) + e, re.sub(r"\s+", " ", t).strip(), names, papers))
+        for a, b, sentence, names, papers in sorted(edits, key=lambda x: -x[0]):
+            if not _usable_span(h, a, b):
+                continue
+            v = _ask_cached(W, "attrib", f"""One sentence of a clinician-facing evidence brief credits {json.dumps(names[:3])} with a paper, and
+the paper it actually cites was written by someone else. A reader searching that name finds nothing.
+
+THE SENTENCE: {json.dumps(sentence)}
+THE PAPER(S) THIS SENTENCE CITES: {json.dumps(papers, ensure_ascii=False)}
+
+Correct ONLY the name so the sentence credits the cited paper's own authors, in the same form the
+sentence already uses. Change nothing else: not a figure, not a journal, not a clause, not the voice.
+If the name belongs to a different study the sentence mentions alongside the cited one, leave it and
+reply with the sentence unchanged.
+Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
+            new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+            if not new or new == sentence or writer_reject(new):
+                continue
+            if abs(len(new) - len(sentence)) > max(60, int(len(sentence) * 0.25)):
+                print(f"  prose attribution rewrite rejected (it changed more than the name): {new[:80]!r}")
+                continue
+            if _numbers_in(new) - _numbers_in(sentence):
+                print(f"  prose attribution rewrite rejected (it introduced a figure): {new[:80]!r}")
+                continue
+            keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+            h = _replace_span(h, a, b, new)
+            at = _after_run(h, a + len(H.escape(new, quote=False)))
+            if keep and keep not in h[a:at + len(keep)]:
+                h = h[:at] + keep + h[at:]
+            fixed += 1
+            print(f"  prose credited {names[:2]} for a paper by someone else — corrected: {new[:90]!r}")
+    return h, fixed
+
+
 def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict, surviving: list | None = None) -> tuple:
     """Rewrite the opening narrative's paragraphs that discuss a paper
     curation removed from the brief.
@@ -8352,6 +8424,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
             if resynth:
                 print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
+            # a name credited to the wrong paper has to be corrected BEFORE the
+            # narrative rewrite, which otherwise demands the removal of a
+            # surname that belongs to a paper the brief keeps
+            h, n_attr = fix_prose_attribution(W, h, real)
+            if n_attr:
+                print(f"  {n_attr} sentence(s) that credited the wrong authors corrected")
             h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
             if n_narr:
                 print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
