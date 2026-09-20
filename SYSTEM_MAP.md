@@ -2096,6 +2096,9 @@ and every step in it is one an earlier version got wrong:
 | **`narrow_to_abstract`** | last resort before refusing: keep only what the abstract supports, drop every clause it does not, delete the sentence if nothing survives | a sentence naming three specialties beside a paper that discusses none of them survived two rewrites and a fresh citation |
 | **`fix_card_attribution`** | a card's editorial text credits its own paper's authors. "X et al." must be in THIS card's byline; "X YEAR" only has to author something in the brief. Articles, months and publication-type words are not surnames | one card read "Mahmoud et al." above a byline of Daniels, Champaneria and Shah, and another cross-referenced "Mahmoud 2016" |
 | **uncarded citations** (in `_renumber`, after curation) | a marker must point at a paper the brief cards; one that does not leaves the held set like a paper curation removed, and the prose arguing from it is rewritten | W21 carried 21 markers to a Cochrane review with no card anywhere; 15 of 17 published briefs have none of these |
+| **`curate_flat`** | curation for a brief with no topic headings: its title is its one heading, every carded paper is judged against it by `TOPIC_FIT_RULE` and the practice library, a rejection is judged a second time from the abstract alone, and only a paper both reject is removed — wholesale, via `excise_paper`, since there is no other heading for it to survive under | curation was gated on topic sections existing; no paper in any of the eight published trend briefs had ever been judged for whether it belongs |
+| **`body_invariant_faults`** | what must be true of a finished body, checked on the body: every marker a number, no tag a browser cannot read, no blank bullet, every carded paper cited, every cited paper carded, every deep dive numbered like its own marker. Runs in the pre-publish gate; `scripts/audit_published_briefs.py` imports the same list and runs it against the live site on every deploy | thirteen guarantee functions have sixty-three paths that give up in silence when the page's shape does not match. W20 published with fifteen carded papers no sentence cites because one of them `continue`d nine times without a word, and every gate then in force passed it |
+| **`cite_uncited_cards`** | the card backstop, shape-agnostic, and the LAST thing the citation chain does — after every review withdrawal | it ran earlier and found nothing to do, because the placement pass had cited the paper on a wrong sentence; the review then withdrew it and nothing looked again |
 | **`repair_from_defects`** | rewrites EVERY sentence the evidence quotes, in one decision so they end up agreeing, with those sentences' PubMed abstracts and the page's measured counts in hand; applies from the end of the document; a round whose rewrites all come back identical does not re-read the page | fixing one side of a contradiction left the other standing, and the identical prompt was then served from cache — W21 burned three repair rounds changing nothing |
 | `auditPublishable` (node) → `preview_and_verify` (Playwright, every marker, hover + tap) | the site's own gate and a browser, BEFORE anything is written | |
 | `--dry` stops here: **`DRY RUN OK`**, nothing written | receipt → PUT → approve → `verify_rendered` on the live route, otherwise | |
@@ -2296,6 +2299,19 @@ it was right. Both now come through, skipping anything already inside a
 passage. `_mask_noprose` masks the evidence pyramid, the shape chart, the
 stat counters and the table of contents alongside markers and verbatim
 abstracts, because a rewrite that reaches into a data widget corrupts it.
+
+**A GUARANTEE THAT APPLIES TO ONE PAGE SHAPE IS NOT A GUARANTEE (2026-09-20).**
+Two brief generations and two shapes: weeklies with topic sections and a
+synthesis paragraph per section, and trend briefs with neither. Curation,
+the uncarded-citation withdrawal, prose attribution and the narrative
+rewrite all sat inside `if topics:`, so the whole trend generation skipped
+them in silence; `cite_every_card` needed a synthesis paragraph, so W20's
+four sections without one were skipped in silence. The three briefs that
+failed tonight's audit were not three bugs — they were the three where a
+skipped guarantee happened to have something to catch. The others passed
+by content, not by check. Every guarantee now runs for every shape, and
+`body_invariant_faults` checks the result regardless of which pass was
+meant to hold it.
 
 **MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
 · `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`

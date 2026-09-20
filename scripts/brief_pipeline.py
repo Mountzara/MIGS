@@ -7742,6 +7742,80 @@ Reply with ONLY {{"verdict": "keep"|"drop", "why": "<one clause>"}}""", timeout_
     return h, removed, moved, emptied
 
 
+def curate_flat(h: str, title: str, papers: dict, W: str = "") -> tuple:
+    """Curate a brief that has no topic headings: its title is its one heading.
+
+    Curation was gated on topic sections existing, and a trend brief has
+    none, so no paper in any of the eight published trend briefs was ever
+    judged for whether it belongs — the pass the owner's standard calls
+    "off-topic papers removed" never ran on them, and the six that passed the
+    structural audit passed because that audit cannot measure topic fit.
+
+    Same two-judgement design as `curate_live`, against one subject: the
+    first pass judges every carded paper by TOPIC_FIT_RULE and the practice
+    library's description of the area; a rejection is then judged again,
+    independently, from the abstract alone, and only a paper both passes
+    reject is removed — wholesale, since there is no other heading for it to
+    survive under. Returns (h, removed) with removed = [(pmid, why)].
+    """
+    carded = list(dict.fromkeys(re.findall(CARD_ID_RE, h) + re.findall(r"openDeepDive\('dd-(\d+)'", h)))
+    pmids = [q for q in carded if len(((papers.get(q) or {}).get("abstract") or "").strip()) >= 60]
+    skipped = [q for q in carded if q not in pmids]
+    if skipped:
+        print(f"  KEEPING {len(skipped)} paper(s) with no abstract available — not judged, not dropped: {skipped[:6]}")
+    if not pmids:
+        return h, []
+    area = kb_area_context(W, title)
+    ctx = lambda qs: [{"pmid": q, "title": (papers.get(q) or {}).get("title", ""),  # noqa: E731
+                       "abstract": ((papers.get(q) or {}).get("abstract") or "")[:2200]} for q in qs]
+    first = {}
+    for i0 in range(0, len(pmids), 10):
+        batch = pmids[i0:i0 + 10]
+        v = _ask_cached(W, "curate", f"""You are auditing a single-subject trend brief for a complex benign gynecology / minimally invasive
+gynecologic surgery practice. Its readers are practising gynecologic surgeons.
+THE BRIEF'S SUBJECT (its title, and its only heading): {json.dumps(title)}
+WHAT THIS AREA COVERS, from the practice's own reference library (ACOG / AAGL / FMIGS / UpToDate):
+{area or "(no library entry retrieved — judge from the rule alone)"}
+{TOPIC_FIT_RULE}
+A trend brief is about ONE clinical claim. A paper belongs when it bears on that claim in any way —
+evidence for it, evidence against it, the mechanism it rests on, or the comparator the brief argues
+against. It does not belong when it is about a different organ, specialty or population with no
+bearing on the claim: a paediatric surgery paper in an endometriosis brief, a rat lipid-metabolism
+study whose only link is a shared drug name.
+For EACH paper: does it belong in a brief on that subject?
+PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
+Reply with ONLY {{"verdicts": [{{"pmid": "...", "verdict": "belongs"|"does_not_belong"|"cannot_tell",
+  "why": "<one clause naming what the paper is actually about and the abstract phrase that decides it>"}}, ...]}}
+with one object for EVERY paper given. "cannot_tell" is for a paper whose title and abstract do not
+let you judge; it is kept.""", timeout_s=900)
+        for r in ((v or {}).get("verdicts") or []) if isinstance(v, dict) else []:
+            q = str(r.get("pmid", "")).strip()
+            if q in batch:
+                first[q] = (str(r.get("verdict", "")).lower(), str(r.get("why", ""))[:300])
+    missing = [q for q in pmids if q not in first]
+    if missing:
+        print(f"  KEEPING {len(missing)} paper(s) the curator did not rule on: {missing[:6]}")
+    removed = []
+    for q in pmids:
+        verdict, why = first.get(q, ("cannot_tell", ""))
+        if verdict != "does_not_belong":
+            continue
+        v2 = _ask_cached(W, "curate", f"""One reviewer says this paper does not belong in a single-subject trend brief titled
+{json.dumps(title)}, because: {json.dumps(why)}
+Judge that independently, from the paper alone. Does it bear on the brief's claim in ANY way — as
+evidence for it, evidence against it, the mechanism it rests on, or the comparator the brief argues
+against? Clinical areas overlap; a paper that refutes the title claim belongs.
+PAPER: {json.dumps(ctx([q])[0], ensure_ascii=False)}
+Reply with ONLY {{"belongs": true|false, "why": "<one clause>"}}""", timeout_s=600)
+        if isinstance(v2, dict) and v2.get("belongs") is False:
+            removed.append((q, why))
+        else:
+            print(f"  KEEPING {q}: rejected once, but a second judgement finds it bears on the subject")
+    for q, _ in removed:
+        h = excise_paper(h, q)
+    return h, removed
+
+
 def _match_heading(name: str, by_title: dict):
     """The topic id a model-quoted heading refers to: exact, then case /
     whitespace / entity-insensitive, then with a trailing parenthetical
@@ -8555,7 +8629,20 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             if resynth:
                 print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
         else:
+            # no topic headings: the brief's own title is its one heading, and
+            # every carded paper is judged against it
             removed, moved, emptied, gone = [], [], [], []
+            title = H.unescape(re.sub(r"<[^>]+>", "", (re.search(
+                r'<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>([\s\S]*?)</h1>', h) or [None, ""])[1])).strip()
+            title = title or str(post.get("title") or "")
+            if title:
+                h, flat_removed = curate_flat(h, title, papers_ctx, W)
+                if flat_removed:
+                    print(f"  curation removed {len(flat_removed)} paper(s) not about this brief's subject:")
+                    for pm, why in flat_removed:
+                        print(f"    {pm}: {why[:110]}")
+                    gone = [pm for pm, _ in flat_removed]
+                    removed = [("the brief", pm, why) for pm, why in flat_removed]
 
         # ---- FOR EVERY BRIEF, WHATEVER ITS SHAPE ----------------------------
         # These three ran inside the curation branch, which only a brief with
