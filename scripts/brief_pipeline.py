@@ -4374,6 +4374,16 @@ def relocate_mid_sentence_markers(h: str) -> tuple:
             end = _end_of_sentence(masked, hit.end())
             frag = frag[:hit.start()] + frag[hit.end():]
             end -= len(marker)
+            # "levels ⟨marker⟩," lifted out leaves "levels ," — the space
+            # before the marker is dropped when punctuation follows
+            cut = hit.start()
+            if frag[cut:cut + 1] in ",.;:!?":
+                k = cut
+                while k > 0 and frag[k - 1] in " \t\xa0":
+                    k -= 1
+                if k < cut:
+                    frag = frag[:k] + frag[cut:]
+                    end -= cut - k
             # the run of markers already standing at that sentence end
             run_end, seen = end, set()
             while True:
@@ -5163,7 +5173,12 @@ def refresh_shape_chart(h: str) -> str:
     row per topic with a count and a bar. After curation its rows still
     named removed topics and stale counts (W24). Rows follow the sections
     that exist; counts are the cards; the caption's totals are recomputed."""
-    m = re.search(r'<section class="[^"]*mz-post-chart[^"]*"[^>]*>[\s\S]*?</section>', h)
+    m = None
+    for cand in re.finditer(r"<section\b[^>]*>", h):
+        b = _element_end(h, "section", cand.end())
+        if "mz-shape-chart" in h[cand.end():b] and "mz-cite-card" not in h[cand.end():b]:
+            m = type("M", (), {"start": lambda self: cand.start(), "end": lambda self: b, "group": lambda self, n=0: h[cand.start():b]})()
+            break
     if not m:
         return h
     sec = m.group(0)
@@ -5176,7 +5191,7 @@ def refresh_shape_chart(h: str) -> str:
         by_title[title.lower()] = t
     counts = {}
     for row in re.findall(r'<div class="mz-shape-row"[\s\S]*?</div>', sec):
-        lab = re.search(r'mz-shape-row-label">([\s\S]*?)</span>', row)
+        lab = re.search(r'mz-shape-(?:row-)?label">([\s\S]*?)</span>', row)
         tid = _match_heading(H.unescape(re.sub(r"<[^>]+>", "", lab.group(1))), {k: v.tid for k, v in by_title.items()}) if lab else None
         if tid:
             seg = next(t.group(0) for t in tops if t.tid == tid)
@@ -5189,13 +5204,71 @@ def refresh_shape_chart(h: str) -> str:
             sec = sec.replace(row, "", 1)
             continue
         new = re.sub(r"--mz-bar:\s*[\d.]+%", f"--mz-bar: {100.0 * n / top:.1f}%", row)
-        new = re.sub(r'(mz-shape-row-count">)\d+(</span>)', lambda mm: mm.group(1) + str(n) + mm.group(2), new)
+        new = re.sub(r'(mz-shape-(?:row-)?count">)\d+(</span>)', lambda mm: mm.group(1) + str(n) + mm.group(2), new)
         new = SUP_RE.sub("", new)  # a chart row is not a place for a citation
         sec = sec.replace(row, new, 1)
     total = sum(n for _, n in counts.values())
     kept = sum(1 for tid, _ in counts.values() if tid)
     sec = re.sub(r"\d+ papers across \d+ topics", f"{total} papers across {kept} topics", sec)
+    sec = re.sub(r"(aria-label=\"[^\"]*?)\d+ papers", lambda mm: mm.group(1) + f"{total} papers", sec)
     return h[:m.start()] + sec + h[m.end():]
+
+
+def fix_document_totals(W: str, h: str, real: dict) -> tuple:
+    """Prose that states document-wide totals — "Eighty-four papers, eleven
+    topics", "Female infertility (25 papers, 35%)" — says what the page now
+    holds. W20's closing thoughts and subspecialty breakdown kept the
+    pre-curation numbers. Returns (h, sentences_changed)."""
+    tops = _topic_sections(h)
+    per = []
+    for t in tops:
+        tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", t.group(1), re.S)
+        title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()) if tt else t.tid
+        per.append({"topic": title, "papers": len(set(re.findall(CARD_ID_RE, t.group(0))))})
+    total = len(set(re.findall(r'<article class="mz-cite-card[^>]*\bid="mz-cite-(\d{5,9})', h)))
+    facts = {"papers_in_this_brief": total, "topics": len(per), "per_topic": per,
+             "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {}}
+    changed = 0
+    for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
+        frag = ps.group(1)
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
+        if not sents or not re.search(r"\d|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b", " ".join(t for t, _ in sents), re.I):
+            continue
+        listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
+        v = _ask_cached(W, "counts", f"""A passage from a clinician-facing weekly evidence brief, sentence by sentence, and the FACTS of what the
+brief now holds after curation:
+{json.dumps(facts, ensure_ascii=False)}
+SENTENCES:
+{listing}
+Find every sentence stating a document-wide total or share — how many papers this week, how many
+topics, how many papers a topic has, a percentage of the whole, "the N papers not deep-read" — that
+disagrees with the facts. Give each such sentence rewritten with the right figures (words or digits
+as the original used) and nothing else changed; plain text, no citation markup. A sentence about a
+single study's own numbers is not a total and is not changed.
+Reply with ONLY {{"changes": [{{"sentence": <number>, "rewrite": "<text>"}}, ...]}} and {{"changes": []}} when
+every total is right.""", timeout_s=600)
+        if not v or not isinstance(v.get("changes"), list):
+            die("the document-totals check returned no verdict")
+        edits = []
+        for c in v["changes"]:
+            try:
+                idx = int(c.get("sentence"))
+            except Exception:
+                continue
+            new = re.sub(r"\s+", " ", str(c.get("rewrite") or "")).strip()
+            if not (1 <= idx <= len(sents)) or len(new) < 15 or len(new) > len(sents[idx - 1][0]) + 80:
+                continue
+            if new == re.sub(r"\s+", " ", sents[idx - 1][0]).strip():
+                continue
+            a = ps.start(1) + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
+            b = ps.start(1) + sents[idx - 1][1]
+            edits.append((a, b, new))
+        for a, b, new in sorted(edits, key=lambda e: -e[0]):
+            h = _replace_span(h, a, b, new)
+            changed += 1
+            print(f"  total corrected: {new[:100]!r}")
+    return h, changed
 
 
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
@@ -5242,6 +5315,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, recounted = fix_stated_counts(W, h, real)
     if recounted:
         print(f"  {recounted} stated count(s) corrected against what the section holds")
+    h, retotalled = fix_document_totals(W, h, real)
+    if retotalled:
+        print(f"  {retotalled} document-wide total(s) corrected against what the brief holds")
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn, unsupported = set(), []
@@ -6156,6 +6232,7 @@ Reply with ONLY {{"verdict": "keep"|"drop", "why": "<one clause>"}}""", timeout_
             # the reader's jump list must not offer a heading that is gone
             h = re.sub(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#%s"[\s\S]*?</a>' % re.escape(tid), "", h)
             h = re.sub(r'<a[^>]*href="#%s"[^>]*class="[^"]*mz-toc-chip[^"]*"[\s\S]*?</a>' % re.escape(tid), "", h)
+    h = remove_empty_groups(h)
     h = recount_headings(h)
     return h, removed, moved, emptied
 
@@ -6178,6 +6255,17 @@ def _match_heading(name: str, by_title: dict):
         return normed[want]
     hits = [v for k, v in normed.items() if k.startswith(want) or want in k or k in want]
     return hits[0] if len(hits) == 1 else None
+
+
+def remove_empty_groups(h: str) -> str:
+    """W20 wraps topic sections in <section class="mz-topic-group" id="group-…">
+    with its own heading; a wrapper whose child sections were all removed
+    kept its heading over nothing."""
+    for m in list(re.finditer(r'<section class="[^"]*mz-topic-group[^"]*"[^>]*\bid="(group-[^"]+)"[^>]*>', h))[::-1]:
+        b = _element_end(h, "section", m.end())
+        if "mz-cite-card" not in h[m.end():b]:
+            h = h[:m.start()] + h[b:]
+    return h
 
 
 def recount_headings(h: str) -> str:
