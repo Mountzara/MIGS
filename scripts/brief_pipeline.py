@@ -2457,8 +2457,14 @@ def renumber_list_labels(h: str) -> str:
 
 
 def tidy_prose_spacing(h: str) -> str:
-    """No space before a comma or full stop in prose (a lifted or rewritten
-    marker can leave "levels ,")."""
+    """Spacing a reader would notice around a citation marker.
+
+    No space before a comma or full stop (a lifted or rewritten marker can
+    leave "levels ,"), and a space AFTER a marker run where the next sentence
+    begins — a marker written at a sentence end came out
+    "…monitoring schedule.<sup>7</sup>The next sentence", which renders as the
+    superscript touching the following word.
+    """
     out, last = [], 0
     for ps in _prose_passages(h):
         frag = ps.group(1)
@@ -2468,6 +2474,9 @@ def tidy_prose_spacing(h: str) -> str:
             if i >= 2 and parts[i - 1].startswith("</"):
                 parts[i] = re.sub(r"^[ \xa0]+(?=[,.;:!?](?:\s|$|&))", "", parts[i])
         joined = re.sub(r"<(em|strong|b|i)\b[^>]*>\s*</\1>", "", "".join(parts))  # a rewrite can leave an empty pair
+        # a marker run and the next sentence need a space between them; a
+        # following mark of punctuation or another marker does not
+        joined = re.sub(r"(</sup>)(?=[A-Za-z\u201c\u2018(\[])", r"\1 ", joined)
         out.append(h[last:ps.start(1)]); out.append(joined); last = ps.end(1)
     out.append(h[last:])
     return "".join(out)
