@@ -5598,6 +5598,47 @@ Reply with ONLY {{"rewrites": [{{"sentence": <number>, "text": "<the sentence wi
     return "".join(out), changed
 
 
+def fix_pyramid_bars(h: str) -> tuple:
+    """Every evidence-pyramid row's bar agrees with the number printed on it.
+
+    A trend brief had a tier marked empty, count 0, still drawing a 6% bar —
+    a reader sees a bar and a zero beside it. The bar is a picture of the
+    count, so it is computed from the count: the largest row is full width,
+    the others are proportional, and a zero count draws nothing and carries
+    the empty-tier class. Returns (h, rows_changed).
+    """
+    n = 0
+
+    def pyramid(m):
+        nonlocal n
+        block = m.group(0)
+        rows = list(re.finditer(r'<div class="([^"]*mz-pyramid-row[^"]*)"([^>]*)>([\s\S]*?)</div>\s*(?=<div|</div>|$)', block))
+        counts = []
+        for r in rows:
+            c = re.search(r'<span class="mz-pyramid-count">\s*(\d+)\s*</span>', r.group(3))
+            counts.append(int(c.group(1)) if c else None)
+        top = max([c for c in counts if c is not None] or [0])
+        if not top:
+            return block
+        out, last = [], 0
+        for r, c in zip(rows, counts):
+            if c is None:
+                continue
+            want = 0 if c == 0 else max(4, round(100 * c / top))
+            cls = [x for x in r.group(1).split() if x != "mz-tier-empty"]
+            if c == 0:
+                cls.append("mz-tier-empty")
+            attrs = re.sub(r'\s*style="[^"]*"', "", r.group(2))
+            new = f'<div class="{" ".join(cls)}"{attrs} style="--mz-bar: {want}%;">{r.group(3)}</div>'
+            if new != block[r.start():r.end()].rstrip()[:len(new)] and new != r.group(0).rstrip():
+                n += 1
+            out.append(block[last:r.start()]); out.append(new); last = r.end()
+        out.append(block[last:])
+        return "".join(out)
+
+    return re.sub(r'<div class="[^"]*mz-evidence-pyramid[^"]*"[\s\S]*?</div>\s*</div>', pyramid, h), n
+
+
 def refresh_shape_chart(h: str) -> str:
     """The older generator's "Where the week's research landed" chart: one
     row per topic with a count and a bar. After curation its rows still
@@ -6435,11 +6476,32 @@ def _topic_sections(h: str) -> list:
     return [t for t in out if not any(o is not t and t.a < o.a < t.b for o in out)]
 
 
+# A data widget is not prose. Its labels and counts are drawn, not written,
+# and a sentence rewrite that reaches into one corrupts it: a trend brief came
+# back with `<span class="mz-pyramid-label"></span>Major RCTs` and stale digits
+# fused onto a tier's name, because the evidence pyramid's rows were being read
+# as sentences and replaced like sentences.
+_NOPROSE_WIDGETS = ("mz-evidence-pyramid", "mz-pyramid", "mz-shape-chart", "mz-design-chart",
+                    "mz-stat", "mz-counter", "mz-toc")
+
+
 def _mask_noprose(frag: str) -> str:
-    """Markers and any verbatim-abstract block masked with spaces: indices stay
-    valid against the fragment, and nothing is inserted inside them."""
+    """Markers, verbatim-abstract blocks and data widgets masked with spaces:
+    indices stay valid against the fragment, and nothing is inserted inside
+    them."""
     out = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
-    return re.sub(r"<details[\s\S]*?</details>", lambda x: " " * len(x.group(0)), out)
+    out = re.sub(r"<details[\s\S]*?</details>", lambda x: " " * len(x.group(0)), out)
+    for m in list(re.finditer(r'<(div|table|nav|figure|ul|ol)\b[^>]*\bclass="([^"]*)"', out)):
+        if out[m.start()] != "<":
+            continue                       # already inside a widget just masked
+        if not any(t.startswith(_NOPROSE_WIDGETS) for t in m.group(2).split()):
+            continue
+        gt = out.find(">", m.start())
+        if gt < 0:
+            continue
+        end = _element_end(out, m.group(1), gt + 1)
+        out = out[:m.start()] + " " * (end - m.start()) + out[end:]
+    return out
 
 
 def _prose_passages(h: str) -> list:
@@ -7771,6 +7833,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print(f"  {bound} card(s) bound to the paper they name (they carried a section index, not a paper)")
         h = normalize_card_ids(h)
         h = refresh_shape_chart(h)
+        h, bars = fix_pyramid_bars(h)
+        if bars:
+            print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
         h = renumber_list_labels(h)
         h = tidy_prose_spacing(h)
         h = breakable_marker_runs(h)
