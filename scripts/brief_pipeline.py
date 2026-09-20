@@ -3071,8 +3071,16 @@ def body_invariant_faults(h: str) -> list:
     published, so a brief is held to one standard before and after it ships.
     """
     out = []
+    # Every invariant below is vacuously true of an empty page. A brief that
+    # cards nothing and cites nothing is not a clean brief, it is a hollow
+    # one — and curation can hollow one out: it judged all four of the GLP-1
+    # brief's papers off-subject, which by the letter of the rule they were.
+    if not re.search(r'<article class="mz-cite-card', h):
+        out.append("the brief cards no paper at all — nothing for a reader to open")
     marks = [re.sub(r"<[^>]+>", "", m).strip()
              for m in re.findall(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', h, re.S)]
+    if not marks:
+        out.append("the brief cites nothing")
     pmid_like = [m for m in marks if re.fullmatch(r"\d{5,9}", m)]
     if pmid_like:
         out.append(f"{len(pmid_like)} of {len(marks)} citation marker(s) show a PMID, not a number")
@@ -7801,17 +7809,44 @@ let you judge; it is kept.""", timeout_s=900)
         verdict, why = first.get(q, ("cannot_tell", ""))
         if verdict != "does_not_belong":
             continue
+        # how the brief itself uses the paper: every sentence that cites it.
+        # Without this the second judgement guessed at "comparator" and kept
+        # the same three landscape papers in one brief while removing them
+        # from another. A brief that says "these are the treatments a GLP-1
+        # agonist would have to beat" has named the paper's role itself.
+        uses = []
+        for ps in _prose_passages(h):
+            frag = ps.group(1)
+            masked = _mask_noprose(frag)
+            sents = _sentences_of(masked)
+            for k, (t, e) in enumerate(sents):
+                s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+                if any(_pmid_of(m.group(0)) == q for m in SUP_RE.finditer(frag, s0, _after_run(frag, e))):
+                    uses.append(re.sub(r"\s+", " ", t).strip()[:400])
         v2 = _ask_cached(W, "curate", f"""One reviewer says this paper does not belong in a single-subject trend brief titled
 {json.dumps(title)}, because: {json.dumps(why)}
-Judge that independently, from the paper alone. Does it bear on the brief's claim in ANY way — as
-evidence for it, evidence against it, the mechanism it rests on, or the comparator the brief argues
-against? Clinical areas overlap; a paper that refutes the title claim belongs.
+Judge that independently. Does it bear on the brief's claim in ANY way — as evidence for it,
+evidence against it, the mechanism it rests on, or the comparator the brief argues against?
+Clinical areas overlap; a paper that refutes the title claim belongs; a paper the brief presents as
+the standard of care a proposed therapy would have to beat is a comparator and belongs. Judge the
+comparator question from HOW THE BRIEF USES THE PAPER below, not from the paper alone: if the brief
+frames it as the treatment landscape the claim sits against, it belongs; if the brief merely
+reports it beside the claim with no such framing, it does not.
 PAPER: {json.dumps(ctx([q])[0], ensure_ascii=False)}
+HOW THE BRIEF USES IT — every sentence citing it: {json.dumps(uses[:6], ensure_ascii=False) if uses else "(no sentence cites it)"}
 Reply with ONLY {{"belongs": true|false, "why": "<one clause>"}}""", timeout_s=600)
         if isinstance(v2, dict) and v2.get("belongs") is False:
             removed.append((q, why))
         else:
             print(f"  KEEPING {q}: rejected once, but a second judgement finds it bears on the subject")
+    if removed and len(removed) >= len(pmids):
+        # Every paper judged off-subject. Either the brief was built from the
+        # wrong papers, in which case a person decides what replaces them, or
+        # the judgement is wrong. Neither is a page to publish. Refuse with the
+        # reasons rather than publish a brief that holds nothing.
+        die(f"curation would remove every paper in the brief ({len(removed)} of {len(pmids)}); "
+            "a brief with nothing left is not a brief — "
+            + "; ".join(f"{q}: {why[:80]}" for q, why in removed[:4]))
     for q, _ in removed:
         h = excise_paper(h, q)
     return h, removed
