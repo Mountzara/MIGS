@@ -5573,6 +5573,97 @@ Reply with ONLY {{"rewrite": "<text>"}}""", timeout_s=600)
     return h, changed
 
 
+# A sentence that says a paper is absent while carrying a marker to it.
+# "Nothing on myomectomy this week" with no citation is a true statement about
+# a topic; the same words with a marker on them point a reader at the very
+# paper being denied.
+_ABSENCE_RE = re.compile(
+    r"(?:never\s+(?:made|reached|entered)|did\s*n[o\u2019']?t\s+(?:make|reach|enter)"
+    r"|was\s+(?:excluded|left\s+out|dropped|cut)|is\s*n[o\u2019']?t\s+(?:covered|carded|included|here)"
+    r"|fell\s+outside|left\s+off|kept\s+out)"
+    r"[^.]{0,40}?\b(?:this\s+brief|the\s+brief|this\s+week|the\s+week|scope"
+    r"|(?:this|the)\s+(?:final\s+)?(?:list|cut|selection|line-?up))\b", re.I)
+
+
+def fix_claimed_absences(W: str, h: str, real: dict) -> tuple:
+    """A sentence cannot say a paper is absent while citing that paper.
+
+    W21's bottom line read "…but it never made this brief's final list" with a
+    marker on it pointing at a card the brief carries; a reader clicks the
+    marker and finds the paper. This is the mirror of `remove_orphan_studies`,
+    which only ever asked the other question — prose reporting a study the
+    brief does NOT hold — so nothing looked at this direction at all, and the
+    read-back audit kept naming it round after round while each repair
+    rewrote the words and left the contradiction.
+
+    A sentence qualifies only when it both reads as an absence claim AND
+    carries a marker to a paper the brief holds. Returns (h, sentences_fixed).
+    """
+    fixed = 0
+    for _round in range(2):
+        edits = []
+        for ps in _prose_passages(h):
+            frag = ps.group(1)
+            masked = _mask_noprose(frag)
+            sents = _sentences_of(masked)
+            items, per = [], {}
+            for k, (t, e) in enumerate(sents):
+                if not _ABSENCE_RE.search(t):
+                    continue
+                s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+                held = []
+                for sm in SUP_RE.finditer(frag, s0, _after_run(frag, e)):
+                    q = _pmid_of(sm.group(0))
+                    if q and _has_card(h, q):
+                        held.append(q)
+                if not held:
+                    continue
+                papers = [{"pmid": q, "title": (real.get(q) or {}).get("title", "")[:150],
+                           "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip()}
+                          for q in dict.fromkeys(held)]
+                items.append({"sentence": len(items) + 1, "text": re.sub(r"\s+", " ", t).strip()[:600],
+                              "papers_the_brief_holds_and_this_sentence_cites": papers})
+                per[len(items)] = (ps.start(1) + s0, ps.start(1) + e)
+            if not items:
+                continue
+            v = _ask_cached(W, "absence", f"""Each sentence below comes from a clinician-facing evidence brief and reads as though a paper is
+absent from the brief — not covered, never made the list, excluded. Each one also carries a citation
+marker to a paper the brief DOES hold and DOES card, listed beside it. A reader clicks the marker and
+finds the paper, so the sentence contradicts the page.
+
+SENTENCES: {json.dumps(items, ensure_ascii=False)[:40000]}
+
+Rewrite each sentence so it no longer says those papers are absent, keeping everything else — the
+same first-person surgeon's voice, the same length or shorter, every figure, every other claim. If
+the sentence's point was that the paper sits OUTSIDE this week's main themes, say that instead of
+saying it is not here. Plain text, no citation markup, ending with a full stop.
+Reply with ONLY {{"rewrites": [{{"sentence": <number>, "text": "<the corrected sentence>"}}, ...]}} for EVERY sentence given.""",
+                            timeout_s=900)
+            for r in ((v or {}).get("rewrites") or []):
+                try:
+                    idx = int(r.get("sentence"))
+                except (TypeError, ValueError):
+                    continue
+                new = re.sub(r"\s+", " ", str(r.get("text") or "")).strip()
+                if idx not in per or not new or _looks_broken(new) or _invents_experience(new):
+                    continue
+                a, b = per[idx]
+                if len(new) > max(400, int((b - a) * 1.4)):
+                    continue
+                edits.append((a, b, new))
+        if not edits:
+            break
+        for a, b, new in sorted(edits, key=lambda e: -e[0]):
+            keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+            h = _replace_span(h, a, b, new)
+            at = _after_run(h, a + len(H.escape(new, quote=False)))
+            if keep and keep not in h[a:at + len(keep)]:
+                h = h[:at] + keep + h[at:]
+            fixed += 1
+            print(f"  a sentence said a paper was not in the brief while citing it: {new[:96]!r}")
+    return h, fixed
+
+
 def resolve_embedded_markers(W: str, h: str, real: dict) -> tuple:
     """A marker that stands IN the sentence — "The most clinically actionable
     is ⟨marker⟩, asking whether…" — is not a citation after a claim; the old
@@ -6110,6 +6201,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, orphaned = remove_orphan_studies(W, h, pmids, real)
     if orphaned:
         print(f"  {orphaned} sentence(s) rewritten or removed for reporting a study the brief does not hold")
+    h, absent = fix_claimed_absences(W, h, real)
+    if absent:
+        print(f"  {absent} sentence(s) that denied holding a paper they cite corrected")
     h, resolved = resolve_embedded_markers(W, h, real)
     if resolved:
         print(f"  {resolved} sentence(s) rewritten so a reference that stood inside the sentence reads as words")
@@ -7354,6 +7448,8 @@ in the same first-person surgeon's voice, each the same length or shorter. Retur
 index, including any sentence you would leave word-for-word unchanged. Change nothing the defect
 does not concern; drop a clause that is no longer true rather than inventing a replacement fact.
 Plain text, no citation markup, each ending with a full stop.
+Never resolve a defect by saying the brief does not hold, did not cover or excluded a paper: every
+marker in these sentences points at a paper this brief carries, and a reader can click it.
 If the defect is that one figure contradicts another, the sentences must END UP AGREEING: the
 abstracts above say which figure the paper actually reports — keep that one everywhere and correct
 the others. When an abstract reports the SAME outcome for more than one population — the whole
@@ -7382,6 +7478,16 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
                 print(f"  audit repair rejected ({'invented experience' if _invents_experience(new_s) else 'damaged prose'}): {new_s[:90]!r}")
                 continue
             keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+            # A repair may not resolve a defect by denying the brief holds a
+            # paper it is citing. W21's bottom line came back "…but it never
+            # made this brief's final list" with the marker still on it; the
+            # next read named that as a defect, the next repair reworded it,
+            # and the round budget ran out on a contradiction the repair kept
+            # re-creating.
+            if _ABSENCE_RE.search(new_s) and any(
+                    q and _has_card(h, q) for q in (_pmid_of(x.group(0)) for x in SUP_RE.finditer(keep))):
+                print(f"  audit repair rejected (it denies holding a paper it cites): {new_s[:90]!r}")
+                continue
             h = h[:a] + H.escape(new_s, quote=False) + keep + h[b:]
             done += 1
             print(f"  audit repair: {new_s[:110]!r}")
