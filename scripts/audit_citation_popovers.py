@@ -95,15 +95,28 @@ def check_marker(page, sup, route, i, mode):
     href = sup.locator("a.mz-ref-link").first.get_attribute("href") or ""
     if href.startswith("#") and page.locator(href).count() == 0:
         fails.append(f"{route}: marker {marker} points at {href}, which is not on the page")
-    try:
-        sup.scroll_into_view_if_needed(timeout=15000)
-        if mode == "hover":
-            sup.hover(timeout=15000)
-        else:
-            sup.click(timeout=15000)
-        page.wait_for_timeout(350)
-    except Exception as e:
-        return fails + [f"{route}: marker {marker} could not be {mode}ed ({str(e)[:60]})"]
+    # Three attempts. On the touch pass the previous marker's popover stays
+    # open (the site's tap handler toggles it) and can lie over the next
+    # marker, so a click is intercepted and times out — W34 was unpublished
+    # for exactly one such tap, on a page whose preview had passed. Every
+    # attempt first closes any open popover and centres the marker.
+    last = ""
+    for attempt in range(3):
+        try:
+            page.evaluate("document.querySelectorAll('.mz-ref.mz-open').forEach(e => e.classList.remove('mz-open'))")
+            sup.evaluate("el => el.scrollIntoView({block: 'center', inline: 'nearest'})")
+            page.wait_for_timeout(250 if attempt == 0 else 700)
+            if mode == "hover":
+                sup.hover(timeout=15000)
+            else:
+                sup.click(timeout=15000, force=(attempt == 2))
+            page.wait_for_timeout(350)
+            last = ""
+            break
+        except Exception as e:
+            last = str(e)[:60]
+    if last:
+        return fails + [f"{route}: marker {marker} could not be {mode}ed after 3 attempts ({last})"]
     pop = sup.locator(".mz-ref-pop").first
     if not pop.is_visible():
         return fails + [f"{route}: {mode} on marker {marker} reveals no popover"]
@@ -112,6 +125,9 @@ def check_marker(page, sup, route, i, mode):
         fails.append(f"{route}: popover for marker {marker} has no real summary ({len(txt)} chars)")
     if pop.locator("a.mz-ref-pop-src").count() == 0:
         fails.append(f"{route}: popover for marker {marker} has no link to the study")
+    if mode != "hover":
+        # leave the page as the next marker needs it: nothing open over it
+        page.evaluate("document.querySelectorAll('.mz-ref.mz-open').forEach(e => e.classList.remove('mz-open'))")
     return fails
 
 
