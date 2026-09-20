@@ -5329,7 +5329,7 @@ def refresh_shape_chart(h: str) -> str:
         tid = _match_heading(H.unescape(re.sub(r"<[^>]+>", "", lab.group(1))), {k: v.tid for k, v in by_title.items()}) if lab else None
         if tid:
             seg = next(t.group(0) for t in tops if t.tid == tid)
-            counts[row] = (tid, len(set(re.findall(CARD_ID_RE, seg))))
+            counts[row] = (tid, len(set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg))))
         else:
             counts[row] = (None, 0)
     top = max([c for _, c in counts.values()] or [1]) or 1
@@ -5385,7 +5385,7 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     for t in tops:
         tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", t.group(1), re.S)
         title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()) if tt else t.tid
-        per.append({"topic": title, "papers": len(set(re.findall(CARD_ID_RE, t.group(0))))})
+        per.append({"topic": title, "papers": len(set(re.findall(CARD_ID_RE, t.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))})
     all_cards = re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', h)
     total = len({(re.search(r'id="mz-cite-(\d{5,9})', c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1] for c in all_cards} - {None})
     seen_pm, designs = set(), __import__("collections").Counter()
