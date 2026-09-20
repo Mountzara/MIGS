@@ -655,7 +655,7 @@ export function auditDosingLanguage(post) {
     h = h.replace(/<!--[\s\S]*?-->/g, " ")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
-        .replace(/<[^>]+>/g, " ");
+        .replace(/<[^>]+>/g, "\n");
     // An INSTRUCTION is addressed to someone: an imperative opening a clause
     // ("Take 300 mg twice daily"), or "you/she/patients should take …". A
     // study's own reported figure is not one — W21's "suppressing movement at
