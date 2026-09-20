@@ -5186,10 +5186,12 @@ the citation against "sentence" alone.
 A sentence may rest on MORE THAN ONE paper: when "other_papers_cited_on_this_sentence" is not
 empty, the parts of the sentence about those papers are theirs to support, not this paper's. Judge
 whether THIS paper is one the sentence is talking about ("right_paper"), and whether the part of the
-sentence that concerns THIS paper is what its abstract says ("supported"). supported=false only when
+sentence that concerns THIS paper is what its abstract says ("supported"). supported=false when
 the sentence says something ABOUT THIS PAPER that its abstract does not — a figure it does not
-report, the opposite direction of effect, a claim it did not make. Never fault a paper for the
-other papers' parts of the sentence.
+report, the opposite direction of effect, a claim it did not make — or DESCRIBES THE PAPER WRONGLY:
+its subject, device, condition, design or population (calling a sterilization-ring case report "an
+LNG-IUS removal", a cohort "a trial", men "women"). Never fault a paper for the other papers' parts
+of the sentence.
 ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "previous_sentence", "sentence", "next_sentence",
                                         "other_papers_cited_on_this_sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
 Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "supported": true|false,
