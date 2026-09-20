@@ -5337,14 +5337,25 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
         tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", t.group(1), re.S)
         title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()) if tt else t.tid
         per.append({"topic": title, "papers": len(set(re.findall(CARD_ID_RE, t.group(0))))})
-    total = len(set(re.findall(r'<article class="mz-cite-card[^>]*\bid="mz-cite-(\d{5,9})', h)))
+    all_cards = re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', h)
+    total = len({(re.search(r'id="mz-cite-(\d{5,9})', c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1] for c in all_cards} - {None})
+    designs = __import__("collections").Counter(
+        re.sub(r"\s*·.*$", "", H.unescape((re.search(r'mz-cite-design">([^<]*)<', c) or [None, ""])[1])).strip()
+        for c in all_cards)
+    designs.pop("", None)
     facts = {"papers_in_this_brief": total, "topics": len(per), "per_topic": per,
-             "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {}}
+             "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {},
+             "papers_by_study_design": dict(designs)}
+    allowed = {str(total), str(len(per))} | {str(x["papers"]) for x in per} | {str(v) for v in facts["percent_of_total"].values()} | {str(v) for v in designs.values()}
+    allowed |= {_NUM_TO_WORD.get(int(x), x) for x in allowed if x.isdigit() and int(x) in _NUM_TO_WORD}
     changed = 0
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
         frag = ps.group(1)
         masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        # a heading is not a sentence to rewrite ("Three papers worth a careful
+        # read" became "Zero papers…" on W20)
+        masked = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
         sents = _sentences_of(masked)
         if not sents or not re.search(r"\d|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b", " ".join(t for t, _ in sents), re.I):
             continue
@@ -5373,6 +5384,13 @@ every total is right.""", timeout_s=600)
             if not (1 <= idx <= len(sents)) or len(new) < 15 or len(new) > len(sents[idx - 1][0]) + 80:
                 continue
             if new == re.sub(r"\s+", " ", sents[idx - 1][0]).strip():
+                continue
+            # every number the rewrite introduces must be one of the facts
+            old_nums = set(re.findall(r"\d+|\b[a-z]+\b", sents[idx - 1][0].lower()))
+            fresh = [x for x in re.findall(r"\d+|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b", new.lower())
+                     if x not in old_nums and x not in allowed]
+            if fresh:
+                print(f"  total rewrite rejected (introduces {fresh[:3]} not in the facts): {new[:80]!r}")
                 continue
             a = ps.start(1) + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
             b = ps.start(1) + sents[idx - 1][1]
@@ -5897,7 +5915,7 @@ def normalize_legacy_markup(h: str) -> str:
 # ---------------------------------------------------------------------------
 # SENTENCES — where one ends is decided from the text around the stop
 # ---------------------------------------------------------------------------
-_ABBR_BEFORE = re.compile(r"(?:^|[\s(\[—–-])(?:e\.g|i\.e|vs|cf|dr|fig|approx|ca|resp)$", re.I)
+_ABBR_BEFORE = re.compile(r"(?:^|[\s(\[\u2014\u2013-])(?:e\.g|i\.e|vs|cf|dr|fig|approx|ca|resp|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec|st|mt|prof|eds?)$", re.I)
 
 
 def _terminal_at(frag: str, i: int) -> bool:
