@@ -6215,7 +6215,10 @@ def _topic_sections(h: str) -> list:
         if not ({"topic-section", "mz-topic-group", "mz-topic-section"} & set(cls)):
             continue
         tid = _attr(tag, "id")
-        if not tid:
+        # a topic carries a topic-* id; "group-*" is W20's wrapper around
+        # several topics, and counting an emptied wrapper as a topic made the
+        # brief's own "ten topics" look right when it held nine
+        if not tid or not tid.startswith("topic-"):
             continue
         b = _element_end(h, m.group(1), m.end())
         out.append(_Span(h, m.start(), m.end(), b - len(f"</{m.group(1)}>"), b, tid, "topic"))
@@ -7004,7 +7007,10 @@ marker in that order and is what you judge numbering and sequence from — the p
 partial. Popover text has been removed from the prose excerpts; judge popover completeness from
 "popovers". A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
-by design, not a defect, and duplicate ids are measured and reported in counts. "card_pmids" is the
+by design, not a defect, and duplicate ids are measured and reported in counts. Which heading a paper
+is carded under was judged twice against the practice's own reference library, and clinical areas
+overlap (placenta accreta under hysterectomy, adenomyosis under pelvic pain): report a placement you
+would have made differently as cosmetic, and block only when the paper is plainly another specialty. "card_pmids" is the
 list of papers a section carries (some older cards have no id attribute and are identified by their
 deep-dive trigger); judge "which papers are carded" from it. Prose describes a
 paper as its ABSTRACT does; when a reference title and the prose disagree, that is a discrepancy in
