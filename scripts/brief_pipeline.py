@@ -5326,6 +5326,33 @@ def refresh_shape_chart(h: str) -> str:
     return h[:m.start()] + sec + h[m.end():]
 
 
+_TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
+_NUMBER_PHRASE = re.compile(r"\d+|\b(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?\b"
+                            r"|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\b", re.I)
+
+
+def _numbers_in(text: str) -> set:
+    """Every number in a text as digits: "Fifty-two" → 52, "ten" → 10, "49" → 49."""
+    out = set()
+    for m in _NUMBER_PHRASE.finditer(text.lower()):
+        w = m.group(0)
+        if w.isdigit():
+            out.add(int(w)); continue
+        parts = re.split(r"[- ]", w)
+        n = 0
+        for x in parts:
+            if x in _TENS:
+                n += _TENS[x]
+            elif x in _NUM_WORDS:
+                n += _NUM_WORDS[x]
+            elif x == "zero":
+                n += 0
+            elif x == "hundred":
+                n = (n or 1) * 100
+        out.add(n)
+    return out
+
+
 def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     """Prose that states document-wide totals — "Eighty-four papers, eleven
     topics", "Female infertility (25 papers, 35%)" — says what the page now
@@ -5346,8 +5373,7 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     facts = {"papers_in_this_brief": total, "topics": len(per), "per_topic": per,
              "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {},
              "papers_by_study_design": dict(designs)}
-    allowed = {str(total), str(len(per))} | {str(x["papers"]) for x in per} | {str(v) for v in facts["percent_of_total"].values()} | {str(v) for v in designs.values()}
-    allowed |= {_NUM_TO_WORD.get(int(x), x) for x in allowed if x.isdigit() and int(x) in _NUM_TO_WORD}
+    allowed = {total, len(per)} | {x["papers"] for x in per} | set(facts["percent_of_total"].values()) | set(designs.values())
     changed = 0
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
@@ -5386,9 +5412,7 @@ every total is right.""", timeout_s=600)
             if new == re.sub(r"\s+", " ", sents[idx - 1][0]).strip():
                 continue
             # every number the rewrite introduces must be one of the facts
-            old_nums = set(re.findall(r"\d+|\b[a-z]+\b", sents[idx - 1][0].lower()))
-            fresh = [x for x in re.findall(r"\d+|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)\b", new.lower())
-                     if x not in old_nums and x not in allowed]
+            fresh = sorted(_numbers_in(new) - _numbers_in(sents[idx - 1][0]) - allowed)
             if fresh:
                 print(f"  total rewrite rejected (introduces {fresh[:3]} not in the facts): {new[:80]!r}")
                 continue
