@@ -157,10 +157,20 @@ def check_reveal(page, sup, route, i, mode, marker):
         try:
             # close any popover still open over this marker AND centre this one,
             # in a single round trip
+            # Two things hold a popover open on the live shell: the mz-open
+            # class the touch script sets, and :focus-within on the anchor a
+            # tap just focused. Clearing only the class left the previous
+            # marker's popover open by focus, sitting over the next marker in
+            # a stacked run, and the click into it went nowhere — W20 failed
+            # markers 4 and 47 on tap, deterministically, while a real tap on
+            # the number opened both. Clear both, then centre this marker.
             sup.evaluate("""el => {
                 document.querySelectorAll('.mz-ref.mz-open').forEach(e => {
                     if (e !== el) e.classList.remove('mz-open');
                 });
+                if (document.activeElement && !el.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
                 el.scrollIntoView({block: 'center', inline: 'nearest'});
             }""")
             if mode == "hover":
@@ -176,7 +186,10 @@ def check_reveal(page, sup, route, i, mode, marker):
             else:
                 if attempt:
                     page.wait_for_timeout(200)
-                sup.click(timeout=HOVER_TIMEOUTS[attempt], force=(attempt == 2))
+                # a reader taps the NUMBER. Clicking the <sup>'s centre aimed
+                # at the same point, but the anchor is the element that takes
+                # focus and the touch script's listener, so target it.
+                sup.locator("a.mz-ref-link").first.click(timeout=HOVER_TIMEOUTS[attempt], force=(attempt == 2))
             # poll for the popover instead of sleeping a fixed 350 ms every
             # time: a page that reveals in 30 ms should cost 30 ms
             sup.locator(".mz-ref-pop").first.wait_for(
