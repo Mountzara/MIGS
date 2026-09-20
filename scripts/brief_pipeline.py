@@ -2357,6 +2357,19 @@ def retitle_topics(h: str, decisions: dict) -> str:
 
 
 
+def normalize_card_ids(h: str) -> str:
+    """Card ids in document order: a paper's first card is mz-cite-<pmid>,
+    its second mz-cite-<pmid>-2, and so on. After curation removes a first
+    card, the survivor kept its old "-2" (W34's Kido paper)."""
+    seen = {}
+
+    def fix(m):
+        pm = m.group(2)
+        seen[pm] = seen.get(pm, 0) + 1
+        return m.group(1) + f'id="mz-cite-{pm}' + (f"-{seen[pm]}" if seen[pm] > 1 else "") + '"'
+    return re.sub(r'(<article class="mz-cite-card[^>]*?)\bid="mz-cite-(\d{5,9})(?:-\d+)?"', fix, h)
+
+
 def dedupe_element_ids(h: str) -> str:
     """Make every element id unique on the page.
 
@@ -3250,6 +3263,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
                 verified_meta[q] = mv
     real = real_from_work(W, man["pmids"])
     h = recount_headings(h)
+    h = normalize_card_ids(h)
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -6321,6 +6335,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             at = m_ref.start() if m_ref else len(h)
             h = h[:at] + DISCLAIMER + h[at:]
             print("  educational disclaimer added (the brief predates it)")
+        h = normalize_card_ids(h)
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
         h = dedupe_element_ids(h)
