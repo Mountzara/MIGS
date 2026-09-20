@@ -60,6 +60,9 @@ import subprocess
 import sys
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _lib_brief_routes import route_for as _route_for  # noqa: E402
+
 ROOT = "/home/user/MIGS"
 # Work files live INSIDE the repo, gitignored. They were under /tmp, and the
 # stage reviewers could not read them — a sandboxed reviewer only sees the
@@ -7553,7 +7556,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json"))[:200])
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json"))[:200])
-    verify_rendered(f"/evidence/?id={post_id}", post_id)
+    verify_rendered(_route_for(post_id, post.get("kind")), post_id)
     print(f"{post_id}: {len(order)} citation(s) renumbered 1-{len(order)}, references in citation order")
 
 

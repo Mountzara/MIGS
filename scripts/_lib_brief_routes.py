@@ -39,6 +39,26 @@ def _get_json(url: str, timeout: int):
         return json.loads(resp.read().decode("utf-8"))
 
 
+SHELL_FOR_KIND = dict(KINDS)
+
+
+def route_for(post_id: str, kind: str) -> str:
+    """The reader's URL for one post.
+
+    The shell is chosen by KIND, never by the id, because the id prefixes read
+    the other way round: the weekly brief `blog-2026-W20` is kind "evidence"
+    and lives at /evidence/, while the trend brief
+    `evidence-2026-05-19-antihistamines...` is kind "blog" and lives at
+    /trending/. Guessing from the prefix sends a post-publish gate to a page
+    that does not exist, which is how a trend brief could be verified without
+    anything being verified.
+    """
+    shell = SHELL_FOR_KIND.get((kind or "").strip().lower())
+    if not shell:
+        raise RuntimeError(f"route_for: unknown post kind {kind!r} for {post_id}")
+    return f"{shell}?id={post_id}"
+
+
 def is_local(base: str) -> bool:
     return "localhost" in base or "127.0.0.1" in base
 
