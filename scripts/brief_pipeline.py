@@ -4997,7 +4997,13 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                 # that still misstates its paper refuses the brief, named
                 again_wrong, again_unsupported = review_inserted_citations(W, h, real)
                 if again_unsupported:
-                    die("after correction, sentence(s) still misstate their papers: "
+                    # once more, with the re-review's reason, before refusing
+                    h, n2 = correct_unsupported_sentences(W, h, again_unsupported, real)
+                    if n2:
+                        print(f"  {n2} sentence(s) corrected a second time — reviewing again")
+                        again_wrong, again_unsupported = review_inserted_citations(W, h, real)
+                if again_unsupported:
+                    die("after two corrections, sentence(s) still misstate their papers: "
                         + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in again_unsupported[:4]))
                 if again_wrong:
                     for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
@@ -6205,6 +6211,13 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, named, declined = sn["h"], sn["named"], sn["declined"]
         print("  resumed from checkpoint 'cited'")
     if stage <= 2:
+        if "mz-eddisclaimer" not in h:
+            # S8: W23-W29 were published before the disclaimer existed; the
+            # weekly path injects it and the rendered gate requires it
+            m_ref = re.search(r'<section class="[^"]*mz-references[^"]*"|<ol class="mz-references-list"|<dialog', h)
+            at = m_ref.start() if m_ref else len(h)
+            h = h[:at] + DISCLAIMER + h[at:]
+            print("  educational disclaimer added (the brief predates it)")
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
         h = dedupe_element_ids(h)
