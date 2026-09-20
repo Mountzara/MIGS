@@ -1380,9 +1380,22 @@ EVERY paper given.""", timeout_s=900)
     if os.path.exists(W + "syntheses.json"):
         syn = json.load(open(W + "syntheses.json"))
         live, stale_tids = [], []
+        # A synthesis is stale when its topic is gone, when it cites a dropped
+        # paper, or when the papers it cites are no longer the papers its topic
+        # holds — curation MOVES papers between topics, and a synthesis written
+        # before the move cites another topic's paper or misses its own
+        # (the trend brief's author review refused for exactly that).
+        holds = {}
+        for tid in man["topics"]:
+            tf = W + f"topics/{tid}.json"
+            if os.path.exists(tf):
+                holds[tid] = {x["pmid"] for x in json.load(open(tf))["papers"]}
         for it in syn.get("items", []):
             html_s = it.get("html") or ""
-            if it["tid"] not in man["topics"] or any(q in html_s for q in orphans):
+            cited = set(re.findall(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", html_s)) | set(re.findall(r"ref-pop-(\d{5,9})", html_s))
+            mine = holds.get(it["tid"], set())
+            if (it["tid"] not in man["topics"] or any(q in html_s for q in orphans)
+                    or (cited and mine and (cited - mine or mine - cited))):
                 stale_tids.append(it["tid"])
             else:
                 live.append(it)
