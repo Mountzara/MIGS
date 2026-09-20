@@ -5229,6 +5229,20 @@ def refresh_deep_dive_meta(h: str, real: dict) -> tuple:
     return re.sub(r"<dialog\b[\s\S]*?</dialog>", one, h), n
 
 
+# A capitalised word before a year is usually not an author. "The 2022 NAMS
+# position statement", "May 2019", "Since 2020" all matched a surname pattern
+# and would have sent a card off to be "corrected" for crediting nobody.
+_NOT_A_SURNAME = {
+    "The", "This", "That", "These", "Those", "Their", "Its", "Our", "His", "Her",
+    "And", "But", "For", "From", "Since", "Until", "Before", "After", "During", "While", "When",
+    "With", "Without", "Between", "Among", "Within", "Across", "Under", "Over", "Into",
+    "One", "Two", "Three", "Four", "Five", "Both", "Each", "All", "Most", "Some", "Every",
+    "January", "February", "March", "April", "May", "June", "July", "August",
+    "September", "October", "November", "December",
+    "Cochrane", "PubMed", "Medline", "Embase", "Trial", "Study", "Review", "Guideline",
+}
+
+
 def fix_card_attribution(W: str, h: str, real: dict) -> tuple:
     """A card's own editorial text names the authors of the paper it is for.
 
@@ -5276,8 +5290,9 @@ def fix_card_attribution(W: str, h: str, real: dict) -> tuple:
         # review written by Daniels, and Mahmoud authors nothing here.
         named = re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", ftxt)
         cross = re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", ftxt)
-        wrong = [x for x in dict.fromkeys(named) if x not in known]
-        wrong += [x for x in dict.fromkeys(cross) if x not in known and x not in all_authors]
+        wrong = [x for x in dict.fromkeys(named) if x not in known and x not in _NOT_A_SURNAME]
+        wrong += [x for x in dict.fromkeys(cross)
+                  if x not in known and x not in all_authors and x not in _NOT_A_SURNAME]
         wrong = list(dict.fromkeys(wrong))
         if not wrong:
             continue
