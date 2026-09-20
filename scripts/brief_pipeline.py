@@ -8295,6 +8295,23 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not _has_card(h, pm)]
             if gone:
                 print(f"  {len(gone)} paper(s) left the brief entirely; {len(set(pm for _, pm, _ in removed)) - len(gone)} remain under another heading")
+            # A citation to a paper the brief does not card points at nothing a
+            # reader can open. W21 carried twenty-one markers to a Cochrane
+            # review with no card in any section, and the read-back audit
+            # refused it for eighty-four cited papers against seventy-five
+            # carded. Fifteen of the seventeen published briefs have none of
+            # these, so it is a defect and not a house style. Those papers
+            # leave the held set exactly like one curation removed, so the
+            # prose that argues from them is rewritten below.
+            uncarded = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(h))
+                        if q and q not in gone and not _has_card(h, q)]
+            if uncarded:
+                print(f"  {len(uncarded)} paper(s) cited with no card anywhere: {uncarded[:6]}")
+                drop = set(uncarded)
+                for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                    if _pmid_of(m.group(0)) in drop:
+                        h = h[:m.start()] + h[m.end():]
+                gone = list(dict.fromkeys(list(gone) + uncarded))
             pmids_all = [x for x in pmids_all if x not in gone]
             pmids = [x for x in pmids if x not in gone]
             h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
