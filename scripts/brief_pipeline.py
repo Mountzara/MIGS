@@ -5654,6 +5654,12 @@ def strip_verbatim_abstract_sentences(h: str, real: dict) -> tuple:
             for i, (t, e) in enumerate(sents):
                 n = norm(t)
                 if len(n) < 60:
+                    # a short fragment that is copied AND broken ("The study
+                    # was developed in the.") is an edit's leftover, not prose
+                    if len(n) >= 15 and _looks_broken(t) and any(n in ab for ab in pool):
+                        a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                        target = (a, ps.start(1) + e, t)
+                        break
                     continue
                 # the sentence must BEGIN in the abstract's words (pasted
                 # source), or repeat two separate long stretches of it. A
