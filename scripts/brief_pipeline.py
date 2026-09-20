@@ -2357,6 +2357,16 @@ def retitle_topics(h: str, decisions: dict) -> str:
 
 
 
+def breakable_marker_runs(h: str) -> str:
+    """A zero-width space between consecutive markers, so a run can wrap.
+    W25's closing narrative sentence carries fifteen markers; with nothing
+    breakable between them the run was one 390-pixel token that fell off the
+    right edge of a phone, inside a clipped container — unreachable, and the
+    rendered gate refused. Added after every insertion step and removed by
+    normalize_legacy_markup before the chain runs again."""
+    return re.sub(r'</sup>(?=<sup class="mz-ref")', "</sup>&#8203;", h)
+
+
 def normalize_card_ids(h: str) -> str:
     """Card ids in document order: a paper's first card is mz-cite-<pmid>,
     its second mz-cite-<pmid>-2, and so on. After curation removes a first
@@ -3271,6 +3281,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     if declined:
         print(f"  NOTE: named but judged not to rest on the paper (the targeted pass asked about each): {declined[:8]}")
     stats["citations_added"] = added
+    h = breakable_marker_runs(h)
     h, cite_order = number_citations(h, verified_meta)
     h = build_references(W, h, cite_order, verified_meta)
     stats["citations"] = len(cite_order)
@@ -5484,6 +5495,9 @@ def normalize_legacy_markup(h: str) -> str:
         return (f'<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{num or pm}</a>'
                 f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">{"".join(parts)}</span></sup>')
     h = SUP_RE.sub(canon, h)
+    # the break opportunities `breakable_marker_runs` adds are removed here so
+    # every run walker in the chain sees adjacent markers
+    h = re.sub(r"</sup>(?:&#8203;|\u200b|<wbr>)+(?=<sup class=\"mz-ref\")", "</sup>", h)
     # an earlier generator escaped an already-escaped ampersand ("&amp;amp;"
     # in W29's C-Section chip), which renders as the literal "&amp;"
     h = re.sub(r"&amp;(amp;|#)", r"&\1", h)
@@ -6361,6 +6375,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             h = h[:at] + DISCLAIMER + h[at:]
             print("  educational disclaimer added (the brief predates it)")
         h = normalize_card_ids(h)
+        h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
         h = dedupe_element_ids(h)
