@@ -1537,7 +1537,7 @@ def _extract_json(text: str):
     return None
 
 
-def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None:
+def _claude(prompt: str, timeout_s: int = 900, attempts: int = 5) -> dict | None:
     """One model call returning parsed JSON, retried on a transient failure.
 
     A single unparseable reply used to kill the whole stage: W31's
@@ -1562,9 +1562,13 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
                                stdin=subprocess.DEVNULL,
                                capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
         except subprocess.TimeoutExpired:
-            last = "timeout"; continue
+            last = "timeout"; time.sleep(5 * (attempt + 1)); continue
         if r.returncode != 0:
-            last = (r.stderr or "")[:120]; continue
+            # four concurrent runs once failed three times each in the same
+            # minute with an empty stderr: a transient outage. Say what came
+            # back, and wait before asking again.
+            last = f"exit {r.returncode}: {(r.stderr or r.stdout or '')[-160:]!r}"
+            time.sleep(10 * (attempt + 1)); continue
         try:
             text = json.loads(r.stdout).get("result", "")
         except json.JSONDecodeError:
