@@ -8521,6 +8521,9 @@ and {{"defects": []}} when every figure agrees.""", timeout_s=900)
 
 
 _MISSING_CITE_RE = re.compile(r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b", re.I)
+# a marker on the wrong sentence, or a paper credited to the wrong marker
+_WRONG_CITE_RE = re.compile(r"\b(?:marker|citation)\b[^.]{0,80}\b(?:wrong|misplaced|displaced|attached to|attributed to|points? (?:at|to)|different (?:paper|study|author))"
+                            r"|\b(?:wrong|misplaced|displaced)\s+(?:marker|citation)\b", re.I)
 
 
 def _renumber_if_unnumbered(W: str, h: str, meta: dict | None) -> str:
@@ -8733,6 +8736,16 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         # burned every round and refused the brief. Supply the citation: the
         # placement pass that reads each sentence with its citations visible
         # runs again before the next read, when the papers are in hand.
+        if real and pmids and any(_WRONG_CITE_RE.search(f"{d.get('what', '')} {d.get('evidence', '')}") for d in blocking):
+            # the repair loop cannot move a marker; the review can withdraw
+            # one judged the wrong paper for its sentence, as the chain does
+            wrong_w, _u = review_inserted_citations(W, after, real)
+            if wrong_w:
+                for mm in sorted(SUP_RE.finditer(after), key=lambda x: -x.start()):
+                    if mm.start() in wrong_w:
+                        after = after[:mm.start()] + after[mm.end():]
+                print(f"  the audit named a misplaced marker: {len(wrong_w)} citation(s) withdrawn as the wrong paper for their sentence")
+                after = _renumber_if_unnumbered(W, after, meta)
         if real and pmids and any(_MISSING_CITE_RE.search(f"{d.get('what', '')} {d.get('evidence', '')}") for d in blocking):
             after, n_cite = cite_missing_studies(W, after, pmids, real)
             after, n_name = cite_named_unique(after, real, W)
