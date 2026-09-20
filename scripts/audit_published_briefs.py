@@ -41,40 +41,13 @@ def _surnames(text):
 
 
 def faults(pid, h):
-    out = []
-    marks = [re.sub(r"<[^>]+>", "", m).strip()
-             for m in re.findall(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', h, re.S)]
-    pmid_like = [m for m in marks if re.fullmatch(r"\d{5,9}", m)]
-    if pmid_like:
-        out.append(f"{len(pmid_like)} of {len(marks)} marker(s) show a PMID, not a number")
-    out += bp.malformed_tag_faults(h)[:2]
+    """The body invariants the pipeline itself refuses to publish without,
+    plus the two attribution checks that need the page's own bylines.
 
-    blanks = [m for m in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h)
-              if not re.sub(r"[\s ]|&nbsp;", "",
-                            bp.H.unescape(re.sub(r"<[^>]+>", "", bp.SUP_RE.sub("", m.group(1)))))]
-    if blanks:
-        out.append(f"{len(blanks)} list item(s) a reader sees as a blank bullet")
-
-    cards = re.findall(CARD_RE, h)
-    carded = {(re.search(bp.CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c)
-               or [None, None])[1] for c in cards} - {None}
-    cited = {bp._pmid_of(m.group(0)) for m in bp.SUP_RE.finditer(h)} - {None}
-    if carded - cited:
-        out.append(f"{len(carded - cited)} carded paper(s) no sentence cites: {sorted(carded - cited)[:4]}")
-    if cited - carded:
-        out.append(f"{len(cited - carded)} cited paper(s) the brief does not card: {sorted(cited - carded)[:4]}")
-
-    first = {}
-    for m in bp.SUP_RE.finditer(h):
-        q = bp._pmid_of(m.group(0))
-        n = re.search(r'mz-ref-link"[^>]*>(\d+)<', m.group(0))
-        if q and n and q not in first:
-            first[q] = n.group(1)
-    for d in re.finditer(r"<dialog\b[\s\S]*?</dialog>", h):
-        q = (re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', d.group(0)) or [None, None])[1]
-        lab = re.search(r"Paper\s*#\s*(\d+)", d.group(0))
-        if q and lab and q in first and lab.group(1) != first[q]:
-            out.append(f"the deep dive for {q} says Paper #{lab.group(1)} where its marker says {first[q]}")
+    The invariants live in brief_pipeline.body_invariant_faults so there is
+    ONE list: a brief is held to the same standard before it ships and after.
+    """
+    out = list(bp.body_invariant_faults(h))
 
     everyone = set()
     for m in re.finditer(r'<p class="mz-cite-meta">([\s\S]*?)</p>'
@@ -93,7 +66,7 @@ def faults(pid, h):
             continue
         own = _surnames(bp.H.unescape(re.sub(r"<[^>]+>", " ", meta.group(1))))
         ftxt = bp.H.unescape(re.sub(r"<[^>]+>", " ", find.group(1)))
-        for x in unknown(re.findall(r"\b([A-Z][a-zà-ſ]{2,})\s+et\s+al\.", ftxt)):
+        for x in unknown(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", ftxt)):
             if x not in own:
                 out.append(f"a card credits {x} et al. above a byline of {sorted(own)[:2]}")
 
@@ -102,13 +75,13 @@ def faults(pid, h):
         masked = bp._mask_noprose(frag)
         sents = bp._sentences_of(masked)
         for k, (t, e) in enumerate(sents):
-            # a sentence stating a PMID of its own is naming a paper outside
-            # the brief on purpose (W24 explaining an Expression of Concern)
+            # a sentence stating a PMID of its own, or reporting an editorial
+            # notice on another paper, is naming an outside study on purpose
             if re.search(r"\bPMID\s*:?\s*\d{5,9}", t) or re.search(
                     r"\b(?:expression\s+of\s+concern|retract(?:ion|ed|s)|correction\s+to|erratum|corrigendum"
-                 r"|comment(?:ary)?\s+on|repl(?:y|ies)\s+to|response\s+to|withdrawn)\b", t, re.I):
+                    r"|comment(?:ary)?\s+on|repl(?:y|ies)\s+to|response\s+to|withdrawn)\b", t, re.I):
                 continue
-            names = unknown(re.findall(r"\b([A-Z][a-zà-ſ]{2,})\s+et\s+al\.", t))
+            names = unknown(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
             if not names:
                 continue
             s0 = bp._sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)

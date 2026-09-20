@@ -3054,12 +3054,62 @@ def _vis_text(h: str) -> str:
     return H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)))
 
 
+def body_invariant_faults(h: str) -> list:
+    """What must be true of a finished brief, checked on the brief itself.
+
+    Every pass in the chain is supposed to guarantee something, and every one
+    of them has a path where the page's shape does not match and it moves on
+    without a word — 63 of them at the last count. `cite_every_card` walks
+    topic sections and needs a synthesis paragraph; W20's generation has none,
+    so it skipped nine sections in silence and W20 published with fifteen
+    carded papers that no sentence cites. Nothing printed, nothing failed, and
+    I called it verified.
+
+    So these are not checks on the passes. They are checks on the body, and
+    they do not care which pass was meant to hold them. The site audit
+    (`audit_published_briefs.py`) runs the same list against what is already
+    published, so a brief is held to one standard before and after it ships.
+    """
+    out = []
+    marks = [re.sub(r"<[^>]+>", "", m).strip()
+             for m in re.findall(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', h, re.S)]
+    pmid_like = [m for m in marks if re.fullmatch(r"\d{5,9}", m)]
+    if pmid_like:
+        out.append(f"{len(pmid_like)} of {len(marks)} citation marker(s) show a PMID, not a number")
+    out += malformed_tag_faults(h)[:2]
+    blanks = [m for m in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h)
+              if not re.sub(r"[\s\u00a0]|&nbsp;", "",
+                            H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub("", m.group(1)))))]
+    if blanks:
+        out.append(f"{len(blanks)} list item(s) a reader sees as a blank bullet")
+    cards = re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', h)
+    carded = {(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c)
+               or [None, None])[1] for c in cards} - {None}
+    cited = {_pmid_of(m.group(0)) for m in SUP_RE.finditer(h)} - {None}
+    if carded - cited:
+        out.append(f"{len(carded - cited)} carded paper(s) no sentence cites: {sorted(carded - cited)[:4]}")
+    if cited - carded:
+        out.append(f"{len(cited - carded)} cited paper(s) the brief does not card: {sorted(cited - carded)[:4]}")
+    first = {}
+    for m in SUP_RE.finditer(h):
+        q = _pmid_of(m.group(0))
+        n = re.search(r'mz-ref-link"[^>]*>(\d+)<', m.group(0))
+        if q and n and q not in first:
+            first[q] = n.group(1)
+    for d in re.finditer(r"<dialog\b[\s\S]*?</dialog>", h):
+        q = (re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', d.group(0)) or [None, None])[1]
+        lab = re.search(r"Paper\s*#\s*(\d+)", d.group(0))
+        if q and lab and q in first and lab.group(1) != first[q]:
+            out.append(f"the deep dive for {q} says Paper #{lab.group(1)} where its marker says {first[q]}")
+    return out
+
+
 def reader_prose_faults(h: str) -> list:
     """S8, S9, S10 on the finished page: no patient-directed advice, no
     placeholder or AI-provenance language, no internal path, no bare MIGS, no
     never/always. Shared by the authoring path (prose_faults) and by
     `renumber`, which published without them until standards-check said so."""
-    faults = list(malformed_tag_faults(h))
+    faults = list(body_invariant_faults(h))
     prose = " ".join(prose_fragments(h))
     text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
     vis = _vis_text(h)
