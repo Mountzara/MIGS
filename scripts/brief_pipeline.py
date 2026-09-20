@@ -5661,7 +5661,7 @@ as the original, ending with a full stop. Plain text, no markup.
 THE SENTENCE: {json.dumps(sentence)}
 Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) < 20 or ABSTRACT_LABEL_RE.search(new):
+        if ABSTRACT_LABEL_RE.search(new) or _looks_broken(new):
             new = ""
         if not new:
             # unusable: drop the pasted sentence, keep its citations
@@ -6755,6 +6755,21 @@ def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
 
 
 
+def _looks_broken(t: str) -> bool:
+    """A rewritten sentence that would read as damage: a stop after a function
+    word ("developed in the. Department of…"), no terminal stop, a lowercase
+    opening, a doubled space or an empty clause."""
+    if not t or len(t) < 15:
+        return True
+    if not re.search(r"[.!?][\"')\]\u201d\u2019]?$", t.strip()):
+        return True
+    if re.search(r"\b(?:in|of|at|by|the|a|an|and|or|with|for|from|to|than|that|as)\.(?:\s|$)", t, re.I):
+        return True
+    if re.search(r"\s{2,}|\(\s*\)|,\s*[,.]|\b(?:and|but|with)\s*[.,]", t):
+        return True
+    return not t[:1].isupper() and not t[:1].isdigit() and t[:1] not in "\u201c\"("
+
+
 def repair_from_defects(W: str, h: str, defects: list) -> tuple:
     """Fix what the read-back audit named, in the sentence it quoted.
 
@@ -6805,7 +6820,8 @@ concern; drop a clause that is no longer true rather than inventing a replacemen
 no citation markup, ending with a full stop.
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) < 15 or len(new) > max(400, int(len(sentence) * 1.5)):
+        if len(new) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new):
+            print(f"  audit repair rejected as damaged prose: {new[:90]!r}")
             continue
         h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
         done += 1
@@ -6813,7 +6829,7 @@ Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
     return h, done
 
 
-def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: bool = True) -> str:
+def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 3) -> str:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -6929,11 +6945,12 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
     for d in (v.get("defects") or [])[:12]:
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
-    if blocking and _repair:
+    if blocking and _repair > 0:
         repaired, n = repair_from_defects(W, after, blocking)
         if n:
-            print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again")
-            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=False)
+            print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
+                  f"({_repair - 1} round(s) left)")
+            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1)
     if blocking:
         die(f"the transform audit found {len(blocking)} blocking defect(s) in the output")
     print(f"  transform audit: the output reads correctly"
