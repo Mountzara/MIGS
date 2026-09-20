@@ -1494,7 +1494,7 @@ def _extract_json(text: str):
             depth -= 1
             if depth == 0:
                 try:
-                    return json.loads(t[start:i + 1])
+                    return json.loads(t[start:i + 1], strict=False)
                 except json.JSONDecodeError:
                     break
     # cut off before closing: keep every complete element and shut what is
@@ -1525,9 +1525,15 @@ def _extract_json(text: str):
         if in_str:
             continue
         try:
-            return json.loads(head + "".join(reversed(stack)))
+            return json.loads(head + "".join(reversed(stack)), strict=False)
         except json.JSONDecodeError:
             continue
+    # a single-field object whose string value carries an unescaped quote
+    # ({"sentence": "… the "live birth" rate …"}): three correction calls on
+    # W34 were "no parseable JSON" for that alone
+    m = re.match(r'\s*\{\s*"(\w+)"\s*:\s*"([\s\S]*)"\s*\}\s*$', t)
+    if m:
+        return {m.group(1): m.group(2).replace("\\n", "\n")}
     return None
 
 
