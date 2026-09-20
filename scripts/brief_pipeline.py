@@ -2435,6 +2435,41 @@ def mend_stranded_text(h: str) -> tuple:
 _BRACKET_RESIDUE_RE = re.compile(r"\s*\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,?\s*\]")
 
 
+# Commentary about the pipeline itself, in the reader's prose: "The biggest
+# pipeline classification artifact this week is C-section scar — 3 papers in
+# the bucket, none really…". Every repair round rewrote it into another
+# sentence about the bucketing, and the audit rightly named each one. A
+# reader is owed the medicine, not the sorting. Narrow on purpose: "anti-IL-1
+# pipelines" is pharmacology and stays.
+_PROCESS_TALK_RE = re.compile(
+    r"\b(?:pipeline\s+(?:classification|artifact|bucket|sorting|keyword)|classification\s+artifact"
+    r"|(?:in|into|from)\s+(?:the|this|that)\s+bucket\b|keyword[- ]?(?:match|over[- ]?match)\w*"
+    r"|the\s+(?:digest|retrieval)\s+(?:pipeline|pulled|over[- ]?matched))", re.I)
+
+
+def drop_process_commentary(h: str) -> tuple:
+    """Delete a reader-prose sentence that talks about the pipeline. (h, cut)."""
+    cut = 0
+    for ps in list(_prose_passages(h))[::-1]:
+        frag = ps.group(1)
+        masked = _mask_noprose(frag)
+        sents = _sentences_of(masked)
+        spans = []
+        for k, (t, e) in enumerate(sents):
+            if _PROCESS_TALK_RE.search(t):
+                s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+                spans.append((s0, _after_run(frag, e)))
+        for a, b in sorted(spans, reverse=True):
+            if _usable_span(frag, a, b):
+                frag = _replace_span(frag, a, b, "")
+                cut += 1
+        if spans:
+            frag, _ = drop_empty_list_items(frag)
+            frag = re.sub(r"<p\b[^>]*>(?:\s|&nbsp;|\u00a0)*</p>", "", frag)
+            h = h[:ps.start(1)] + frag + h[ps.end(1):]
+    return h, cut
+
+
 def drop_bracket_residue(h: str) -> tuple:
     """"[Bafort 2020, ]" — a legacy bracket whose marker a later pass withdrew.
     The bracket named the paper before the marker did; with the marker gone
@@ -3213,6 +3248,9 @@ def reader_prose_faults(h: str) -> list:
     m = ADVICE_RE.search(text)
     if m:
         faults.append(f"patient-directed advice in the site's own prose: {m.group(0)!r}")
+    m = _PROCESS_TALK_RE.search(text)
+    if m:
+        faults.append(f"commentary about the pipeline itself in the reader's prose: {m.group(0)!r}")
     m = EXPERIENCE_RE.search(text)
     if m:
         faults.append(f"a claim about the practice's own patients, written from a paper: {m.group(0)!r}")
@@ -9117,6 +9155,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, dup = dedupe_run_markers(h)
         if dup:
             print(f"  {dup} marker(s) citing a paper already cited in the same run removed")
+        h, talk = drop_process_commentary(h)
+        if talk:
+            print(f"  {talk} sentence(s) of commentary about the pipeline itself removed from the reader's prose")
         h, residue = drop_bracket_residue(h)
         if residue:
             print(f"  {residue} empty citation bracket(s) left by a withdrawn marker removed")
@@ -9156,6 +9197,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, dup0 = dedupe_run_markers(h)
         if dup0:
             print(f"  {dup0} marker(s) citing a paper already cited in the same run removed")
+        h, talk0 = drop_process_commentary(h)
+        if talk0:
+            print(f"  {talk0} sentence(s) of commentary about the pipeline itself removed")
         h = _renumber_if_unnumbered(W, h, meta)
 
     # post-conditions, on exactly the two things reported plus what they touch
