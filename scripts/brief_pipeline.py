@@ -447,9 +447,9 @@ RENDERED_ONLY = {"S3": "hover and tap behaviour", "S14": "contrast on the render
 def stage_addendum(stage: str) -> str:
     own = STAGE_STANDARDS.get(stage, [])
     later = [f"S{i}" for i in range(1, 17) if f"S{i}" not in own]
+    mine = {k: v for k, v in RENDERED_ONLY.items() if k in own}
     rendered = ("\nMEASURED ON THE RENDERED PAGE after publish, not from this text — do not block on "
-                "them here: " + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + "."
-                if stage == "apply" else "")
+                "them here: " + "; ".join(f"{k} ({v})" for k, v in mine.items()) + "." if mine else "")
     scope = (f"\nIN SCOPE AT THIS STAGE (block on these): {', '.join(own)}." + rendered
              + (f"\nENFORCED BY A LATER STAGE — report as advisory, DO NOT block: {', '.join(later)}."
                 if later else "\nEVERY standard is in scope: this is the finished body.")
@@ -1911,7 +1911,8 @@ matters, and what it changes or does not change on a Monday.
 MUST BE SPECIFIC: name the design, population and key result from the abstract. No reusable template
 sentences, no "this week's signal", no "what I'd want to read next", no "the gap I'm building tools to
 close". A reader should be unable to move this paragraph to another paper.
-GROUNDING: every fact from the abstract. No dose in your prose.
+GROUNDING: every fact from the abstract. A dose the study itself used may be stated as that study's
+dose ("600 mg twice daily in the trial arm"); never as an instruction to a reader ("take 600 mg").
 NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No AI/placeholder language. No
 "never"/"always". When you name the practice write "CBG/MIGS", never bare "MIGS", and only where
 the paper actually bears on it — omit it rather than shoehorn it in.
@@ -1945,8 +1946,9 @@ This editorial must agree with those labels exactly. Also read the topic files a
 VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
 surgery surgeon writing for a reader who may be the person who made the claim.
 {BRIDGE_TONE}
-GROUNDING: only studies, numbers and findings present in the syntheses or topic files. No dose in your
-prose. Cite every study you name, inline, right after the claim, with EXACTLY this markup and the
+GROUNDING: only studies, numbers and findings present in the syntheses or topic files. A dose a study
+itself used may be stated as that study's dose; never as an instruction to a reader ("take…", "start
+at…"). Cite every study you name, inline, right after the claim, with EXACTLY this markup and the
 paper's PMID (the pipeline renumbers markers sequentially):
 <sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
 (FINDING: 250-600 characters, conclusion first with numbers, then a "Relevance:" sentence.)
@@ -3488,7 +3490,13 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         if re.search(r'mz-verdict|REVIEW REQUIRED', h):
             faults.append("a verdict gauge or its label remains")
 
-        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b", prose, re.I)
+        # S13's language rule covers the CARD LENS paragraphs too: site_prose
+        # strips cite cards as attributed text, so a "verdict"/"myth" written
+        # into a card was never scanned (standards-check, 2026-09-20).
+        card_prose = " ".join(re.sub(r"<[^>]+>", " ", re.sub(r"<details[\s\S]*?</details>", " ", c))
+                              for c in CARD_RE.findall(h))
+        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b",
+                         prose + " " + card_prose, re.I)
         if bad:
             faults.append(f"scoring language in the site's own prose: {sorted(set(b.lower() for b in bad))[:4]}")
         for tid in man["topics"]:
