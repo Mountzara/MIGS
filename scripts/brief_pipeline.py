@@ -2400,7 +2400,8 @@ def tidy_prose_spacing(h: str) -> str:
             parts[i] = re.sub(r"(?<=[A-Za-z0-9)\]\u201d\u2019'])[ \xa0]+(?=[,.;:!?](?:\s|$|&))", "", parts[i])
             if i >= 2 and parts[i - 1].startswith("</"):
                 parts[i] = re.sub(r"^[ \xa0]+(?=[,.;:!?](?:\s|$|&))", "", parts[i])
-        out.append(h[last:ps.start(1)]); out.append("".join(parts)); last = ps.end(1)
+        joined = re.sub(r"<(em|strong|b|i)\b[^>]*>\s*</\1>", "", "".join(parts))  # a rewrite can leave an empty pair
+        out.append(h[last:ps.start(1)]); out.append(joined); last = ps.end(1)
     out.append(h[last:])
     return "".join(out)
 
@@ -5366,10 +5367,15 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
         per.append({"topic": title, "papers": len(set(re.findall(CARD_ID_RE, t.group(0))))})
     all_cards = re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', h)
     total = len({(re.search(r'id="mz-cite-(\d{5,9})', c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1] for c in all_cards} - {None})
-    designs = __import__("collections").Counter(
-        re.sub(r"\s*·.*$", "", H.unescape((re.search(r'mz-cite-design">([^<]*)<', c) or [None, ""])[1])).strip()
-        for c in all_cards)
-    designs.pop("", None)
+    seen_pm, designs = set(), __import__("collections").Counter()
+    for c in all_cards:
+        pm = (re.search(r'id="mz-cite-(\d{5,9})', c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+        if not pm or pm in seen_pm:
+            continue  # a paper carded under two headings is one paper
+        seen_pm.add(pm)
+        d = re.sub(r"\s*·.*$", "", H.unescape((re.search(r'mz-cite-design">([^<]*)<', c) or [None, ""])[1])).strip()
+        if d:
+            designs[d] += 1
     # the deep-dive (journal club) section: "N papers worth a careful read" and
     # "the M papers not deep-read" are derived from it
     jc = re.search(r'<section class="[^"]*mz-journal-club[^"]*"[^>]*>', h)
@@ -5974,7 +5980,13 @@ def _terminal_at(frag: str, i: int) -> bool:
     if _ABBR_BEFORE.search(before):
         return False
     if re.search(r"(?:^|\s)et al$", before):
-        return bool(re.match(r"[A-Z“\"]", after_txt)) or not after_txt.strip()
+        # "Smith et al. Bernardi found…" ends a sentence; "Wang et al. Front
+        # Endocrinol 2026" and "Smith et al. reported" do not
+        return (not after_txt.strip()
+                or bool(re.match(r"(?:The|This|That|These|Those|It|In|On|For|A|An|We|But|And|Here|There|If|When|While|"
+                                 r"One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|What|Why|How|Their|His|Her|Our|"
+                                 r"[A-Z][a-z]+ (?:et al|found|report|reported|show|showed|describe|argue|ran|used|compared))\b", after_txt))
+                or bool(re.match(r"[\u201c\"]", after_txt)))
     if re.search(r"(?:^|\s)no$", before, re.I):
         return not re.match(r"\d", after_txt)
     return True
