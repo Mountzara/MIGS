@@ -5820,6 +5820,13 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                 if m.start() in wrong3:
                     h = h[:m.start()] + h[m.end():]
             print(f"  withdrew {len(wrong3)} citation(s) judged the wrong paper after the second every-card pass")
+    # LAST: every writer above inserts prose — a correction, a written card
+    # sentence, an audit repair — and one of them pasted an abstract's own
+    # text into W21's infertility synthesis. Whatever put it there, it does
+    # not reach the page.
+    h, n_end = rewrite_pasted_abstract_text(W, h)
+    if n_end:
+        print(f"  {n_end} pasted-abstract sentence(s) rewritten after the chain")
     return h, named, declined
 
 
@@ -6007,6 +6014,9 @@ THE PAPERS IT MISSTATES: {json.dumps(papers, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
             cand = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
             limit = max(400, int(len(us[0]["sentence"]) * 1.6) + 80)
+            if ABSTRACT_LABEL_RE.search(cand):
+                note = "\nA PREVIOUS ATTEMPT PASTED THE ABSTRACT'S OWN TEXT, labels and all. Write plain clinical prose."
+                continue
             if 20 <= len(cand) <= limit:
                 new = cand
                 break
