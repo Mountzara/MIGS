@@ -2500,6 +2500,13 @@ def renumber_card_badges(h: str, order: list) -> tuple:
         block = m.group(0)
         pm = ((re.search(CARD_ID_RE, block) or re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', block)
                or [None, None])[1])
+        # the deep dive's eyebrow carries the same index: "Journal Club ·
+        # Deep Dive · Paper #1" on a paper every marker and every badge calls
+        # 3. One number per paper, and it is the citation's.
+        if pm in num:
+            block, k = re.subn(r"(Paper\s*#\s*)\d+", lambda x: x.group(1) + str(num[pm]), block)
+            if k:
+                changed += k
         b = re.search(r'(<(?:p|span) class="mz-cite-design"[^>]*>)\s*\[(\d+)\]\s*(?:·|&middot;|&#183;)\s*', block)
         if not b:
             return block
@@ -5187,6 +5194,67 @@ def refresh_deep_dive_meta(h: str, real: dict) -> tuple:
     return re.sub(r"<dialog\b[\s\S]*?</dialog>", one, h), n
 
 
+def fix_card_attribution(W: str, h: str, real: dict) -> tuple:
+    """A card's own editorial text names the authors of the paper it is for.
+
+    One card on the live site opened "Mahmoud et al. systematic review of
+    embolization and sclerotherapy…" above a byline reading "Daniels JP,
+    Champaneria R, Shah L et al." — a reader is told two different teams wrote
+    the same paper, and the wrong name is the one they would search for. The
+    detection is exact: a surname the text credits with "et al." that appears
+    nowhere in the card's own byline. Only the attribution is rewritten.
+    Returns (h, cards_corrected).
+    """
+    n = 0
+    out, last = [], 0
+    for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
+        card = m.group(0)
+        pm = (re.search(CARD_ID_RE, card) or [None, None])[1]
+        meta = re.search(r'<p class="mz-cite-meta">([\s\S]*?)</p>', card)
+        find = re.search(r'<p class="mz-cite-finding">([\s\S]*?)</p>', card)
+        r = real.get(pm) if pm else None
+        if not (pm and meta and find and r):
+            continue
+        byline = H.unescape(re.sub(r"<[^>]+>", " ", meta.group(1))).split("\u00b7")[0]
+        known = set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", byline))
+        known |= set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", r.get("authors", "")))
+        ftxt = H.unescape(re.sub(r"<[^>]+>", " ", find.group(1)))
+        wrong = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", ftxt))
+                 if x not in known]
+        if not wrong:
+            continue
+        flat = re.sub(r"\s+", " ", ftxt).strip()[:1200]
+        v = _ask_cached(W, "attrib", f"""A cite card in a clinician-facing evidence brief credits the wrong authors. Its own editorial text
+says {json.dumps(wrong[:3])}, but the paper it is for is:
+TITLE: {json.dumps(r.get("title", ""))}
+AUTHORS: {json.dumps(r.get("authors", ""))}
+JOURNAL: {json.dumps(r.get("journal", ""))} {json.dumps(str(r.get("year", "") or ""))}
+
+THE CARD'S TEXT: {json.dumps(flat)}
+
+Correct ONLY the attribution so the text credits this paper's actual authors. Change nothing else —
+not a figure, not a clause, not the voice. If a name belongs to a DIFFERENT study the text mentions
+for contrast, leave that name alone and reply with the text unchanged.
+Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
+        new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
+        if not new or _looks_broken(new) or _invents_experience(new):
+            continue
+        if abs(len(new) - len(ftxt.strip())) > max(120, int(len(ftxt) * 0.4)):
+            print(f"  attribution rewrite rejected for {pm} (it rewrote more than the name)")
+            continue
+        if _numbers_in(new) - _numbers_in(ftxt):
+            print(f"  attribution rewrite rejected for {pm} (it introduced a figure)")
+            continue
+        lead = re.match(r"\s*<strong>[\s\S]*?</strong>\s*", find.group(1))
+        body = (lead.group(0) if lead else "") + H.escape(new, quote=False)
+        card = card[:find.start(1)] + body + card[find.end(1):]
+        print(f"  card for {pm} credited {wrong[:2]} — corrected to the paper's own authors")
+        n += 1
+        out.append(h[last:m.start()]); out.append(card); last = m.end()
+    out.append(h[last:])
+    return "".join(out), n
+
+
 def cite_every_card(W: str, h: str, real: dict, force_new: set | None = None) -> tuple:
     """Every paper carded under a heading is cited somewhere in the prose.
 
@@ -6036,6 +6104,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, n_cards = refresh_card_abstracts(h, real)
     if n_cards:
         print(f"  {n_cards} card(s) given their PubMed abstract and metadata")
+    h, n_attrib = fix_card_attribution(W, h, real)
+    if n_attrib:
+        print(f"  {n_attrib} card(s) that credited the wrong authors corrected")
     h, orphaned = remove_orphan_studies(W, h, pmids, real)
     if orphaned:
         print(f"  {orphaned} sentence(s) rewritten or removed for reporting a study the brief does not hold")
