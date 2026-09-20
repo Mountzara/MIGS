@@ -3205,6 +3205,9 @@ def body_invariant_faults(h: str) -> list:
         out.append(f"{dup_runs} run(s) of markers cite the same paper twice")
     if _STRANDED_RE.search(h):
         out.append("a recommendation's wrapper is empty with its own text stranded beside it")
+    talk = _PROCESS_TALK_RE.search(H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", " ".join(ps.group(1) for ps in _prose_passages(h))))))
+    if talk:
+        out.append(f"the reader's prose discusses the pipeline itself: {talk.group(0)!r}")
     if re.search(r"\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,\s*<sup class=\"mz-ref\"", h):
         out.append("a surname is bracketed around a citation marker, the pre-marker way of naming a paper")
     if _BRACKET_RESIDUE_RE.search(re.sub(r"<[^>]+>", "", h)):
