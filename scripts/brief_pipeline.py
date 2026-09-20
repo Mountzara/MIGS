@@ -4517,6 +4517,48 @@ def _own_papers_for(h: str, ps, topic_spans: list) -> set:
     return set()
 
 
+# A sentence whose claim is that NO evidence exists cannot be supported by a
+# paper, and a marker on it tells a reader the opposite: that the cited study
+# backs the absence. A trend brief's lede says "essentially no RCT evidence"
+# and "zero randomized clinical trials in endometriosis", and once the ledes
+# reached the placement pass it hung the brief's actual evidence base off
+# those very sentences — NAMS 2022 and SKYLIGHT beside a claim that nothing
+# has been trialled.
+_NO_EVIDENCE_RE = re.compile(
+    r"\b(?:no|zero|none|not\s+a\s+single|lack(?:s|ing)?\s+(?:any\s+)?|without\s+(?:any\s+)?|essentially\s+no)\s+"
+    r"(?:\w+\s+){0,3}?"
+    r"(?:randomi[sz]ed|randomi[sz]ation|RCTs?|trials?|studies|stud(?:y|ies)|evidence|data|literature)\b", re.I)
+
+
+def _asserts_no_evidence(t: str) -> bool:
+    """The sentence's point is that nothing has been studied."""
+    return bool(_NO_EVIDENCE_RE.search(t or ""))
+
+
+def withdraw_citations_from_absence_claims(h: str) -> tuple:
+    """Take the markers off a sentence whose claim is that nothing exists.
+
+    The guard in `cite_prose` stops new ones being placed; this clears the
+    ones already on the page. Returns (h, markers_withdrawn).
+    """
+    n = 0
+    for ps in list(_prose_passages(h))[::-1]:
+        frag = ps.group(1)
+        masked = _mask_noprose(frag)
+        sents = _sentences_of(masked)
+        spans = []
+        for k, (t, e) in enumerate(sents):
+            if not _asserts_no_evidence(t):
+                continue
+            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            spans.append((ps.start(1) + s0, ps.start(1) + _after_run(frag, e)))
+        for a, b in sorted(spans, reverse=True):
+            for m in sorted(SUP_RE.finditer(h[a:b]), key=lambda x: -x.start()):
+                h = h[:a + m.start()] + h[a + m.end():]
+                n += 1
+    return h, n
+
+
 def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
     """The model decides which sentence cites which paper; the code inserts it.
 
@@ -4605,6 +4647,9 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
             except Exception:
                 continue
             if not (1 <= idx <= len(sents)):
+                continue
+            if _asserts_no_evidence(sents[idx - 1][0]):
+                # nothing can be cited for the absence of itself
                 continue
             for pm in (r.get("pmids") or []):
                 pm = str(pm).strip()
@@ -6462,6 +6507,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     its abstract (wrong paper: withdrawn by position; misstated: the sentence
     is rewritten from the abstract and reviewed again; still wrong: refuse).
     Returns (h, citations_added, names_declined)."""
+    h, n_noev = withdraw_citations_from_absence_claims(h)
+    if n_noev:
+        print(f"  {n_noev} citation(s) withdrawn from sentences claiming no evidence exists")
     h, n_inab = strip_markers_in_abstracts(h)
     if n_inab:
         print(f"  {n_inab} citation marker(s) removed from verbatim abstract blocks (a reader cannot open them)")
