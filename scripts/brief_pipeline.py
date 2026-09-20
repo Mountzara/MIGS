@@ -6092,7 +6092,8 @@ by design, not a defect, and duplicate ids are measured and reported in counts. 
 paper as its ABSTRACT does; when a reference title and the prose disagree, that is a discrepancy in
 the paper itself (a title naming a sterilization ring over an abstract describing an LNG-IUS), not a
 wrong citation — report it as cosmetic, never blocking, when the prose names the discrepancy or
-follows the abstract.
+follows the abstract. The ORDER of markers stacked at the end of one sentence is cosmetic, never
+blocking: each number resolves through the reference list, whichever order the stack shows.
 
 Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
 markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
