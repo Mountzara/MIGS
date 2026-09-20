@@ -7338,6 +7338,11 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h = tidy_prose_spacing(h)
         h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
+        # numbering can leave a legacy marker without a popover (W20's 8 and
+        # 20); the browser gate refuses the page for it, so fill them here
+        h, filled_pops = refresh_popovers_from_abstracts(W, h, real)
+        if filled_pops:
+            print(f"  {filled_pops} popover(s) written after numbering")
         h = build_references(W, h, order, meta)
         h = dedupe_element_ids(h)
         _snap_put(W, "numbered", h, order=order)
