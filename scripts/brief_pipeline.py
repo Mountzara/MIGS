@@ -8561,7 +8561,11 @@ and {{"defects": []}} when every figure agrees.""", timeout_s=900)
     return out
 
 
-_MISSING_CITE_RE = re.compile(r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b", re.I)
+_MISSING_CITE_RE = re.compile(
+    r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b"
+    # "cites only 6 distinct", "never receives an inline citation", "not cited anywhere"
+    r"|\bcites?\s+only\b|\bonly\s+\d+\s+(?:distinct|of\s+(?:the\s+)?\d+)|\bnever\s+(?:receives?|gets?|carries)\b[^.]{0,30}\b(?:citation|marker)"
+    r"|\bnot\s+cited\s+(?:in|anywhere|by)\b|\bfewer\s+(?:papers|citations|markers)\b", re.I)
 # a marker on the wrong sentence, or a paper credited to the wrong marker
 _WRONG_CITE_RE = re.compile(r"\b(?:marker|citation)\b[^.]{0,80}\b(?:wrong|misplaced|displaced|attached to|attributed to|points? (?:at|to)|different (?:paper|study|author))"
                             r"|\b(?:wrong|misplaced|displaced)\s+(?:marker|citation)\b", re.I)
@@ -8794,6 +8798,12 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         if real and pmids and any(_MISSING_CITE_RE.search(f"{d.get('what', '')} {d.get('evidence', '')}") for d in blocking):
             after, n_cite = cite_missing_studies(W, after, pmids, real)
             after, n_name = cite_named_unique(after, real, W)
+            # a card whose section synthesis no longer cites it: the
+            # section-scoped pass places it there, and the shape-agnostic
+            # backstop catches a card cited nowhere
+            after, by_s, app_s = cite_every_card(W, after, real)
+            after, flat_s = cite_uncited_cards(W, after, real)
+            n_cite += by_s + app_s + flat_s
             if n_cite or n_name:
                 print(f"  the audit named a missing citation: {n_cite + n_name} citation(s) supplied before the next read")
                 after = _renumber_if_unnumbered(W, after, meta)
