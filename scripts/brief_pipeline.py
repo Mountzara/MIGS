@@ -5104,9 +5104,14 @@ def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
             masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
             sents = _sentences_of(masked)
         listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
+        by_design = __import__("collections").Counter(re.sub(r"\s*·.*$", "", c["design"]).strip() for c in cards if c["design"])
+        reviews = sum(n for d, n in by_design.items() if "review" in d.lower() or "meta-analysis" in d.lower())
+        trials = sum(n for d, n in by_design.items() if "trial" in d.lower())
         v = _ask_cached(W, "counts", f"""This is the opening paragraph of one section of a clinician-facing weekly evidence brief, sentence
 by sentence, and the complete list of papers the section holds ({len(cards)} papers, with each one's
 study design). Sentence [1]'s opening count is already correct; judge only counts BY KIND.
+COUNTS BY DESIGN, from the badges: {json.dumps(dict(by_design), ensure_ascii=False)} — reviews (any review or
+meta-analysis): {reviews}; trials: {trials}. "Four reviews converge…" over three review-badged papers is wrong.
 PAPERS IN THIS SECTION: {json.dumps(cards, ensure_ascii=False)}
 SENTENCES:
 {listing}
