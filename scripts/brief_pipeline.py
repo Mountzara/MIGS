@@ -1571,7 +1571,12 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
             text = r.stdout
         obj = _extract_json(text)
         if obj is None:
-            last = f"no parseable JSON in reply (got: {text[:200]!r})"; continue
+            # the whole reply, on disk, so a parse failure can be diagnosed
+            # from what actually came back rather than a 200-character prefix
+            os.makedirs("/tmp/claude-0", exist_ok=True)
+            dump = f"/tmp/claude-0/claude_unparsed_{os.getpid()}_{attempt}.txt"
+            open(dump, "w").write(text)
+            last = f"no parseable JSON in reply (got: {text[:200]!r}; full reply in {dump})"; continue
         return obj
     print(f"    (model call failed {attempts}x: {last})")
     return None
@@ -5190,9 +5195,11 @@ def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict)
             v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates a paper it cites. Rewrite ONLY that
 sentence so that every figure, comparison and direction of effect it attributes to each paper below
 comes from that paper's abstract, in the same first-person surgeon's voice, the same length or
-shorter, ending with a full stop. Keep everything in the sentence that is not about these papers
-exactly as it is. If an abstract does not support the point at all, state what that paper actually
-found instead. Plain text; no citation markup; no HTML.{note}
+shorter, ending with a full stop. Fix EXACTLY what "what_is_wrong" says: when a figure is mislabelled
+(a cumulative rate called a plain rate), change the label and keep the figure; never replace a figure
+with a different one unless the abstract says the sentence's figure is wrong. Keep everything in the
+sentence that is not about these papers exactly as it is. If an abstract does not support the point
+at all, state what that paper actually found instead. Plain text; no citation markup; no HTML.{note}
 THE SENTENCE: {json.dumps(us[0]["sentence"])}
 THE PAPERS IT MISSTATES: {json.dumps(papers, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
