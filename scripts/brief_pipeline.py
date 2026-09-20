@@ -5630,6 +5630,47 @@ every total is right.""", timeout_s=600)
 ABSTRACT_LABEL_RE = re.compile(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?|P?URPOSE|F?INDINGS)\s*:")
 
 
+def strip_verbatim_abstract_sentences(h: str, real: dict) -> tuple:
+    """Remove prose sentences that reproduce a covered paper's own abstract.
+
+    W21 carried a whole paragraph of one paper's methods inside its
+    infertility synthesis — "I designed this as a prospective, randomized,
+    controlled, single-center…", the abstract's own first person. Sentence
+    rewriting cannot rescue pasted source; it goes, and its citations stay.
+    A prose sentence sharing 60 consecutive normalised characters with any
+    abstract is pasted, not written. Returns (h, removed)."""
+    def norm(x):
+        return re.sub(r"[^a-z0-9]", "", H.unescape(re.sub(r"<[^>]+>", " ", x)).lower())
+    pool = [norm(v.get("abstract") or "") for v in real.values() if (v.get("abstract") or "").strip()]
+    if not pool:
+        return h, 0
+    removed = 0
+    for _round in range(6):
+        target = None
+        for ps in _prose_passages(h):
+            frag = ps.group(1)
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            sents = _sentences_of(masked)
+            for i, (t, e) in enumerate(sents):
+                n = norm(t)
+                if len(n) < 60:
+                    continue
+                if any(n[:60] in ab or n[-60:] in ab or (len(n) > 120 and n[60:120] in ab) for ab in pool):
+                    a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                    target = (a, ps.start(1) + e, t)
+                    break
+            if target:
+                break
+        if not target:
+            return h, removed
+        a, b, t = target
+        keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+        h = h[:a] + keep + h[b:]
+        removed += 1
+        print(f"  removed a sentence copied from a paper's abstract: {t[:100]!r}")
+    return h, removed
+
+
 def rewrite_pasted_abstract_text(W: str, h: str) -> tuple:
     """A sentence of the site's own prose carrying an abstract's section label
     is pasted source text, not writing. W21's infertility synthesis opened
@@ -5686,6 +5727,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     its abstract (wrong paper: withdrawn by position; misstated: the sentence
     is rewritten from the abstract and reviewed again; still wrong: refuse).
     Returns (h, citations_added, names_declined)."""
+    h, n_verb = strip_verbatim_abstract_sentences(h, real)
+    if n_verb:
+        print(f"  {n_verb} sentence(s) copied from abstracts removed from the site's prose")
     h, n_pasted = rewrite_pasted_abstract_text(W, h)
     if n_pasted:
         print(f"  {n_pasted} pasted-abstract sentence(s) rewritten as the site's own prose")
@@ -5824,9 +5868,10 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     # sentence, an audit repair — and one of them pasted an abstract's own
     # text into W21's infertility synthesis. Whatever put it there, it does
     # not reach the page.
+    h, n_verb2 = strip_verbatim_abstract_sentences(h, real)
     h, n_end = rewrite_pasted_abstract_text(W, h)
-    if n_end:
-        print(f"  {n_end} pasted-abstract sentence(s) rewritten after the chain")
+    if n_end or n_verb2:
+        print(f"  after the chain: {n_verb2} copied sentence(s) removed, {n_end} pasted-abstract sentence(s) rewritten")
     return h, named, declined
 
 
