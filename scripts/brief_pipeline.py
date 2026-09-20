@@ -6917,7 +6917,7 @@ def _looks_broken(t: str) -> bool:
     return not t[:1].isupper() and not t[:1].isdigit() and t[:1] not in "\u201c\"("
 
 
-def repair_from_defects(W: str, h: str, defects: list) -> tuple:
+def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = None) -> tuple:
     """Fix what the read-back audit named, in the sentence it quoted.
 
     Owner, from the beginning: "this code has a way to automatically correct
@@ -6926,6 +6926,13 @@ def repair_from_defects(W: str, h: str, defects: list) -> tuple:
     the brief instead of being repaired, so a person had to intervene. Each
     blocking defect whose evidence quotes prose is now rewritten in place,
     with the sentence's citations preserved, and the page is read again.
+
+    A repair is only as good as what it knows. Asked to fix "the same Cochrane
+    finding is given two different odds ratios" with nothing but the sentence
+    in hand, a writer can only guess which figure is the true one. So the
+    sentence's own papers come with it — the PubMed abstracts the brief was
+    built from settle which number is right — and, for a claim about how many
+    papers or topics the brief holds, the page's measured counts do.
     Returns (h, repaired_count)."""
     done = 0
     for d in defects:
@@ -6958,13 +6965,30 @@ def repair_from_defects(W: str, h: str, defects: list) -> tuple:
             continue
         a, b, sentence = hit
         keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+        # the papers this very sentence cites, as PubMed has them: the only
+        # thing that can settle which of two contradicting figures is real
+        cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(keep)) if q]
+        papers = real_from_work(W, cited)
+        src = "\n".join(
+            f"PAPER {q} — {papers[q].get('title', '')}\nABSTRACT: {(papers[q].get('abstract') or '')[:2600]}"
+            for q in cited if q in papers)
+        ctx = f"\n\nTHE PAPERS THIS SENTENCE CITES:\n{src}" if src else ""
+        if counts:
+            ctx += ("\n\nWHAT THE PAGE ACTUALLY HOLDS (measured, not claimed): "
+                    + json.dumps({k: counts[k] for k in (
+                        "citations", "distinct_papers_cited", "reference_entries", "cite_cards",
+                        "topic_sections", "toc_chips") if k in counts}))
         v = _ask_cached(W, "audit_fix", f"""An editor reading a clinician-facing evidence brief found this defect in one sentence:
 DEFECT: {json.dumps(str(d.get('what'))[:600])}
-THE SENTENCE: {json.dumps(sentence)}
+THE SENTENCE: {json.dumps(sentence)}{ctx}
 Rewrite the sentence so the defect is gone and everything it still says is true, in the same
 first-person surgeon's voice, the same length or shorter. Change nothing the defect does not
 concern; drop a clause that is no longer true rather than inventing a replacement fact. Plain text,
 no citation markup, ending with a full stop.
+If the defect is that a number here contradicts a number elsewhere on the page, the abstracts above
+settle it: keep the figure the abstract actually reports and correct or drop the other. Where a
+count of papers, topics or references is in dispute, the measured figures above are the truth. Never
+carry a figure no source shown here supports — drop the clause instead.
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
         if len(new) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new) or _invents_experience(new):
@@ -6974,6 +6998,46 @@ Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         done += 1
         print(f"  audit repair: {new[:110]!r}")
     return h, done
+
+
+# A number a reader can check must not contradict another number on the same
+# page. Severity was left entirely to the auditor's judgement, and it filed
+# "the same Cochrane finding is given two different odds ratios" and "the
+# closing total disagrees with the bars printed beside it" as cosmetic notes —
+# which is to say it would have published a brief that contradicts itself. The
+# prompt now says these are blocking; this says it in code, because a rule that
+# only lives in a prompt is a rule that holds most of the time.
+_CONTRADICTION_RE = re.compile(
+    r"(?:does\s*n[o']?t\s+match|do\s*n[o']?t\s+match|disagree|contradict|inconsist|mismatch"
+    r"|two\s+different|conflicting|differs?\s+from|does\s*n[o']?t\s+(?:sum|add|equal)"
+    r"|(?:sum|total)s?\s+to\s+\d)", re.I)
+# a contradiction stated plainly, with no mismatch verb at all:
+# "stated 11 topics but the page shows 10 topic sections"
+_COUNT_CLASH_RE = re.compile(
+    r"(?:stat\w*|says?|claims?|reports?|reads?|gives?)\b[^.]{0,90}?\d[^.]{0,90}?"
+    r"\b(?:but|yet|while|whereas|however|when the|although)\b[^.]{0,90}?\d", re.I)
+# the three things the prompt calls cosmetic on purpose stay cosmetic even when
+# they are phrased as a disagreement
+_COSMETIC_OK_RE = re.compile(
+    r"(?:marker\s+(?:order|sequence)\s+(?:within|inside|at\s+the\s+end|of\s+the\s+stack)"
+    r"|stack(?:ed)?\s+(?:marker\s+)?order|order\s+of\s+(?:the\s+)?stacked"
+    r"|carded\s+under|placement|would\s+have\s+(?:placed|carded|made)"
+    r"|reference\s+title|title\s+(?:naming|disagrees|and\s+the\s+abstract))", re.I)
+
+
+def _escalate_numeric_contradictions(defects: list) -> list:
+    """Raise any cosmetic note that reports one number contradicting another."""
+    raised = []
+    for d in defects:
+        if str(d.get("severity", "")).lower() == "blocking":
+            continue
+        txt = f"{d.get('what', '')} {d.get('evidence', '')}"
+        if _COSMETIC_OK_RE.search(txt):
+            continue
+        if (_CONTRADICTION_RE.search(txt) or _COUNT_CLASH_RE.search(txt)) and re.search(r"\d", txt):
+            d["severity"] = "blocking"
+            raised.append(d)
+    return raised
 
 
 def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 3) -> str:
@@ -7079,6 +7143,15 @@ wrong citation — report it as cosmetic, never blocking, when the prose names t
 follows the abstract. The ORDER of markers stacked at the end of one sentence is cosmetic, never
 blocking: each number resolves through the reference list, whichever order the stack shows.
 
+ALWAYS BLOCKING, whatever else you think of it: a number a reader can check that contradicts
+another number on the same page. The same paper or the same finding given two different effect
+sizes, rates or sample sizes in different places; a stated total that disagrees with the breakdown
+printed beside it; a count of papers, topics or studies that disagrees with what the page shows.
+A reader can do that arithmetic, and a brief that fails it is wrong, not untidy. The only defects
+that are cosmetic are the three named above — a placement you would have made differently, a
+reference title that disagrees with its own abstract, and the order of markers stacked at the end
+of one sentence. Everything else that makes the brief say something untrue is blocking.
+
 Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
 markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
 heading that is gone, or a chip count that disagrees with the section; a reference entry for a paper
@@ -7093,12 +7166,15 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
 "severity": "blocking"|"cosmetic"}}, ...], "notes": "one or two sentences"}}""", timeout_s=1200)
     if not v or "ok" not in v:
         die("the transform audit returned no verdict")
+    for d in _escalate_numeric_contradictions(v.get("defects") or []):
+        print(f"  TRANSFORM AUDIT: filed as cosmetic, raised to blocking — a number contradicts "
+              f"another number on the page: {str(d.get('what'))[:100]}")
     blocking = [d for d in (v.get("defects") or []) if str(d.get("severity", "")).lower() == "blocking"]
     for d in (v.get("defects") or [])[:12]:
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
     if blocking and _repair > 0:
-        repaired, n = repair_from_defects(W, after, blocking)
+        repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
         if n:
             print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
                   f"({_repair - 1} round(s) left)")
