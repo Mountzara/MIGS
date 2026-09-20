@@ -2667,8 +2667,15 @@ def number_citations(h: str, meta: dict | None = None) -> tuple:
     def rewrite(m):
         sup = m.group(0)
         pm = _pmid_of(sup)
-        if not pm or pm not in canon:
+        if not pm:
             return sup
+        if pm not in canon:
+            # no stored popover for this marker: it still gets its number and
+            # its link, or the reference list lists a paper whose marker shows
+            # stale text (W21: 84 entries above a highest marker of 76)
+            return re.sub(r'<a class="mz-ref-link"[^>]*>[\s\S]*?</a>',
+                          f'<a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{num[pm]}</a>',
+                          sup, count=1)
         k = counts.get(pm, 0) + 1
         counts[pm] = k
         pid = f"ref-pop-{pm}" + (f"-{k}" if k > 1 else "")
@@ -5664,7 +5671,7 @@ def strip_verbatim_abstract_sentences(h: str, real: dict) -> tuple:
     if not pool:
         return h, 0
     removed = 0
-    for _round in range(6):
+    for _round in range(60):
         target = None
         for ps in _prose_passages(h):
             frag = ps.group(1)
