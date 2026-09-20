@@ -4949,6 +4949,67 @@ Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]
     return "".join(out), added
 
 
+def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
+    """Every count a synthesis states — "four papers", "five qualitative
+    studies", "two reviews" — must match what its section holds. W34's
+    Infertility synthesis said "five qualitative studies" over four cards
+    after curation removed one and the rewrite kept the word. The model
+    reads the paragraph against the section's paper list (title + badge)
+    and rewrites only the sentences whose counts disagree; markers at the
+    sentence end are kept. Returns (h, sentences_changed)."""
+    changed = 0
+    for t in _topic_sections(h):
+        cards = []
+        for card in re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', t.group(0)):
+            pm = re.search(r'id="mz-cite-(\d{5,9})', card) or re.search(r"openDeepDive\('dd-(\d+)'", card)
+            b = re.search(r'mz-cite-design">([^<]*)<', card)
+            if pm:
+                cards.append({"pmid": pm.group(1), "title": (real.get(pm.group(1)) or {}).get("title", "")[:120],
+                              "design": H.unescape(b.group(1)) if b else ""})
+        sec = _section_span(h, t.tid)
+        pm_ = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
+        if not pm_ or not cards:
+            continue
+        frag = pm_.group(1)
+        base = sec.start() + pm_.start(1)
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
+        if not sents:
+            continue
+        listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
+        v = _ask_cached(W, "counts", f"""This is the opening paragraph of one section of a clinician-facing weekly evidence brief, sentence
+by sentence, and the complete list of papers the section holds ({len(cards)} papers, with each one's
+study design).
+PAPERS IN THIS SECTION: {json.dumps(cards, ensure_ascii=False)}
+SENTENCES:
+{listing}
+Find every sentence that states a COUNT of papers or studies — "four papers", "five qualitative
+studies", "two reviews", "three trials", "one adenomyosis paper" — that does not match the list
+(count the papers of that kind in the list). For each, give the sentence rewritten with the correct
+count and nothing else changed; plain text, no citation markup, ending as the original does.
+Reply with ONLY {{"changes": [{{"sentence": <number>, "rewrite": "<text>"}}, ...]}} and {{"changes": []}} when every
+stated count is right.""", timeout_s=600)
+        if not v or not isinstance(v.get("changes"), list):
+            die(f"the stated-count check returned no verdict for {t.tid}")
+        edits = []
+        for c in v["changes"]:
+            try:
+                idx = int(c.get("sentence"))
+            except Exception:
+                continue
+            new = re.sub(r"\s+", " ", str(c.get("rewrite") or "")).strip()
+            if not (1 <= idx <= len(sents)) or len(new) < 20 or len(new) > len(sents[idx - 1][0]) + 80:
+                continue
+            a = base + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
+            b = base + sents[idx - 1][1]
+            edits.append((a, b, new))
+        for a, b, new in sorted(edits, key=lambda e: -e[0]):
+            h = _replace_span(h, a, b, new)
+            changed += 1
+            print(f"  count corrected in {t.tid}: {new[:100]!r}")
+    return h, changed
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -4987,6 +5048,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     if filled:
         print(f"  completeness pass: {filled} citation(s) added on sentences that reported a study not yet cited on them")
     named += filled
+    h, recounted = fix_stated_counts(W, h, real)
+    if recounted:
+        print(f"  {recounted} stated count(s) corrected against what the section holds")
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn, unsupported = set(), []
