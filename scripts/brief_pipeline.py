@@ -5114,7 +5114,10 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
                 + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", t)
                 # "the Yang cohort", "this Guzelbag study" — the form the
                 # deep-dive pass already read and this one did not
-                + re.findall(r"\b(?:[Tt]he|[Tt]his|[Tt]hat)\s+([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:cohort|trial|study|series|paper|review|analysis|data|RCT)\b", t))
+                + re.findall(r"\b(?:[Tt]he|[Tt]his|[Tt]hat)\s+([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:cohort|trial|study|series|paper|review|analysis|data|RCT|signal|finding|result|evidence|meta-analysis)\b", t)
+                # "Lensen Cochrane sets a precedent", "the Wang adenomyosis-ART signal"
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+Cochrane\b", t)
+                + re.findall(r"\b(?:[Tt]he|[Tt]his)\s+([A-Z][a-z\u00e0-\u017f]{2,})\s+[a-z][\w-]*\s+(?:signal|finding|cohort|series|data)\b", t))
                 if x not in _NOT_A_SURNAME]
             if not cand:
                 continue
@@ -8381,7 +8384,8 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
             _pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:b])) if q]
         papers = real_from_work(W, cited)
         src = "\n".join(
-            f"PAPER {q} — {papers[q].get('title', '')}\nABSTRACT: {(papers[q].get('abstract') or '')[:2600]}"
+            f"PAPER {q} — {papers[q].get('title', '')}\nAUTHORS: {papers[q].get('authors', '')}"
+            f"\nABSTRACT: {(papers[q].get('abstract') or '')[:2600]}"
             for q in cited if q in papers)
         ctx = f"\n\nTHE PAPERS THESE SENTENCES CITE:\n{src}" if src else ""
         if counts:
@@ -8404,6 +8408,8 @@ does not concern; drop a clause that is no longer true rather than inventing a r
 Plain text, no citation markup, each ending with a full stop.
 Never resolve a defect by saying the brief does not hold, did not cover or excluded a paper: every
 marker in these sentences points at a paper this brief carries, and a reader can click it.
+If the defect is that a sentence credits a paper to the wrong name, the AUTHORS line above is the
+paper's real byline: use its first author's surname in the form the sentence already uses.
 If the defect is that one figure contradicts another, the sentences must END UP AGREEING: the
 abstracts above say which figure the paper actually reports — keep that one everywhere and correct
 the others. When an abstract reports the SAME outcome for more than one population — the whole
