@@ -5316,6 +5316,65 @@ Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
     return "".join(out), n
 
 
+def cite_cards_without_headings(W: str, h: str, real: dict) -> tuple:
+    """Cite every carded paper in a brief that has no topic headings.
+
+    `cite_every_card` walks topic sections, and the whole trend generation has
+    none, so those briefs fell straight through it: a paper could carry a card
+    and a deep dive and be cited nowhere at all. The read-back audit caught it
+    as four cards against three papers cited. Each uncited card is given a
+    sentence in the prose passage that introduces it — the last one ending
+    before the card — written from the paper's own abstract, and that sentence
+    is reviewed like any other afterwards. Returns (h, sentences_added).
+    """
+    if _topic_sections(h):
+        return h, 0
+    added = 0
+    for m in list(re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h)):
+        q = ((re.search(CARD_ID_RE, m.group(0)) or re.search(r"openDeepDive\('dd-(\d+)'", m.group(0))
+              or [None, None])[1])
+        r = real.get(q) or {}
+        if not q or not (r.get("abstract") or "").strip():
+            continue
+        passages = _prose_passages(h)
+        if any(q in {_pmid_of(x) for x in SUP_RE.findall(ps.group(1))} for ps in passages):
+            continue
+        before = [ps for ps in passages if ps.b <= m.start()]
+        ps = before[-1] if before else next((x for x in passages if x.a > m.end()), None)
+        if ps is None:
+            continue
+        ab = re.sub(r"\s+", " ", r.get("abstract") or "")
+        paper = json.dumps({"title": r.get("title", ""), "abstract": ab[:2500]}, ensure_ascii=False)
+        text = ""
+        for attempt in range(2):
+            extra = ("" if attempt == 0 else
+                     " Write it in your own plain clinical words, NOT copied from the abstract, with no"
+                     " section labels like METHODS or RESULTS.")
+            w = _ask_cached(W, "resynth", f"""Write ONE sentence for a clinician-facing evidence brief, in Dr. Mabini's first person (a DO and
+complex benign gynecology / minimally invasive gynecologic surgery surgeon), reporting this paper's
+main finding with its key number as the abstract states it.{extra} At most 45 words, plain text, no
+citation markup, ending with a full stop.
+THE PAPER: {paper}
+Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
+            cand = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
+            ab_norm = re.sub(r"[^a-z0-9]", "", ab.lower())
+            c_norm = re.sub(r"[^a-z0-9]", "", cand.lower())
+            if (30 <= len(cand) <= 420 and not writer_reject(cand)
+                    and not (len(c_norm) > 60 and c_norm[:60] in ab_norm)):
+                text = cand
+                break
+        if not text:
+            die(f"could not write a sentence for the uncited card {q}")
+        sup = _sup_markup(q, real, W)
+        if not sup:
+            die(f"no hover card could be written for {q}")
+        at = ps.end(1)
+        h = h[:at] + " " + H.escape(text, quote=False) + sup + h[at:]
+        added += 1
+        print(f"  carded paper {q} was cited nowhere — given a sentence: {text[:90]!r}")
+    return h, added
+
+
 def cite_every_card(W: str, h: str, real: dict, force_new: set | None = None) -> tuple:
     """Every paper carded under a heading is cited somewhere in the prose.
 
@@ -6279,6 +6338,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     if named2:
         print(f"  inserted {named2} more citation(s) on sentences that name a covered paper's author")
     named += named2
+    h, flat = cite_cards_without_headings(W, h, real)
+    if flat:
+        print(f"  {flat} carded paper(s) with no citation anywhere given one")
     h, by_sent, appended = cite_every_card(W, h, real)
     if by_sent or appended:
         print(f"  every card cited: {by_sent} placed on the sentence that reports the paper, "
@@ -7874,6 +7936,14 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
             "deep_dive_dialogs_(one_per_carded_paper_not_per_marker)": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "reference_entries": len(re.findall(r'<li id="ref-\d+">', after)),
             "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
+            # a paper discussed in two places is carded in both, with or
+            # without topic headings — this is the difference that explains
+            # cite_cards exceeding distinct_papers_cited, and the audit read
+            # that difference as a missing citation on a brief that had none
+            "extra_cards_for_papers_carded_twice": (
+                len(re.findall(r'<article class="mz-cite-card', after))
+                - len({(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+                       for c in re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', after)} - {None})),
             "toc_chips": sum(1 for m in re.finditer(r'<a[^>]*class="([^"]*)"', after) if "mz-toc-chip" in m.group(1).split()),
             "topic_sections": len(_topic_sections(after)),
             # a reader can add the section counts up, and they sum to MORE than
@@ -7905,7 +7975,10 @@ cited inside deep dives (counted separately in counts). That difference is not a
 and is not a defect. Judge numbering and sequence from that list — the prose excerpts are partial. Popover text has been removed from the prose excerpts; judge popover completeness from
 "popovers". A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
-by design, not a defect, and duplicate ids are measured and reported in counts. For the same reason
+by design, not a defect, and duplicate ids are measured and reported in counts. This holds whether or
+not the brief has topic headings: "extra_cards_for_papers_carded_twice" is exactly how far
+"cite_cards" may exceed "distinct_papers_cited" for that reason alone, so that difference is NOT a
+paper missing a citation. For the same reason
 the per-heading counts a reader could add up sum to MORE than the brief's paper total, which counts
 each paper ONCE: "sum_of_topic_section_counts" exceeding "distinct_papers_cited" is that design and
 is NOT a contradiction. A stated total is wrong only when it disagrees with "distinct_papers_cited". Which heading a paper
