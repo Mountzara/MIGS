@@ -2432,7 +2432,9 @@ def mend_stranded_text(h: str) -> tuple:
     return _STRANDED_RE.sub(one, h), n
 
 
-_BRACKET_RESIDUE_RE = re.compile(r"\s*\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,?\s*\]")
+# the comma is the signature: "[Bafort 2020, ]" is a bracket whose marker was
+# withdrawn; "[Endometriosis]" is a label and stays
+_BRACKET_RESIDUE_RE = re.compile(r"\s*\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,\s*\]")
 
 
 # Commentary about the pipeline itself, in the reader's prose: "The biggest
@@ -9234,6 +9236,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, talk0 = drop_process_commentary(h)
         if talk0:
             print(f"  {talk0} sentence(s) of commentary about the pipeline itself removed")
+        # a repair without the byline flipped two corrected names back (W21:
+        # Yang for Guzelbag, Liu for Shen); the attribution pass reads the
+        # banked page here so a resume corrects them without a full run
+        h, attr0 = fix_prose_attribution(W, h, real)
+        if attr0:
+            print(f"  {attr0} sentence(s) that credited the wrong authors corrected at resume")
         # numbering is deterministic and cheap; the post-conditions below
         # compare every marker with the citation ORDER, so after any edit at
         # load the order is rebuilt from the page rather than trusted from
