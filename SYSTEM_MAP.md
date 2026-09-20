@@ -2086,7 +2086,8 @@ and every step in it is one an earlier version got wrong:
 | **`_plain_finding`** | the hover card is written FROM the PubMed abstract: first sentence carries the figures when the abstract has any, every number must exist in the abstract, ends on a complete sentence, 240–700 chars; three attempts with the reason fed back; keeps the best rather than losing the citation | verbatim abstract paste is refused by the site; my own deep-dive text is not the paper; "general language that doesn't say the RESULTS" was the owner's exact complaint |
 | `number_citations` → `build_references` → `dedupe_element_ids` | numbers by first appearance, references in that order, ids deduped against ids that already exist | the dedupe once minted `-2` suffixes the numbering had already used |
 | post-conditions | no PMID marker left, sequence unbroken, refs == order, no missing ref, no duplicate id; a named-but-uncited study is REPORTED (the model may have refused it for cause), not faulted | a post-condition that contradicts a reviewer's considered refusal is a bug in the post-condition |
-| **`audit_transform`** (S16) | a model reads before/after with the drop and heading lists and returns a verdict; blocking ⇒ refuse | every one of the code-level bugs above passed the deterministic checks of its day |
+| **`audit_transform`** (S16) | a model reads before/after with the drop and heading lists and returns a verdict; blocking ⇒ refuse. Only three defects may be cosmetic — a placement judged differently, a reference title that disagrees with its own abstract, and the order of markers stacked at one full stop. `_escalate_numeric_contradictions` re-files any other note that reports one number contradicting another (the auditor filed W21's two-odds-ratios-for-one-Cochrane-finding as cosmetic, which is to say it would have published a brief that contradicts itself) | every one of the code-level bugs above passed the deterministic checks of its day |
+| **`repair_from_defects`** | rewrites EVERY sentence the evidence quotes, in one decision so they end up agreeing, with those sentences' PubMed abstracts and the page's measured counts in hand; applies from the end of the document; a round whose rewrites all come back identical does not re-read the page | fixing one side of a contradiction left the other standing, and the identical prompt was then served from cache — W21 burned three repair rounds changing nothing |
 | `auditPublishable` (node) → `preview_and_verify` (Playwright, every marker, hover + tap) | the site's own gate and a browser, BEFORE anything is written | |
 | `--dry` stops here: **`DRY RUN OK`**, nothing written | receipt → PUT → approve → `verify_rendered` on the live route, otherwise | |
 
@@ -2135,7 +2136,10 @@ final audits — never a replay. (`run` resumes from its `.ledger/` receipts
 the same way.) The pre-publish preview is built per work directory
 (`<work>/_preview/`), and `audit_citation_popovers.py` gives each marker
 three attempts with any open popover closed and the marker centred first —
-W34 was unpublished for one intercepted tap. The first briefs published
+W34 was unpublished for one intercepted tap. The render budget is no
+longer a flat 2400 s (a guess that killed W21's passing gate at 249
+markers); `preview_and_verify` counts the markers in the body and budgets
+from that. The first briefs published
 through this chain were W29, W33, W34, W25 and W28 on 2026-09-20; the refusals on the way there (each fixed in
 the code, never by hand) were: a decided citation dropped silently
 because `_plain_finding` had no card for a review or protocol without
@@ -2245,11 +2249,31 @@ and their trending twins.
 **The gates now open every brief.** `scripts/_lib_brief_routes.py`
 asks `/api/posts?kind=…&status=published` and returns `/<shell>/?id=<id>`
 per published post; page-canvas, light-text and contrast all append them.
+`route_for(id, kind)` in the same file answers the single-post question,
+and the pipeline's post-publish check uses it: the shell follows the
+post's KIND, never its id prefix, which read the opposite way round —
+`blog-2026-W20` is kind `evidence` at `/evidence/`, while
+`evidence-2026-05-19-…` is kind `blog` at `/trending/`. A renumbered
+trend brief was being verified at a page that does not exist.
 The helper RAISES if the API cannot be read — a gate that cannot
 enumerate must fail, not audit fewer surfaces. All three gates also join
 their `?cb=` cache-buster with `&` when the route already carries a
 query; before this they would have produced `?id=x?cb=…` and audited the
 listing again under a different name.
+
+**THE CITATION GATE READS FIRST, TOUCHES ONLY WHAT IT MUST (2026-09-20).**
+Five of the six things a citation must be — the marker is a number and not
+a PMID, it resolves to a reference on the page, its popover carries a real
+summary and a link to the study — are in the DOM before anyone hovers
+anything. `marker_facts()` reads them for every marker in ONE `evaluate`;
+`check_reveal()` then asks the browser only what it alone can answer, does
+the popover appear on hover and on tap. Reveal attempts go short, then
+patient, then forced, and poll for the popover instead of sleeping, because
+a fifteen-second first attempt made a marker covered by its neighbour's
+popover cost fifteen seconds. Routes are striped across `--workers=3`
+processes (the sync Playwright API is not thread-safe, so processes); a
+worker that dies fails the gate with a named route rather than vanishing.
+Every marker is still checked, in both viewports.
 
 **MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
 · `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`
