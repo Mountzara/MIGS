@@ -5284,7 +5284,10 @@ sentence so that every figure, comparison and direction of effect it attributes 
 comes from that paper's abstract, in the same first-person surgeon's voice, the same length or
 shorter, ending with a full stop. Fix EXACTLY what "what_is_wrong" says: when a figure is mislabelled
 (a cumulative rate called a plain rate), change the label and keep the figure; never replace a figure
-with a different one unless the abstract says the sentence's figure is wrong. Keep everything in the
+with a different one unless the abstract says the sentence's figure is wrong. THE ABSTRACT IS THE
+AUTHORITY: when a paper's title and its abstract disagree about what it describes (a title naming a
+"sterilization ring" over an abstract describing an LNG-IUS), describe it as the abstract does and
+name the discrepancy in a few words ("titled as …, described in its abstract as …"). Keep everything in the
 sentence that is not about these papers exactly as it is. If an abstract does not support the point
 at all, state what that paper actually found instead. Plain text; no citation markup; no HTML.{note}
 THE SENTENCE: {json.dumps(us[0]["sentence"])}
@@ -6079,7 +6082,11 @@ marker in that order and is what you judge numbering and sequence from — the p
 partial. Popover text has been removed from the prose excerpts; judge popover completeness from
 "popovers". A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
-by design, not a defect, and duplicate ids are measured and reported in counts.
+by design, not a defect, and duplicate ids are measured and reported in counts. Prose describes a
+paper as its ABSTRACT does; when a reference title and the prose disagree, that is a discrepancy in
+the paper itself (a title naming a sterilization ring over an abstract describing an LNG-IUS), not a
+wrong citation — report it as cosmetic, never blocking, when the prose names the discrepancy or
+follows the abstract.
 
 Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
 markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
