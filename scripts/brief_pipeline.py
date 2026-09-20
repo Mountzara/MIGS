@@ -5010,10 +5010,14 @@ study design).
 PAPERS IN THIS SECTION: {json.dumps(cards, ensure_ascii=False)}
 SENTENCES:
 {listing}
-Find every sentence that states a COUNT of papers or studies — "four papers", "five qualitative
-studies", "two reviews", "three trials", "one adenomyosis paper" — that does not match the list
-(count the papers of that kind in the list). For each, give the sentence rewritten with the correct
-count and nothing else changed; plain text, no citation markup, ending as the original does.
+Find every sentence that states a COUNT of papers or studies that does not match the list. HOW TO
+COUNT: a count of the section's papers as a whole — "three fibroid papers this week", "five papers",
+"one adenomyosis paper" — means EVERY paper the section holds, whatever each title is about, so the
+right number is {len(cards)}; only a count qualified by design or kind — "two reviews", "five
+qualitative studies", "three trials" — is the number of listed papers of that kind. For each wrong
+count, give the sentence rewritten with the correct count and nothing else changed; plain text, no
+citation markup, ending as the original does. A sentence whose count is already right is not
+changed.
 Reply with ONLY {{"changes": [{{"sentence": <number>, "rewrite": "<text>"}}, ...]}} and {{"changes": []}} when every
 stated count is right.""", timeout_s=600)
         if not v or not isinstance(v.get("changes"), list):
@@ -5034,7 +5038,8 @@ stated count is right.""", timeout_s=600)
 not match the section, which holds {len(cards)} papers in all:
 {json.dumps(cards, ensure_ascii=False)}
 SENTENCE: {json.dumps(sents[idx - 1][0])}
-Rewrite it with the correct count (the number of papers of the kind it counts, from the list above)
+Rewrite it with the correct count — every paper the section holds ({len(cards)}) when it counts the
+section's papers as a whole, or the number of listed papers of a stated kind when it counts a kind —
 and nothing else changed; plain text, no citation markup.
 Reply with ONLY {{"rewrite": "<text>"}}""", timeout_s=600)
                 new = re.sub(r"\s+", " ", str((v2 or {}).get("rewrite") or "")).strip()
