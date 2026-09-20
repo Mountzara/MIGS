@@ -2893,6 +2893,9 @@ def reader_prose_faults(h: str) -> list:
     m = ADVICE_RE.search(text)
     if m:
         faults.append(f"patient-directed advice in the site's own prose: {m.group(0)!r}")
+    m = EXPERIENCE_RE.search(text)
+    if m:
+        faults.append(f"a claim about the practice's own patients, written from a paper: {m.group(0)!r}")
     if re.search(r"Pending[^<]{0,40}review", vis):
         faults.append("a reader-visible 'Pending review' placeholder remains")
     # In the site's OWN prose an abstract label is pasted text ("ETHODS:" —
@@ -5064,7 +5067,7 @@ Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
             text = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
             ab_norm = re.sub(r"[^a-z0-9]", "", ab.lower())
             t_norm = re.sub(r"[^a-z0-9]", "", text.lower())
-            if (len(text) < 30 or len(text) > 420
+            if (len(text) < 30 or len(text) > 420 or _invents_experience(text)
                     or re.search(r"\b(?:M?ETHODS?|RESULTS?|CONCLUSIONS?|BACKGROUND|OBJECTIVES?|DESIGN|SETTING)\s*:", text)
                     or (len(t_norm) > 60 and t_norm[:60] in ab_norm)):
                 # W21: the model pasted the abstract's METHODS paragraph
@@ -5712,7 +5715,7 @@ as the original, ending with a full stop. Plain text, no markup.
 THE SENTENCE: {json.dumps(sentence)}
 Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if ABSTRACT_LABEL_RE.search(new) or _looks_broken(new):
+        if ABSTRACT_LABEL_RE.search(new) or _looks_broken(new) or _invents_experience(new):
             new = ""
         if not new:
             # unusable: drop the pasted sentence, keep its citations
@@ -6069,6 +6072,9 @@ THE PAPERS IT MISSTATES: {json.dumps(papers, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
             cand = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
             limit = max(400, int(len(us[0]["sentence"]) * 1.6) + 80)
+            if _invents_experience(cand):
+                note = "\nA PREVIOUS ATTEMPT CLAIMED THE SURGEON'S OWN CASE. The brief reports the literature; never write 'in my practice', 'my patient' or a case as his own."
+                continue
             if ABSTRACT_LABEL_RE.search(cand):
                 note = "\nA PREVIOUS ATTEMPT PASTED THE ABSTRACT'S OWN TEXT, labels and all. Write plain clinical prose."
                 continue
@@ -6810,6 +6816,18 @@ def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
 
 
 
+EXPERIENCE_RE = re.compile(r"\b(?:in my (?:practice|clinic|hands|experience)|my patient|a patient of mine|"
+                           r"I (?:saw|treated|operated|managed|had) (?:a|an|this|one|my))\b", re.I)
+
+
+def _invents_experience(t: str) -> bool:
+    """A rewrite that turns a paper's case report into the surgeon's own case.
+    W21: "In my practice, a 28-year-old with normal BMI achieved pregnancy…"
+    was written from a published case report. The briefs report the
+    literature; they never claim the practice's own patients."""
+    return bool(EXPERIENCE_RE.search(t))
+
+
 def _looks_broken(t: str) -> bool:
     """A rewritten sentence that would read as damage: a stop after a function
     word ("developed in the. Department of…"), no terminal stop, a lowercase
@@ -6875,8 +6893,8 @@ concern; drop a clause that is no longer true rather than inventing a replacemen
 no citation markup, ending with a full stop.
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new):
-            print(f"  audit repair rejected as damaged prose: {new[:90]!r}")
+        if len(new) > max(400, int(len(sentence) * 1.5)) or _looks_broken(new) or _invents_experience(new):
+            print(f"  audit repair rejected ({'invented experience' if _invents_experience(new) else 'damaged prose'}): {new[:90]!r}")
             continue
         h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
         done += 1
