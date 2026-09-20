@@ -8585,6 +8585,7 @@ def _renumber_if_unnumbered(W: str, h: str, meta: dict | None, force: bool = Fal
         return h
     h, dup = dedupe_run_markers(h)
     h, order = number_citations(h, meta)
+    h, _badges = renumber_card_badges(h, order)   # the badges and deep-dive labels carry the same numbers
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
     print(f"  {sum(1 for m in marks if re.fullmatch(chr(92) + 'd{5,9}', m))} marker(s) numbered after the audit supplied them"
@@ -9213,6 +9214,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # the checkpoint
         h, dup_ = dedupe_run_markers(h)
         h, order = number_citations(h, meta)
+        h, _badges = renumber_card_badges(h, order)   # badges and deep-dive labels follow the numbers
         h = build_references(W, h, order, meta)
         h = dedupe_element_ids(h)
         _snap_put(W, "numbered", h, order=order)
