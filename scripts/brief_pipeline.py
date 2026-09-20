@@ -9090,6 +9090,10 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         sn = _snap_get(W, "numbered")
         h, order = sn["h"], sn["order"]
         print("  resumed from checkpoint 'numbered'")
+        # a banked checkpoint carries whatever the audit-stage supply added
+        # since numbering ran, and the post-conditions below refuse a marker
+        # that shows a PMID — number the page before judging it
+        h = _renumber_if_unnumbered(W, h, meta)
 
     # post-conditions, on exactly the two things reported plus what they touch
     faults = []
