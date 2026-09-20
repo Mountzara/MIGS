@@ -3274,6 +3274,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     real = real_from_work(W, man["pmids"])
     h = recount_headings(h)
     h = normalize_card_ids(h)
+    h = refresh_shape_chart(h)
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -4479,10 +4480,23 @@ def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict, surviv
     (h, paragraphs_rewritten)."""
     if not gone:
         return h, 0
-    m = re.search(r'(<section class="[^"]*mz-(?:post-)?narrative[^"]*"[^>]*>)([\s\S]*?)(</section>)', h)
-    if not m:
-        return h, 0
-    frag = m.group(2)
+    total = 0
+    for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
+        h, n = _rewrite_passage_for_removed(W, h, ps.start(1), ps.end(1), gone, real, surviving)
+        total += n
+    return h, total
+
+
+def _rewrite_passage_for_removed(W: str, h: str, ia: int, ib: int, gone: list, real: dict, surviving) -> tuple:
+    """One prose section (narrative, bottom line, gaps…): its paragraphs that
+    discuss a removed paper are rewritten or removed."""
+    class _M:
+        def start(self, n=0):
+            return ia
+        def end(self, n=0):
+            return ib
+    m = _M()
+    frag = h[ia:ib]
     paras = list(re.finditer(r'<p\b[^>]*>([\s\S]*?)</p>', frag))
     if not paras:
         return h, 0
@@ -5055,6 +5069,131 @@ Reply with ONLY {{"rewrite": "<text>"}}""", timeout_s=600)
     return h, changed
 
 
+def resolve_embedded_markers(W: str, h: str, real: dict) -> tuple:
+    """A marker that stands IN the sentence — "The most clinically actionable
+    is ⟨marker⟩, asking whether…" — is not a citation after a claim; the old
+    generator used the marker as the paper's name. Relocating it to the
+    sentence end left "…actionable is , asking whether…" (W24). For every
+    sentence with a mid-sentence marker the model rewrites the sentence with
+    the reference in words where the grammar needs it (or nothing where it
+    does not), and the code moves those markers to the end of the sentence.
+    Returns (h, sentences_rewritten)."""
+    changed = 0
+    out, last = [], 0
+    for ps in _prose_passages(h):
+        frag = ps.group(1)
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
+        if not sents:
+            out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
+            continue
+        # mid-sentence markers per sentence, with the text they sit in
+        items, per = [], {}
+        for k, (t, e) in enumerate(sents):
+            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            mids = []
+            for sm in SUP_RE.finditer(frag, s0, e):
+                before = H.unescape(re.sub(r"<[^>]+>", "", masked[s0:sm.start()])).rstrip(" \t\r\n\xa0")
+                after = H.unescape(re.sub(r"<[^>]+>", "", masked[sm.end():e])).strip(" \t\r\n\xa0")
+                if before and after and not re.search(r"[.!?][)\]\"\u201d\u2019']*$", before):
+                    mids.append(sm)
+            if not mids:
+                continue
+            # the sentence with each embedded marker shown as a reference token
+            shown, pos = "", s0
+            for j, sm in enumerate(mids):
+                q = _pmid_of(sm.group(0)) or "?"
+                r = real.get(q) or {}
+                au = (r.get("authors") or "").split(",")[0].strip()
+                shown += frag[pos:sm.start()] + f" ⟦REF{j + 1}: {au or 'the study'} — {(r.get('title') or '')[:70]}⟧ "
+                pos = sm.end()
+            shown += frag[pos:e]
+            shown = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub(" ", shown)))).strip()
+            items.append({"sentence": k + 1, "text": shown})
+            per[k + 1] = (s0, e, mids)
+        if not items:
+            out.append(h[last:ps.start(1)]); out.append(frag); last = ps.end(1)
+            continue
+        v = _ask_cached(W, "embedded", f"""Sentences from a clinician-facing evidence brief in which a citation reference stands INSIDE the
+sentence as a token ⟦REFn: first author — title⟧. The reference will be shown as a numbered marker at
+the END of the sentence, so rewrite each sentence WITHOUT the tokens: where the sentence reads
+correctly with a token simply removed, remove it; where the token is the grammatical subject or
+object ("The most clinically actionable is ⟦REF1⟧, asking whether…"), put the study into words in
+its place — "Chen et al.'s cohort", "the MAUDE device review", "a 2026 case report" — from the
+token's author and title. Change nothing else. Plain text, no markup, same voice.
+SENTENCES: {json.dumps(items, ensure_ascii=False)}
+Reply with ONLY {{"rewrites": [{{"sentence": <number>, "text": "<the sentence without tokens>"}}, ...]}} for EVERY sentence given.""",
+                        timeout_s=900)
+        if not v or not isinstance(v.get("rewrites"), list):
+            die("the embedded-marker rewrite returned no verdict")
+        got = {}
+        for r in v["rewrites"]:
+            try:
+                got[int(r.get("sentence"))] = re.sub(r"\s+", " ", str(r.get("text") or "")).strip()
+            except Exception:
+                continue
+        missing = [k for k in per if not got.get(k) or "⟦" in got[k]]
+        if missing:
+            die(f"the embedded-marker rewrite skipped or kept tokens in sentence(s) {missing[:4]}")
+        frag_out = frag
+        for k in sorted(per, key=lambda x: -per[x][0]):
+            s0, e, mids = per[k]
+            markers = "".join(dict.fromkeys(sm.group(0) for sm in mids))
+            # remove the embedded markers, replace the prose, re-attach the
+            # markers after the sentence's run
+            body = frag_out[s0:e]
+            for sm in mids:
+                body = body.replace(sm.group(0), "", 1)
+            new_body = _replace_span(body, 0, len(body), got[k])
+            frag_out = frag_out[:s0] + new_body + frag_out[e:]
+            at = _after_run(frag_out, s0 + len(new_body))
+            frag_out = frag_out[:at] + markers + frag_out[at:]
+            changed += 1
+        out.append(h[last:ps.start(1)]); out.append(frag_out); last = ps.end(1)
+    out.append(h[last:])
+    return "".join(out), changed
+
+
+def refresh_shape_chart(h: str) -> str:
+    """The older generator's "Where the week's research landed" chart: one
+    row per topic with a count and a bar. After curation its rows still
+    named removed topics and stale counts (W24). Rows follow the sections
+    that exist; counts are the cards; the caption's totals are recomputed."""
+    m = re.search(r'<section class="[^"]*mz-post-chart[^"]*"[^>]*>[\s\S]*?</section>', h)
+    if not m:
+        return h
+    sec = m.group(0)
+    tops = _topic_sections(h)
+    by_title = {}
+    for t in tops:
+        tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", t.group(1), re.S)
+        title = H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else t.tid
+        title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", title)
+        by_title[title.lower()] = t
+    counts = {}
+    for row in re.findall(r'<div class="mz-shape-row"[\s\S]*?</div>', sec):
+        lab = re.search(r'mz-shape-row-label">([\s\S]*?)</span>', row)
+        tid = _match_heading(H.unescape(re.sub(r"<[^>]+>", "", lab.group(1))), {k: v.tid for k, v in by_title.items()}) if lab else None
+        if tid:
+            seg = next(t.group(0) for t in tops if t.tid == tid)
+            counts[row] = (tid, len(set(re.findall(CARD_ID_RE, seg))))
+        else:
+            counts[row] = (None, 0)
+    top = max([c for _, c in counts.values()] or [1]) or 1
+    for row, (tid, n) in counts.items():
+        if not tid:
+            sec = sec.replace(row, "", 1)
+            continue
+        new = re.sub(r"--mz-bar:\s*[\d.]+%", f"--mz-bar: {100.0 * n / top:.1f}%", row)
+        new = re.sub(r'(mz-shape-row-count">)\d+(</span>)', lambda mm: mm.group(1) + str(n) + mm.group(2), new)
+        new = SUP_RE.sub("", new)  # a chart row is not a place for a citation
+        sec = sec.replace(row, new, 1)
+    total = sum(n for _, n in counts.values())
+    kept = sum(1 for tid, _ in counts.values() if tid)
+    sec = re.sub(r"\d+ papers across \d+ topics", f"{total} papers across {kept} topics", sec)
+    return h[:m.start()] + sec + h[m.end():]
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -5073,6 +5212,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, orphaned = remove_orphan_studies(W, h, pmids, real)
     if orphaned:
         print(f"  {orphaned} sentence(s) rewritten or removed for reporting a study the brief does not hold")
+    h, resolved = resolve_embedded_markers(W, h, real)
+    if resolved:
+        print(f"  {resolved} sentence(s) rewritten so a reference that stood inside the sentence reads as words")
     h, relocated = relocate_mid_sentence_markers(h)
     if relocated:
         print(f"  moved {relocated} marker(s) standing mid-sentence to the end of their sentence")
@@ -5680,6 +5822,10 @@ def _replace_span(h: str, a: int, b: int, new_text: str) -> str:
     markup balanced: a closing tag inside the span whose opener lies before
     it is re-emitted first, an opener left unclosed is closed after."""
     old = h[a:b]
+    # a sentence that opened an enumerated list item keeps its label
+    lab = re.match(r"\s*(\(\d+\)\s+|\d+\.\s+)", re.sub(r"<[^>]+>", "", old))
+    if lab and not re.match(r"\s*(\(\d+\)|\d+\.)\s", new_text):
+        new_text = lab.group(1).strip() + " " + new_text
     stack, prefix = [], ""
     for t in re.finditer(r"<(/?)(em|strong|i|b|a|span)\b[^>]*>", old):
         if t.group(1):
@@ -6413,6 +6559,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             h = h[:at] + DISCLAIMER + h[at:]
             print("  educational disclaimer added (the brief predates it)")
         h = normalize_card_ids(h)
+        h = refresh_shape_chart(h)
         h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
