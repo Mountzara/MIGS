@@ -4525,7 +4525,8 @@ def _own_papers_for(h: str, ps, topic_spans: list) -> set:
 # those very sentences — NAMS 2022 and SKYLIGHT beside a claim that nothing
 # has been trialled.
 _NO_EVIDENCE_RE = re.compile(
-    r"\b(?:no|zero|none|not\s+a\s+single|lack(?:s|ing)?\s+(?:any\s+)?|without\s+(?:any\s+)?|essentially\s+no)\s+"
+    r"\b(?:no|zero|none|not\s+a\s+single|lack(?:s|ing)?\s+(?:any\s+)?|without\s+(?:any\s+)?"
+    r"|essentially\s+no|absence\s+of(?:\s+(?:any|adequate\w*|sufficient))?)\s+"
     r"(?:\w+\s+){0,3}?"
     r"(?:randomi[sz]ed|randomi[sz]ation|RCTs?|trials?|studies|stud(?:y|ies)|evidence|data|literature)\b", re.I)
 
