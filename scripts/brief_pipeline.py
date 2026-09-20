@@ -5038,6 +5038,27 @@ def _leading_count(text: str):
     return int(w) if w.isdigit() else _NUM_WORDS.get(w)
 
 
+_NUM_TO_WORD = {v: k for k, v in _NUM_WORDS.items()}
+
+
+def _set_leading_count(text: str, n: int) -> str:
+    """"Three chronic-pelvic-pain papers…" with n=1 → "One chronic-pelvic-pain
+    paper…"; digits stay digits, words stay words, the noun agrees."""
+    m = re.match(r"(\s*(?:only\s+|just\s+)?)(\d+|[a-z]+)(\s+(?:[\w&/-]+\s+){0,4}?)(papers?|entries|studies)\b", text, re.I)
+    if not m:
+        return text
+    w = m.group(2)
+    word = str(n) if w.isdigit() else (_NUM_TO_WORD.get(n, str(n)).capitalize() if w[0].isupper() else _NUM_TO_WORD.get(n, str(n)))
+    noun = m.group(4)
+    if noun.lower().startswith("paper"):
+        noun = "paper" if n == 1 else "papers"
+    elif noun.lower().startswith("stud"):
+        noun = "study" if n == 1 else "studies"
+    elif noun.lower().startswith("entr"):
+        noun = "entry" if n == 1 else "entries"
+    return text[:m.start(2)] + word + m.group(3) + noun + text[m.end(4):]
+
+
 def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
     """Every count a synthesis states — "four papers", "five qualitative
     studies", "two reviews" — must match what its section holds. W34's
@@ -5065,10 +5086,27 @@ def fix_stated_counts(W: str, h: str, real: dict) -> tuple:
         sents = _sentences_of(masked)
         if not sents:
             continue
+        # the whole-section count that opens a synthesis is known exactly:
+        # set it here, never by asking (the model counted W23's three pelvic
+        # pain papers as one because two titles did not say "pelvic pain")
+        lead = _leading_count(sents[0][0])
+        if lead is not None and lead != len(cards):
+            new0 = _set_leading_count(sents[0][0], len(cards))
+            a = base + _sentence_start(masked, 0)
+            b = base + sents[0][1]
+            h = _replace_span(h, a, b, new0)
+            changed += 1
+            print(f"  count set in {t.tid}: {new0[:90]!r}")
+            sec = _section_span(h, t.tid)
+            pm_ = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
+            frag = pm_.group(1)
+            base = sec.start() + pm_.start(1)
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            sents = _sentences_of(masked)
         listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
         v = _ask_cached(W, "counts", f"""This is the opening paragraph of one section of a clinician-facing weekly evidence brief, sentence
 by sentence, and the complete list of papers the section holds ({len(cards)} papers, with each one's
-study design).
+study design). Sentence [1]'s opening count is already correct; judge only counts BY KIND.
 PAPERS IN THIS SECTION: {json.dumps(cards, ensure_ascii=False)}
 SENTENCES:
 {listing}
@@ -5097,7 +5135,8 @@ stated count is right.""", timeout_s=600)
             # W23's "Three chronic-pelvic-pain papers" came back as "One"
             lead = _leading_count(new)
             if idx == 1 and lead is not None and lead != len(cards):
-                die(f"the count rewrite for {t.tid} says {lead} where the section holds {len(cards)}: {new[:90]!r}")
+                # the model re-counted the whole section by kind; ignore it
+                continue
             if re.sub(r"\s+", " ", sents[idx - 1][0]).strip() == new:
                 # the model flagged the count and then handed the sentence
                 # back unchanged (W28: "Two fibroid papers" over three cards)
