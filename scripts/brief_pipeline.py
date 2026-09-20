@@ -2443,6 +2443,35 @@ def drop_bracket_residue(h: str) -> tuple:
     return out, n
 
 
+def dedupe_run_markers(h: str) -> tuple:
+    """Within one run of markers, a paper is cited once.
+
+    Two placement passes walked a run with their own loops that stopped at
+    the zero-width break a published run carries between markers, saw one
+    marker of a stack, decided the paper was uncited, and appended it again:
+    "…translation.⁵ ⁵". A reader sees the same number twice. Whatever puts a
+    duplicate in a run, it comes out here. (h, removed)."""
+    n = 0
+    out, last = [], 0
+    for m in re.finditer(r"(?:<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>(?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*){2,}", h):
+        run = m.group(0)
+        seen, parts, pos = set(), [], 0
+        for sm in re.finditer(r"(<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>)((?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*)", run):
+            q = _pmid_of(sm.group(1))
+            if q and q in seen:
+                n += 1
+                continue
+            seen.add(q)
+            parts.append(sm.group(1) + sm.group(2))
+        new = "".join(parts)
+        if new != run:
+            out.append(h[last:m.start()]); out.append(new); last = m.end()
+    if not n:
+        return h, 0
+    out.append(h[last:])
+    return "".join(out), n
+
+
 def repair_split_tags(h: str) -> tuple:
     """Close an opening tag whose ">" was pushed past the text. (h, repaired)."""
     n = 0
@@ -3115,6 +3144,12 @@ def body_invariant_faults(h: str) -> list:
     if pmid_like:
         out.append(f"{len(pmid_like)} of {len(marks)} citation marker(s) show a PMID, not a number")
     out += malformed_tag_faults(h)[:2]
+    dup_runs = 0
+    for m in re.finditer(r"(?:<sup class=\"mz-ref\"[^>]*>[\s\S]*?</sup>(?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)*){2,}", h):
+        qs = [_pmid_of(x) for x in SUP_RE.findall(m.group(0))]
+        dup_runs += len(qs) != len(set(qs))
+    if dup_runs:
+        out.append(f"{dup_runs} run(s) of markers cite the same paper twice")
     if _STRANDED_RE.search(h):
         out.append("a recommendation's wrapper is empty with its own text stranded beside it")
     if re.search(r"\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,\s*<sup class=\"mz-ref\"", h):
@@ -4780,13 +4815,9 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
                 # live. Checking only the inside span let the same paper be
                 # cited twice in a row (W33: "…in adenomyosis.¹¹").
                 already = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:s_end])}
-                run_end = s_end
-                while True:
-                    mm = SUP_RE.match(frag, run_end)
-                    if not mm:
-                        break
+                run_end = _after_run(frag, s_end)   # the shared walker: it steps over the breaks a published run carries
+                for mm in SUP_RE.finditer(frag, s_end, run_end):
                     already.add(_pmid_of(mm.group(0)))
-                    run_end = mm.end()
                 if pm in already:
                     continue
                 placements.setdefault(idx, []).append(pm)
@@ -4872,13 +4903,8 @@ def relocate_mid_sentence_markers(h: str) -> tuple:
                     frag = frag[:k] + frag[cut:]
                     end -= cut - k
             # the run of markers already standing at that sentence end
-            run_end, seen = end, set()
-            while True:
-                mm = SUP_RE.match(frag, run_end)
-                if not mm:
-                    break
-                seen.add(_pmid_of(mm.group(0)))
-                run_end = mm.end()
+            run_end = _after_run(frag, end)   # the shared walker: it steps over the breaks a published run carries
+            seen = {_pmid_of(mm.group(0)) for mm in SUP_RE.finditer(frag, end, run_end)}
             if run_end == hit.start() and pm not in seen:
                 # nowhere to go (no stop follows): put it back and stop
                 frag = frag[:run_end] + marker + frag[run_end:]
@@ -5247,13 +5273,9 @@ def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
         for i, (t, e) in enumerate(sents):
             s_start = _sentence_start(masked, sents[i - 1][1]) if i >= 1 else 0
             on_it = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:e])}
-            run_end = e
-            while True:
-                mm = SUP_RE.match(frag, run_end)
-                if not mm:
-                    break
+            run_end = _after_run(frag, e)   # the shared walker: it steps over the breaks a published run carries
+            for mm in SUP_RE.finditer(frag, e, run_end):
                 on_it.add(_pmid_of(mm.group(0)))
-                run_end = mm.end()
             for name, qs in sur.items():
                 cands = [q for q in qs if q not in on_it]
                 if cands and re.search(r"(?<![\w-])" + re.escape(name) + r"(?:['\u2019]s)?(?![\w-])", t):
@@ -5948,13 +5970,9 @@ def cite_missing_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
         for i, (t, e) in enumerate(sents):
             s_start = _sentence_start(masked, sents[i - 1][1]) if i >= 1 else 0
             on_it = [_pmid_of(x) for x in SUP_RE.findall(frag[s_start:e])]
-            run_end = e
-            while True:
-                mm = SUP_RE.match(frag, run_end)
-                if not mm:
-                    break
+            run_end = _after_run(frag, e)   # the shared walker: it steps over the breaks a published run carries
+            for mm in SUP_RE.finditer(frag, e, run_end):
                 on_it.append(_pmid_of(mm.group(0)))
-                run_end = mm.end()
             rows.append({"sentence": i + 1, "text": t, "already_cited": [title_of.get(q, q) for q in dict.fromkeys(on_it) if q]})
         placements = {}
         covered_json = json.dumps([{"pmid": q, "title": title_of.get(q, ""),
@@ -7023,15 +7041,11 @@ def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
             # pairs an NHANES cohort with a Mendelian-randomization study
             # rests on both, and each marker is judged for ITS part only
             co = []
-            run_end = s_to
-            while True:
-                mm = SUP_RE.match(frag, run_end)
-                if not mm:
-                    break
+            run_end = _after_run(frag, s_to)   # the shared walker: it steps over the breaks a published run carries
+            for mm in SUP_RE.finditer(frag, s_to, run_end):
                 q = _pmid_of(mm.group(0))
                 if q and q != pm:
                     co.append((real.get(q) or {}).get("title", "")[:140])
-                run_end = mm.end()
             r = real.get(pm) or {}
             idx += 1
             items.append({"id": idx, "pmid": pm, "_at": base + sm.start(), "_span": (base + s_from, base + s_to),
@@ -8504,10 +8518,12 @@ def _renumber_if_unnumbered(W: str, h: str, meta: dict | None) -> str:
              for x in SUP_RE.findall(h)]
     if not any(re.fullmatch(r"\d{5,9}", m) for m in marks):
         return h
+    h, dup = dedupe_run_markers(h)
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
-    print(f"  {sum(1 for m in marks if re.fullmatch(chr(92) + 'd{5,9}', m))} marker(s) numbered after the audit supplied them")
+    print(f"  {sum(1 for m in marks if re.fullmatch(chr(92) + 'd{5,9}', m))} marker(s) numbered after the audit supplied them"
+          + (f", {dup} duplicate(s) in a run removed" if dup else ""))
     return h
 
 
@@ -9058,6 +9074,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, bars = fix_pyramid_bars(h)
         if bars:
             print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
+        h, dup = dedupe_run_markers(h)
+        if dup:
+            print(f"  {dup} marker(s) citing a paper already cited in the same run removed")
         h, residue = drop_bracket_residue(h)
         if residue:
             print(f"  {residue} empty citation bracket(s) left by a withdrawn marker removed")
@@ -9092,7 +9111,11 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         print("  resumed from checkpoint 'numbered'")
         # a banked checkpoint carries whatever the audit-stage supply added
         # since numbering ran, and the post-conditions below refuse a marker
-        # that shows a PMID — number the page before judging it
+        # that shows a PMID or a run that cites a paper twice — dedupe and
+        # number the page before judging it
+        h, dup0 = dedupe_run_markers(h)
+        if dup0:
+            print(f"  {dup0} marker(s) citing a paper already cited in the same run removed")
         h = _renumber_if_unnumbered(W, h, meta)
 
     # post-conditions, on exactly the two things reported plus what they touch
