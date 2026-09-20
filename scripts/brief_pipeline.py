@@ -8543,31 +8543,44 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             # these, so it is a defect and not a house style. Those papers
             # leave the held set exactly like one curation removed, so the
             # prose that argues from them is rewritten below.
-            uncarded = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(h))
-                        if q and q not in gone and not _has_card(h, q)]
-            if uncarded:
-                print(f"  {len(uncarded)} paper(s) cited with no card anywhere: {uncarded[:6]}")
-                drop = set(uncarded)
-                for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
-                    if _pmid_of(m.group(0)) in drop:
-                        h = h[:m.start()] + h[m.end():]
-                gone = list(dict.fromkeys(list(gone) + uncarded))
-            pmids_all = [x for x in pmids_all if x not in gone]
-            pmids = [x for x in pmids if x not in gone]
             h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
             if resynth:
                 print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
-            # a name credited to the wrong paper has to be corrected BEFORE the
-            # narrative rewrite, which otherwise demands the removal of a
-            # surname that belongs to a paper the brief keeps
-            h, n_attr = fix_prose_attribution(W, h, real)
-            if n_attr:
-                print(f"  {n_attr} sentence(s) that credited the wrong authors corrected")
-            h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
-            if n_narr:
-                print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
         else:
-            removed, moved, emptied = [], [], []
+            removed, moved, emptied, gone = [], [], [], []
+
+        # ---- FOR EVERY BRIEF, WHATEVER ITS SHAPE ----------------------------
+        # These three ran inside the curation branch, which only a brief with
+        # topic headings ever enters, so the whole trend generation skipped
+        # them in silence. The mast-cell brief published citing two papers it
+        # does not card because of exactly that. A guarantee that applies to
+        # one page shape is not a guarantee.
+        #
+        # A citation to a paper the brief does not card points at nothing a
+        # reader can open. W21 carried twenty-one markers to a Cochrane review
+        # with no card in any section. Those papers leave the held set exactly
+        # like one curation removed, so the prose arguing from them is
+        # rewritten below.
+        uncarded = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(h))
+                    if q and q not in gone and not _has_card(h, q)]
+        if uncarded:
+            print(f"  {len(uncarded)} paper(s) cited with no card anywhere: {uncarded[:6]}")
+            drop = set(uncarded)
+            for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                if _pmid_of(m.group(0)) in drop:
+                    h = h[:m.start()] + h[m.end():]
+            gone = list(dict.fromkeys(list(gone) + uncarded))
+        pmids_all = [x for x in pmids_all if x not in gone]
+        pmids = [x for x in pmids if x not in gone]
+        # a name credited to the wrong paper has to be corrected BEFORE the
+        # narrative rewrite, which otherwise demands the removal of a surname
+        # that belongs to a paper the brief keeps
+        h, n_attr = fix_prose_attribution(W, h, real)
+        if n_attr:
+            print(f"  {n_attr} sentence(s) that credited the wrong authors corrected")
+        h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
+        if n_narr:
+            print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
         # every paper the brief holds may be cited by the chain below, so every
         # one gets its file and its journal line — not only the ones already cited
         meta = {}
