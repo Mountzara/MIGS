@@ -20,6 +20,7 @@ Every marker is checked, not a sample. --max=N caps it for a spot check.
 
 Usage: audit_citation_popovers.py <base-url> --routes=/evidence/?id=x,/trending/?id=y [--max=N]
 """
+import concurrent.futures as cf
 import re
 import sys
 
@@ -36,6 +37,12 @@ for a in sys.argv[1:]:
 # tappable, and a sample is exactly how a defect survives on the markers nobody
 # looked at. A brief with 200 citations takes longer; that is the right trade.
 MAX_CHECKED = int(next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--max=")), "0")) or None
+# Routes are independent pages in independent browsers, so they run at the
+# same time. Every deploy re-checks every published brief, and that bill only
+# grows as briefs accumulate: seventeen routes, each hovered AND tapped, was
+# half an hour of a deploy spent waiting on one gate. Each worker is its own
+# process with its own Playwright — the sync API is not thread-safe.
+WORKERS = int(next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--workers=")), "3"))
 
 
 def disclaimer_visible(page, route):
@@ -209,14 +216,13 @@ def audit(page, route, mode="hover"):
     return fails
 
 
-def main():
-    if not ROUTES:
-        print("no routes given"); return 1
-    all_fails = []
-    probe = BASE.rstrip("/") + ROUTES[0]
+def audit_routes(routes):
+    """One browser, both viewports, the routes given. Returns (printed, fails)."""
+    out, fails = [], []
+    probe = BASE.rstrip("/") + routes[0]
     with sync_playwright() as pw:
         browser, engine, note = launch_reachable(pw, probe, headless=True)
-        print(f"  engine: {engine}{(' — ' + note) if note else ''}")
+        out.append(f"  engine: {engine}{(' — ' + note) if note else ''}")
         # hover on a desktop viewport, then tap on a touch viewport: the
         # standard says hoverable AND tappable, and the touch path is a
         # different code path (a delegated click handler, not CSS :hover)
@@ -225,12 +231,40 @@ def main():
                                         "has_touch": True, "is_mobile": True})):
             ctx = browser.new_context(**ctx_args)
             page = ctx.new_page()
-            for route in ROUTES:
+            for route in routes:
                 f = audit(page, route, mode)
-                print(f"  {route} [{mode}]: {'OK' if not f else str(len(f)) + ' problem(s)'}")
-                all_fails += f
+                out.append(f"  {route} [{mode}]: {'OK' if not f else str(len(f)) + ' problem(s)'}")
+                fails += f
             ctx.close()
         browser.close()
+    return "\n".join(out), fails
+
+
+def _worker(routes):
+    """Child process: its own Playwright, its own browser, its own slice."""
+    try:
+        return audit_routes(routes)
+    except Exception as e:  # a crashed worker must fail the gate, not vanish
+        return "", [f"{routes[0]}…: the citation gate crashed — {str(e).splitlines()[0][:160]}"]
+
+
+def main():
+    if not ROUTES:
+        print("no routes given"); return 1
+    n = max(1, min(WORKERS, len(ROUTES)))
+    if n == 1:
+        printed, all_fails = audit_routes(ROUTES)
+        print(printed)
+    else:
+        # stripe the routes so one very long brief does not decide the wall clock
+        chunks = [ROUTES[i::n] for i in range(n)]
+        print(f"  {len(ROUTES)} route(s) across {n} browsers")
+        all_fails = []
+        with cf.ProcessPoolExecutor(max_workers=n) as ex:
+            for printed, fails in ex.map(_worker, chunks):
+                if printed:
+                    print(printed)
+                all_fails += fails
     for f in all_fails:
         print("  ✗ " + f)
     if all_fails:
@@ -240,4 +274,5 @@ def main():
     return 0
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
