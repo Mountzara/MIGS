@@ -104,8 +104,13 @@ def faults(pid, h):
             if not cited_names:
                 continue
             names = [x for x in cand if x not in cited_names and not bp._near_surname(x, cited_names)]
-            if names:
-                out.append(f"prose credits {names[0]} for a paper by {sorted(cited_names)[:2]}")
+            for x in names:
+                if x in everyone or bp._near_surname(x, everyone):
+                    # the name is real and the brief holds that paper; the
+                    # sentence just does not cite it — a different fault
+                    out.append(f"prose names {x}, a paper the brief holds, on a sentence that cites only {sorted(cited_names)[:2]}")
+                else:
+                    out.append(f"prose credits {x} for a paper by {sorted(cited_names)[:2]}")
     return list(dict.fromkeys(out))
 
 

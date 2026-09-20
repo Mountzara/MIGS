@@ -5694,6 +5694,54 @@ Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
     return "".join(out), n
 
 
+def cite_named_unique(h: str, real: dict, W: str = "") -> tuple:
+    """A sentence that names a held paper by its first author cites it.
+
+    "fezolinetant … with phase-3 RCT efficacy (Lederman et al., …)" carried a
+    marker only to the NAMS statement named earlier in the sentence. Lederman
+    is the first author of exactly one paper the brief holds, SKYLIGHT 1, and
+    the sentence reports its finding. That needs no judgement: when a surname
+    written as "X et al." or "X and colleagues" belongs to exactly one held
+    paper and that paper is not cited on the sentence, its marker is added to
+    the sentence's run. A surname shared by two held papers is left to the
+    model pass, which can read which one is meant.
+    Returns (h, citations_added).
+    """
+    by_first = {}
+    for q, r in (real or {}).items():
+        first = ((r or {}).get("authors") or "").split(",")[0].strip().split(" ")[0]
+        if len(first) >= 2 and _has_card(h, q):
+            by_first.setdefault(first, []).append(q)
+    unique = {k: v[0] for k, v in by_first.items() if len(v) == 1}
+    if not unique:
+        return h, 0
+    added = 0
+    for ps in list(_prose_passages(h))[::-1]:
+        frag = ps.group(1)
+        masked = _mask_noprose(frag)
+        sents = _sentences_of(masked)
+        inserts = []
+        for k, (t, e) in enumerate(sents):
+            names = dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:et\s+al\.|and\s+colleagues)", t))
+            want = [unique[x] for x in names if x in unique]
+            if not want:
+                continue
+            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            run_end = _after_run(frag, e)
+            have = {_pmid_of(m.group(0)) for m in SUP_RE.finditer(frag, s0, run_end)}
+            missing = [q for q in dict.fromkeys(want) if q not in have]
+            if missing:
+                inserts.append((run_end, missing))
+        for at, qs in sorted(inserts, reverse=True):
+            sups = "".join(x for x in (_sup_markup(q, real, W) for q in qs) if x)
+            if sups:
+                frag = frag[:at] + sups + frag[at:]
+                added += len(qs)
+        if inserts:
+            h = h[:ps.start(1)] + frag + h[ps.end(1):]
+    return h, added
+
+
 def cite_uncited_cards(W: str, h: str, real: dict) -> tuple:
     """Backstop: every carded paper is cited somewhere, whatever the shape.
 
@@ -6883,6 +6931,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     # study. The review then withdrew it, three rounds running, and the brief
     # reached the gate with a card no sentence cites. A backstop that runs
     # before the last withdrawal is not a backstop.
+    h, by_name = cite_named_unique(h, real, W)
+    if by_name:
+        print(f"  {by_name} citation(s) added where a sentence names a held paper's first author and cites it nowhere")
     h, flat2 = cite_uncited_cards(W, h, real)
     if flat2:
         print(f"  {flat2} carded paper(s) left uncited by a withdrawal given a sentence of their own")
