@@ -5545,6 +5545,10 @@ _NOT_A_SURNAME = {
     # is the PCOS criteria, not a person
     "Rotterdam", "Helsinki", "Montreal", "Vienna", "Sydney", "Paris", "Rome", "Amsterdam",
     "Chicago", "Bethesda", "Berlin", "Toronto", "Milan", "Lyon", "Madrid", "Barcelona", "Geneva",
+    # journal words a citation writes before a year: "Lancet 2023", "Metab 2023"
+    "Lancet", "Metab", "Endocrinol", "Gynecol", "Obstet", "Reprod", "Fertil", "Steril", "Menopause",
+    "Climacteric", "Maturitas", "Cochrane", "Surg", "Med", "Res", "Int", "Sci", "Rev", "Update",
+    "Pol", "Ital", "Chir", "Bras", "Assoc", "Pract", "Gen", "Immunol", "Front", "Biol", "Mol",
 }
 
 

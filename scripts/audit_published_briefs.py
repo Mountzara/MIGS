@@ -52,7 +52,9 @@ def faults(pid, h):
     everyone = set()
     for m in re.finditer(r'<p class="mz-cite-meta">([\s\S]*?)</p>'
                          r'|<span class="mz-ref-pop-meta">([\s\S]*?)</span>', h):
-        everyone |= _surnames(bp.H.unescape(re.sub(r"<[^>]+>", " ", m.group(1) or m.group(2) or "")))
+        # authors only: the part before the first middle dot. The whole line
+        # made "Lancet" and "Metab" surnames the brief holds.
+        everyone |= _surnames(bp.H.unescape(re.sub(r"<[^>]+>", " ", m.group(1) or m.group(2) or "")).split("\u00b7")[0])
 
     def unknown(names):
         return [x for x in dict.fromkeys(names)
