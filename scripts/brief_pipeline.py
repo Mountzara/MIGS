@@ -2893,6 +2893,10 @@ def reader_prose_faults(h: str) -> list:
         faults.append(f"patient-directed advice in the site's own prose: {m.group(0)!r}")
     if re.search(r"Pending[^<]{0,40}review", vis):
         faults.append("a reader-visible 'Pending review' placeholder remains")
+    # "ETHODS:" — W21 carried the label with its first letter lost
+    m = re.search(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?|P?URPOSE|F?INDINGS)\s*:", vis)
+    if m:
+        faults.append(f"raw abstract text a reader can see: {m.group(0)!r}")
     if re.search(r"\[Awaiting|\[\s*pending\s*\]|\[TODO", vis, re.I):
         faults.append("an authorship placeholder remains")
     m = PROVENANCE_RE.search(vis)
@@ -6738,6 +6742,8 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         "references_head": slice_of(after, r'<ol class="mz-references-list">[\s\S]{0,2500}', 1, 2500),
         "cite_card": slice_of(after, r'<article class="mz-cite-card[\s\S]*?</article>', 1, 2500),
         "counts": {
+            "citation_markers_in_prose_and_sections": sum(len(x["markers_in_order"]) for x in seq),
+            "citation_markers_inside_deep_dive_dialogs": len(SUP_RE.findall(after)) - sum(len(x["markers_in_order"]) for x in seq),
             "citations": len(SUP_RE.findall(after)),
             "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
             "duplicate_element_ids_(measured)": len([i for i, n in __import__("collections").Counter(re.findall(r'\bid="([^"]+)"', after)).items() if n > 1]),
@@ -6855,6 +6861,18 @@ numbers. 900-2000 characters. Plain HTML: <em> and <strong> only, no headings, n
 (citations are added afterwards). Escape & < >.
 Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
         new_text = (v or {}).get("paragraph", "").strip()
+        if new_text and re.search(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?)\s*:", new_text):
+            # W21: an abstract's METHODS paragraph pasted into the synthesis
+            v = _claude(f"""Rewrite one section-opening paragraph of a clinician-facing weekly evidence brief in Dr. Mabini's
+first person. A previous attempt pasted raw abstract text with section labels (METHODS:, RESULTS:) —
+write plain clinical prose in your own words instead, reporting each paper's finding with its numbers.
+THE PAPERS THE SECTION NOW HOLDS: {papers_json}
+THE PARAGRAPH AS IT STANDS: {json.dumps(old_flat)}
+900-2000 characters, plain HTML (<em>/<strong> only), no citation markup, & < > escaped.
+Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
+            new_text = (v or {}).get("paragraph", "").strip()
+            if re.search(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?)\s*:", new_text):
+                new_text = ""
         if not new_text or len(new_text) < 400:
             print(f"  could not rewrite the synthesis for {tid}; leaving it and reporting")
             continue
