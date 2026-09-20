@@ -7012,9 +7012,11 @@ appearance, rebuilt the reference list in that order, and de-duplicated element 
 
 Read the ACTUAL OUTPUT below and find what is wrong with it. Do not take the program's word for
 anything — check what you can see. Markers are numbered by FIRST APPEARANCE IN THE WHOLE DOCUMENT,
-narrative first, then each section in order; "marker_sequence_in_document_order" lists every
-marker in that order and is what you judge numbering and sequence from — the prose excerpts are
-partial. Popover text has been removed from the prose excerpts; judge popover completeness from
+narrative first, then each section in order, AND THEN the deep-dive dialogs, whose markers continue
+the same sequence. "marker_sequence_in_document_order" lists the prose and section markers only, so
+the highest number in it is normally LOWER than the reference count: the difference is the papers
+cited inside deep dives (counted separately in counts). That difference is not an orphan reference
+and is not a defect. Judge numbering and sequence from that list — the prose excerpts are partial. Popover text has been removed from the prose excerpts; judge popover completeness from
 "popovers". A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
 by design, not a defect, and duplicate ids are measured and reported in counts. Which heading a paper
