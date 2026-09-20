@@ -5176,7 +5176,7 @@ def refresh_shape_chart(h: str) -> str:
     m = None
     for cand in re.finditer(r"<section\b[^>]*>", h):
         b = _element_end(h, "section", cand.end())
-        if "mz-shape-chart" in h[cand.end():b] and "mz-cite-card" not in h[cand.end():b]:
+        if '<div class="mz-shape-chart"' in h[cand.end():b] and "mz-cite-card" not in h[cand.end():b]:
             m = type("M", (), {"start": lambda self: cand.start(), "end": lambda self: b, "group": lambda self, n=0: h[cand.start():b]})()
             break
     if not m:
