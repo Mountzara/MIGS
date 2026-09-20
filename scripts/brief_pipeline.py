@@ -6017,7 +6017,7 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
                          "header": strip_pops(seg[:seg.find("</h2>") + 5 if "</h2>" in seg else 400])[:700],
                          "synthesis": strip_pops(synth.group(1))[:9000] if synth else "",
                          "cards": len(re.findall(r'<article class="mz-cite-card', seg)),
-                         "card_ids": sorted(set(re.findall(CARD_ID_RE, seg)))})
+                         "card_ids": sorted(set(re.findall(r'<article class="mz-cite-card[^>]*\bid="([^"]+)"', seg)))})
     sample = {
         "marker_sequence_in_document_order": seq,
         "toc_nav": slice_of(after, r'<nav class="mz-toc"[\s\S]*?</nav>', 1, 4000),
@@ -6054,7 +6054,9 @@ anything — check what you can see. Markers are numbered by FIRST APPEARANCE IN
 narrative first, then each section in order; "marker_sequence_in_document_order" lists every
 marker in that order and is what you judge numbering and sequence from — the prose excerpts are
 partial. Popover text has been removed from the prose excerpts; judge popover completeness from
-"popovers".
+"popovers". A paper that belongs under two headings is carded under both — two cite cards, the
+second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
+by design, not a defect, and duplicate ids are measured and reported in counts.
 
 Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
 markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
