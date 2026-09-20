@@ -7025,7 +7025,11 @@ does not concern; drop a clause that is no longer true rather than inventing a r
 Plain text, no citation markup, each ending with a full stop.
 If the defect is that one figure contradicts another, the sentences must END UP AGREEING: the
 abstracts above say which figure the paper actually reports — keep that one everywhere and correct
-the others. Where a count of papers, topics or references is in dispute, the measured figures above
+the others. When an abstract reports the SAME outcome for more than one population — the whole
+cohort and a subgroup, an unadjusted and an adjusted estimate — the right figure is the one for the
+population each sentence names, and a sentence naming the subgroup must not carry the whole
+cohort's number. W21 described the direct-marker finding of an adenomyosis cohort and gave the
+overall estimate, which the paper's own title exists to distinguish. Where a count of papers, topics or references is in dispute, the measured figures above
 are the truth. Never carry a figure no source shown here supports; drop the clause instead.
 Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sentence>"}}, ...]}}""",
                         timeout_s=900)
@@ -7093,6 +7097,72 @@ def _escalate_numeric_contradictions(defects: list) -> list:
     return raised
 
 
+def numeric_consistency_defects(W: str, h: str, facts: dict) -> list:
+    """Compare every figure on the page against every other figure on the page.
+
+    The read-back audit reads the brief as a reader would, one pass over a
+    large sample, and it finds a contradiction between two distant sentences
+    only when both happen to catch its attention. W21 surfaced them two at a
+    time over five rounds — the Cochrane odds ratio, then the adenomyosis
+    adjusted odds ratio, then a stats line, then a bucket described as "roughly
+    half" of one paper — because no single read held all of them at once.
+
+    This pass holds nothing else. Every sentence that states a figure, from
+    every passage and every synthesis, arrives as one compact list with the
+    page's measured facts beside it, so two sentences ten thousand characters
+    apart sit next to each other. Evidence quotes BOTH sentences, which is
+    what the reconciling repair needs to make them agree.
+    """
+    items, seen = [], set()
+    for ps in _prose_passages(h):
+        masked = _mask_noprose(ps.group(1))
+        masked = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
+        where = ps.tid or ps.kind
+        for t, _ in _sentences_of(masked):
+            flat = re.sub(r"\s+", " ", t).strip()
+            if len(flat) < 25 or not _num_tokens(flat):
+                continue
+            if flat in seen:
+                continue
+            seen.add(flat)
+            items.append({"passage": where, "sentence": flat[:400]})
+            if len(items) >= 400:
+                break
+        if len(items) >= 400:
+            break
+    if len(items) < 2:
+        return []
+    listing = "\n".join(f"[{x['passage']}] {x['sentence']}" for x in items)
+    v = _ask_cached(W, "numeric", f"""Every sentence in one clinician-facing evidence brief that states a figure, with the passage it
+sits in. A reader meets all of these on one page and can compare them.
+
+WHAT THE PAGE MEASURABLY HOLDS: {json.dumps(facts, ensure_ascii=False)}
+
+SENTENCES:
+{listing}
+
+Report ONLY these two faults:
+(a) the SAME study or the SAME finding given different values in two different sentences — a
+    different odds ratio, hazard ratio, percentage, sample size or follow-up for what is plainly the
+    same result;
+(b) a document-wide total or share that disagrees with what the page measurably holds.
+Two different studies reporting different numbers is not a fault. The same study reported at two
+different timepoints, outcomes, or populations is not a fault WHEN each sentence names which one it
+means — a whole-cohort estimate and a subgroup estimate are different findings. It IS a fault when
+two sentences name the SAME population and outcome and give different values. A figure rounded
+differently (41% and 41.2%) is not a fault. Say nothing unless you are confident a reader would call it a
+contradiction.
+For each fault, quote BOTH sentences verbatim in "evidence", separated by " AND ".
+Reply with ONLY {{"defects": [{{"what": "<the contradiction>", "evidence": "<sentence one> AND <sentence two>"}}, ...]}}
+and {{"defects": []}} when every figure agrees.""", timeout_s=900)
+    out = []
+    for d in ((v or {}).get("defects") or [])[:8]:
+        what, ev = str(d.get("what") or "").strip(), str(d.get("evidence") or "").strip()
+        if what and ev:
+            out.append({"what": what, "evidence": ev, "severity": "blocking"})
+    return out
+
+
 def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: int = 5) -> str:
     """Read the transformed page and find what my own checks could not.
 
@@ -7138,7 +7208,7 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         synth = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', seg)
         sections.append({"id": t.tid,
                          "header": strip_pops(seg[:seg.find("</h2>") + 5 if "</h2>" in seg else 400])[:700],
-                         "synthesis": strip_pops(synth.group(1))[:9000] if synth else "",
+                         "synthesis": strip_pops(synth.group(1))[:20000] if synth else "",
                          "cards": len(re.findall(r'<article class="mz-cite-card', seg)),
                          "card_pmids": sorted(set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg))),
                          "card_element_ids": sorted(set(re.findall(r'<article class="mz-cite-card[^>]*\bid="([^"]+)"', seg)))})
@@ -7224,12 +7294,17 @@ removed paper (a dangling "and", a doubled full stop, an empty parenthesis, a to
 cards under it); a popover missing its title, journal line, finding or link; markup that will not
 render (unclosed tag, stray attribute); and anything a reader would notice as damage.
 
-OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:180000]}
+OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:260000]}
 
 Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evidence": "<quote it>",
 "severity": "blocking"|"cosmetic"}}, ...], "notes": "one or two sentences"}}""", timeout_s=1200)
     if not v or "ok" not in v:
         die("the transform audit returned no verdict")
+    numeric = numeric_consistency_defects(W, after, sample["counts"])
+    if numeric:
+        v["defects"] = (v.get("defects") or []) + numeric
+        for d in numeric:
+            print(f"  FIGURES DISAGREE: {str(d.get('what'))[:130]}")
     for d in _escalate_numeric_contradictions(v.get("defects") or []):
         print(f"  TRANSFORM AUDIT: filed as cosmetic, raised to blocking — a number contradicts "
               f"another number on the page: {str(d.get('what'))[:100]}")
