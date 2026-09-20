@@ -3086,9 +3086,9 @@ def reader_prose_faults(h: str) -> list:
         faults.append(f"internal path or spec reference: {m.group(0)!r}")
     if re.search(r"(?<!CBG/)\bMIGS\b", text):
         faults.append("bare 'MIGS' in the site's own prose — write CBG/MIGS")
-    m = re.search(r"\b(never|always)\b", text, re.I)
+    m = absolute_claim(text)
     if m:
-        faults.append(f"an absolute in the site's own prose: {m.group(0)!r}")
+        faults.append(f"an absolutist clinical claim in the site's own prose: {m.group(0)!r}")
     return faults
 
 
@@ -7376,6 +7376,30 @@ def _invents_experience(t: str) -> bool:
     return bool(EXPERIENCE_RE.search(t))
 
 
+# "No never/always" is a rule about ABSOLUTIST CLINICAL CLAIMS — "always
+# excise", "never offer" — and it was written as a search for the two words.
+# It therefore refused two finished briefs over prose that says the opposite
+# of an absolute: "the least invasive route is NOT ALWAYS the safest one" is a
+# hedge, "plantar heel pain that never reaches gyn care" describes a referral
+# pathway, and "the authors were contacted and never substantively responded"
+# reports what happened to a paper. A gate that cries wolf gets worked around,
+# which is worse than no gate. The words are flagged where they make a
+# universal claim: attached to a clinical directive, or to a judgement about
+# whether something is safe, effective or indicated.
+_HEDGED = r"(?<!not )(?<!n't )(?<!almost )(?<!nearly )(?<!hardly )(?<!not\u2019t )"
+_ABSOLUTE_RE = re.compile(
+    _HEDGED + r"\b(?:always|never)\s+(?:be\s+)?"
+    r"(?:offer|use|excise|remove|resect|prescribe|give|start|stop|treat|perform|do|choose|"
+    r"recommend|order|image|operate|biopsy|refer|screen|repeat|attempt|place|avoid|require)\w*\b"
+    + "|" + _HEDGED + r"\b(?:always|never)\s+(?:safe|effective|indicated|appropriate|necessary|"
+    r"required|warranted|works|helps|harmful|wrong|right)\b", re.I)
+
+
+def absolute_claim(text: str):
+    """The match when prose makes an absolutist clinical claim, else None."""
+    return _ABSOLUTE_RE.search(text or "")
+
+
 def writer_reject(new: str) -> str:
     """Why this sentence may not go on the page, or "" when it may.
 
@@ -7395,9 +7419,9 @@ def writer_reject(new: str) -> str:
         return "invented experience"
     if ABSTRACT_LABEL_RE.search(new):
         return "raw abstract text"
-    m = re.search(r"\b(never|always)\b", new, re.I)
+    m = absolute_claim(new)
     if m:
-        return f"an absolute the standards forbid ({m.group(0)!r})"
+        return f"an absolutist clinical claim ({m.group(0)!r})"
     m = ADVICE_RE.search(new)
     if m:
         return f"patient-directed advice ({m.group(0)[:40]!r})"
