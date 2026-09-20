@@ -2438,6 +2438,82 @@ def tidy_prose_spacing(h: str) -> str:
     return "".join(out)
 
 
+def bind_legacy_cards(h: str, real: dict) -> tuple:
+    """Give a card that names a paper that paper's own id.
+
+    The 2026-05 trend generation wrote <article class="mz-cite-card"
+    id="mz-ref-1"> — a per-section index, not a paper, repeated in every
+    section. Nothing downstream could tell which paper a card was for, so
+    those briefs carded nothing that curation, the counts or the renumbering
+    could see; the index printed in the badge went stale the moment the
+    citations were renumbered; and two cards in different sections claimed the
+    same element id as a real reference anchor.
+
+    The card prints the paper's title, and PubMed has the title, so that is
+    the join. Cards already carrying a paper's id are left alone.
+    """
+    norm = lambda x: re.sub(r"[^a-z0-9]", "", H.unescape(re.sub(r"<[^>]+>", " ", x or "")).lower())  # noqa: E731
+    by_title = {}
+    for pm, f in (real or {}).items():
+        t = norm((f or {}).get("title"))
+        if len(t) >= 20:
+            by_title.setdefault(t, pm)
+    bound, out, last = 0, [], 0
+    for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
+        card = m.group(0)
+        if re.search(CARD_ID_RE, card):
+            continue                                   # already a paper's id
+        title = norm((re.search(r'<p class="mz-cite-title">([\s\S]*?)</p>', card) or [None, ""])[1])
+        pm = by_title.get(title)
+        if not pm and len(title) >= 25:
+            # a generator that trimmed a long title, or added a trailing stop
+            pm = next((q for t, q in by_title.items()
+                       if (title in t or t in title) and min(len(t), len(title)) >= 25), None)
+        if not pm:
+            continue
+        # class first, then id: normalize_card_ids reads the class before the
+        # id, and a card whose id came first was invisible to the pass that
+        # suffixes a paper carded twice
+        tag = re.match(r"<article\s[^>]*>", card).group(0)
+        cls = (re.search(r'class="([^"]*)"', tag) or [None, "mz-cite-card"])[1]
+        new = f'<article class="{cls}" id="mz-cite-{pm}">' + card[len(tag):]
+        out.append(h[last:m.start()]); out.append(new); last = m.end()
+        bound += 1
+    out.append(h[last:])
+    return "".join(out), bound
+
+
+def renumber_card_badges(h: str, order: list) -> tuple:
+    """A card's badge opens with the number of the citation it belongs to.
+
+    "[1] · Cochrane review · 2020" was written with a per-section index, so
+    after renumbering it named a different paper than the markers did — the
+    read-back audit refused a trend brief for exactly that. The number now
+    comes from the document's citation order, and a card for a paper the brief
+    no longer cites loses the bracket rather than keeping a wrong one.
+    """
+    num = {pm: i + 1 for i, pm in enumerate(order or [])}
+    changed = 0
+
+    def one(m):
+        nonlocal changed
+        block = m.group(0)
+        pm = ((re.search(CARD_ID_RE, block) or re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', block)
+               or [None, None])[1])
+        b = re.search(r'(<(?:p|span) class="mz-cite-design"[^>]*>)\s*\[(\d+)\]\s*(?:·|&middot;|&#183;)\s*', block)
+        if not b:
+            return block
+        head = b.group(1) + (f"[{num[pm]}] · " if pm in num else "")
+        if head == b.group(0):
+            return block
+        changed += 1
+        return block[:b.start()] + head + block[b.end():]
+
+    h = re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', one, h)
+    h = re.sub(r'<dialog\b[\s\S]*?</dialog>', one, h)
+    return h, changed
+
+
 def normalize_card_ids(h: str) -> str:
     """Card ids in document order: a paper's first card is mz-cite-<pmid>,
     its second mz-cite-<pmid>-2, and so on. After curation removes a first
@@ -7616,12 +7692,18 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print("  educational disclaimer added (the brief predates it)")
         h = remove_empty_groups(h)
         h = recount_headings(h)
+        h, bound = bind_legacy_cards(h, real)
+        if bound:
+            print(f"  {bound} card(s) bound to the paper they name (they carried a section index, not a paper)")
         h = normalize_card_ids(h)
         h = refresh_shape_chart(h)
         h = renumber_list_labels(h)
         h = tidy_prose_spacing(h)
         h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
+        h, badges = renumber_card_badges(h, order)
+        if badges:
+            print(f"  {badges} card badge(s) renumbered to the citation they belong to")
         # numbering can leave a legacy marker without a popover (W20's 8 and
         # 20); the browser gate refuses the page for it, so fill them here
         h, filled_pops = refresh_popovers_from_abstracts(W, h, real)
