@@ -7163,6 +7163,14 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
             "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
             "toc_chips": sum(1 for m in re.finditer(r'<a[^>]*class="([^"]*)"', after) if "mz-toc-chip" in m.group(1).split()),
             "topic_sections": len(_topic_sections(after)),
+            # a reader can add the section counts up, and they sum to MORE than
+            # the brief's paper total whenever a paper sits under two headings.
+            # Both figures are shown so the audit reads it as the design it is
+            # rather than as the page contradicting itself (W21).
+            "sum_of_topic_section_counts": sum(
+                len(set(re.findall(CARD_ID_RE, t.group(0)))
+                    | set(re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))
+                for t in _topic_sections(after)),
             "placements_removed": len(dropped),
             "papers_moved_between_headings": len(moved or []),
             "headings_removed": emptied,
@@ -7184,7 +7192,10 @@ cited inside deep dives (counted separately in counts). That difference is not a
 and is not a defect. Judge numbering and sequence from that list — the prose excerpts are partial. Popover text has been removed from the prose excerpts; judge popover completeness from
 "popovers". A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
-by design, not a defect, and duplicate ids are measured and reported in counts. Which heading a paper
+by design, not a defect, and duplicate ids are measured and reported in counts. For the same reason
+the per-heading counts a reader could add up sum to MORE than the brief's paper total, which counts
+each paper ONCE: "sum_of_topic_section_counts" exceeding "distinct_papers_cited" is that design and
+is NOT a contradiction. A stated total is wrong only when it disagrees with "distinct_papers_cited". Which heading a paper
 is carded under was judged twice against the practice's own reference library, and clinical areas
 overlap (placenta accreta under hysterectomy, adenomyosis under pelvic pain): report a placement you
 would have made differently as cosmetic, and block only when the paper is plainly another specialty. "card_pmids" is the
