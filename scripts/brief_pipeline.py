@@ -4232,8 +4232,9 @@ def _own_papers_for(h: str, ps, topic_spans: list) -> set:
     if jc:
         jb = _element_end(h, "section", jc.end())
         if jc.start() <= ps.a < jb:
-            seg = h[jc.start():jb]
-            own = set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg)) | set(re.findall(r'id="dd-(\d+)"', seg))
+            seg = SUP_RE.sub(" ", h[jc.start():jb])  # the cards' own PubMed links, not the markers' popovers
+            own = (set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg))
+                   | set(re.findall(r'id="dd-(\d+)"', seg)) | set(re.findall(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", seg)))
             if own:
                 return own
     return set()
