@@ -5049,8 +5049,6 @@ def _rewrite_passage_for_removed(W: str, h: str, ia: int, ib: int, gone: list, r
     m = _M()
     frag = h[ia:ib]
     paras = list(re.finditer(r'<p\b[^>]*>([\s\S]*?)</p>', frag))
-    if not paras:
-        return h, 0
     removed = [{"pmid": q, "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip(),
                 "title": (real.get(q) or {}).get("title", "")} for q in gone]
     sur = _first_surnames(gone, real)
@@ -5058,9 +5056,19 @@ def _rewrite_passage_for_removed(W: str, h: str, ia: int, ib: int, gone: list, r
     def text_of(inner):
         return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", inner)))).strip()
 
+    # nothing named here at all: nothing to rewrite and nothing to cut
+    shared0 = set(_first_surnames(surviving or [], real))
+    named0 = [k for k in sur if k not in shared0
+              and re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", text_of(_mask_noprose(frag)))]
+    if not named0:
+        return h, 0
+    still = named0
     listing = {str(i + 1): text_of(pm.group(1)) for i, pm in enumerate(paras)}
     reason = ""
-    for attempt in range(2):
+    # a fragment with no <p> — a recommendation list, say — has nothing the
+    # paragraph rewrite can address, but it can still name a removed paper,
+    # and it used to return here before the cut below ever ran
+    for attempt in range(2 if paras else 0):
         v = _ask_cached(W, "narrative", f"""Below is the opening narrative of a clinician-facing weekly evidence brief, paragraph by paragraph,
 written in Dr. Mabini's first person (a DO and complex benign gynecology / minimally invasive
 gynecologic surgery surgeon). These papers have since been REMOVED from the brief because they were
@@ -5111,36 +5119,36 @@ containing ONLY the paragraphs you changed.""", timeout_s=900)
     # smaller question than composing a paragraph around the hole, and it is
     # the one action that is always available — W21 refused a finished brief
     # over one surname the writer would not drop.
-    cut = 0
-    out, last = [], 0
-    for pm in paras:
-        inner = pm.group(1)
-        masked = _mask_noprose(inner)
-        sents = _sentences_of(masked)
-        keep_parts, prev = [], 0
-        for k, (t, e) in enumerate(sents):
+    #
+    # The cut walks SENTENCES across the whole fragment, not <p> paragraphs:
+    # the GLP-1 brief named Zakhari inside a <li><span class="mz-rec-text">
+    # recommendation, which a paragraph walk never reaches, and the leftover
+    # check then read raw text — including popover bylines the sentence scan
+    # masks — so the name looked unremovable. Both now see the same text.
+    frag_now = h[m.start(2):m.end(2)]
+    masked = _mask_noprose(frag_now)
+    sents = _sentences_of(masked)
+    spans = []
+    for k, (t, e) in enumerate(sents):
+        if any(re.search(r"(?<![\w-])" + re.escape(x) + r"(?:['\u2019]s)?(?![\w-])", t) for x in still):
             s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
-            if any(re.search(r"(?<![\w-])" + re.escape(x) + r"(?:['\u2019]s)?(?![\w-])", t) for x in still):
-                end = _after_run(inner, e)
-                keep_parts.append(inner[prev:s0]); prev = end
-                cut += 1
-        if not cut or prev == 0:
-            continue
-        keep_parts.append(inner[prev:])
-        kept = re.sub(r"\s{2,}", " ", "".join(keep_parts)).strip()
-        out.append(frag[last:pm.start()])
-        if text_of(kept):
-            out.append(f'<p>{kept}</p>')
-        last = pm.end()
+            spans.append((s0, _after_run(frag_now, e)))
+    cut = 0
+    for a, b in sorted(spans, reverse=True):
+        if _usable_span(frag_now, a, b):
+            frag_now = _replace_span(frag_now, a, b, "")
+            cut += 1
     if cut:
-        out.append(frag[last:])
-        new_frag = "".join(out)
+        frag_now, _ = drop_empty_list_items(frag_now)
+        frag_now = re.sub(r"<p\b[^>]*>(?:\s|&nbsp;|\u00a0)*</p>", "", frag_now)
+        left_masked = text_of(_mask_noprose(frag_now))
         leftover = [k for k in still
-                    if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", text_of(new_frag))]
+                    if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", left_masked)]
         if not leftover:
-            print(f"  {cut} narrative sentence(s) naming a removed paper deleted (rewriting them twice did not)")
-            h = h[:m.start(2)] + new_frag + h[m.end(2):]
+            print(f"  {cut} sentence(s) naming a removed paper deleted (rewriting them twice did not)")
+            h = h[:m.start(2)] + frag_now + h[m.end(2):]
             return h, cut
+        still = leftover
     die(f"the narrative still discusses removed paper(s) after rewriting and cutting: {still}")
 
 
