@@ -98,7 +98,9 @@ def faults(pid, h):
             for q in cites:
                 mm = re.search(r'id="ref-pop-%s(?:-\d+)?"[\s\S]{0,600}?mz-ref-pop-meta">([^<]*)' % q, h)
                 if mm:
-                    cited_names |= _surnames(bp.H.unescape(mm.group(1)))
+                    # the authors are before the first "·"; after it come the
+                    # journal and year, and "Menopause" is a journal, not a person
+                    cited_names |= _surnames(bp.H.unescape(mm.group(1)).split("\u00b7")[0])
             if not cited_names:
                 continue
             names = [x for x in cand if x not in cited_names and not bp._near_surname(x, cited_names)]
