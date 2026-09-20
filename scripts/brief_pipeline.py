@@ -2389,6 +2389,22 @@ def renumber_list_labels(h: str) -> str:
     return re.sub(r"(<p\b[^>]*>)([\s\S]*?)(</p>)", para, h)
 
 
+def tidy_prose_spacing(h: str) -> str:
+    """No space before a comma or full stop in prose (a lifted or rewritten
+    marker can leave "levels ,")."""
+    out, last = [], 0
+    for ps in _prose_passages(h):
+        frag = ps.group(1)
+        parts = re.split(r"(<[^>]+>)", frag)
+        for i in range(0, len(parts), 2):
+            parts[i] = re.sub(r"(?<=[A-Za-z0-9)\]\u201d\u2019'])[ \xa0]+(?=[,.;:!?](?:\s|$|&))", "", parts[i])
+            if i >= 2 and parts[i - 1].startswith("</"):
+                parts[i] = re.sub(r"^[ \xa0]+(?=[,.;:!?](?:\s|$|&))", "", parts[i])
+        out.append(h[last:ps.start(1)]); out.append("".join(parts)); last = ps.end(1)
+    out.append(h[last:])
+    return "".join(out)
+
+
 def normalize_card_ids(h: str) -> str:
     """Card ids in document order: a paper's first card is mz-cite-<pmid>,
     its second mz-cite-<pmid>-2, and so on. After curation removes a first
@@ -3298,6 +3314,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h = normalize_card_ids(h)
     h = refresh_shape_chart(h)
     h = renumber_list_labels(h)
+    h = tidy_prose_spacing(h)
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -5324,6 +5341,7 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
     facts = {"papers_in_this_brief": total, "topics": len(per), "per_topic": per,
              "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {}}
     changed = 0
+    all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
         frag = ps.group(1)
         masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
@@ -5359,10 +5377,13 @@ every total is right.""", timeout_s=600)
             a = ps.start(1) + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
             b = ps.start(1) + sents[idx - 1][1]
             edits.append((a, b, new))
-        for a, b, new in sorted(edits, key=lambda e: -e[0]):
-            h = _replace_span(h, a, b, new)
-            changed += 1
-            print(f"  total corrected: {new[:100]!r}")
+        all_edits.extend(edits)
+    # every offset was measured on the same body: apply from the end, or an
+    # early edit shifts every later passage ("ThZero papers", "EighFifty-five")
+    for a, b, new in sorted(all_edits, key=lambda e: -e[0]):
+        h = _replace_span(h, a, b, new)
+        changed += 1
+        print(f"  total corrected: {new[:100]!r}")
     return h, changed
 
 
@@ -6754,9 +6775,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             at = m_ref.start() if m_ref else len(h)
             h = h[:at] + DISCLAIMER + h[at:]
             print("  educational disclaimer added (the brief predates it)")
+        h = remove_empty_groups(h)
+        h = recount_headings(h)
         h = normalize_card_ids(h)
         h = refresh_shape_chart(h)
         h = renumber_list_labels(h)
+        h = tidy_prose_spacing(h)
         h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
