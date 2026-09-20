@@ -4127,6 +4127,16 @@ def _paper_finding(abstract: str) -> str:
 
 
 
+def _after_run(frag: str, pos: int) -> int:
+    """The index after the run of markers standing at pos, so a new marker
+    joins the end of the run and stacked markers keep mention order."""
+    while True:
+        mm = SUP_RE.match(frag, pos)
+        if not mm:
+            return pos
+        pos = mm.end()
+
+
 def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
     """The model decides which sentence cites which paper; the code inserts it.
 
@@ -4255,7 +4265,7 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
             sup = "".join(_sup_markup(pm, real, W) for pm in dict.fromkeys(placements[idx]))
             if not sup:
                 die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
-            at = sents[idx - 1][1] + shift
+            at = _after_run(frag_out, sents[idx - 1][1] + shift)
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
             added += len(placements[idx])
@@ -4562,7 +4572,7 @@ object for EVERY item.""", timeout_s=900)
             sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
             if not sup:
                 die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
-            at = sents[idx - 1][1] + shift
+            at = _after_run(frag_out, sents[idx - 1][1] + shift)
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
             added += len(placements[idx])
@@ -4784,13 +4794,16 @@ def cite_every_card(W: str, h: str, real: dict) -> tuple:
     abstract, which is appended to the synthesis with its marker. Everything
     inserted here is reviewed by the same per-sentence review afterwards.
     Returns (h, cited_by_sentence, sentences_added)."""
-    # a marker inside a deep-dive dialog or a card is not a citation in the
-    # prose: W29's two uncited cards counted as cited that way
-    cited_now = {_pmid_of(x) for ps in _prose_passages(h) for x in SUP_RE.findall(ps.group(1))}
     by_sentence, added = 0, 0
     for t in _topic_sections(h):
         cards = list(dict.fromkeys(re.findall(CARD_ID_RE, t.group(0)) + re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))
-        missing = [q for q in cards if q not in cited_now and (real.get(q) or {}).get("abstract")]
+        # cited IN THIS SECTION'S SYNTHESIS: a paper carded under two headings
+        # is discussed under both (W33: two endometriosis cards were cited
+        # only under Pelvic Pain and Adenomyosis). Markers inside dialogs or
+        # cards do not count either.
+        synth_all = re.findall(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', t.group(0))
+        cited_here = {_pmid_of(x) for sy in synth_all for x in SUP_RE.findall(sy)}
+        missing = [q for q in cards if q not in cited_here and (real.get(q) or {}).get("abstract")]
         if not missing:
             continue
         sec = _section_span(h, t.tid)
@@ -4824,9 +4837,8 @@ Reply with ONLY {{"sentence": <number or null>}}""", timeout_s=600)
                 sup = _sup_markup(q, real, W)
                 if not sup:
                     die(f"no hover card could be written for {q}")
-                at = base + sents[idx - 1][1]
+                at = base + _after_run(frag, sents[idx - 1][1])
                 h = h[:at] + sup + h[at:]
-                cited_now.add(q)
                 by_sentence += 1
                 continue
             w = _ask_cached(W, "resynth", f"""Write ONE sentence for the opening paragraph of a section of a clinician-facing weekly evidence
@@ -4843,7 +4855,6 @@ Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
                 die(f"no hover card could be written for {q}")
             at = base + len(frag)
             h = h[:at] + " " + H.escape(text, quote=False) + sup + h[at:]
-            cited_now.add(q)
             added += 1
     return h, by_sentence, added
 
@@ -4917,7 +4928,7 @@ Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]
             sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
             if not sup:
                 die(f"no hover card for {placements[idx]}; a decided citation cannot be dropped silently")
-            at = sents[idx - 1][1] + shift
+            at = _after_run(frag_out, sents[idx - 1][1] + shift)
             frag_out = frag_out[:at] + sup + frag_out[at:]
             shift += len(sup)
             added += len(placements[idx])
