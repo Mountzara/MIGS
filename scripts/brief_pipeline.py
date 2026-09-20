@@ -5505,22 +5505,28 @@ _ABBR_BEFORE = re.compile(r"(?:^|[\s(\[—–-])(?:e\.g|i\.e|vs|cf|dr|fig|approx
 def _terminal_at(frag: str, i: int) -> bool:
     """Is the . ! ? at frag[i] the end of a sentence? Decided from the text
     around it: a stop followed directly by a letter or digit is inside a
-    token (e.g, 4.5, U.S), a stop that closes e.g./i.e./vs./cf./Dr./Fig. is
-    not terminal, "no." is terminal unless a number follows, and "et al." is
-    terminal only when a new sentence visibly starts after it."""
+    token (e.g, 4.5, U.S); a stop the sentence carries on from — a quoted
+    question followed by lowercase, "et al. (n=54)" — is not an end; a stop
+    that closes e.g./i.e./vs./cf./Dr./Fig. is not terminal; "no." is terminal
+    unless a number follows; "et al." is terminal only when a new sentence
+    visibly starts after it."""
     c = frag[i]
-    if c in "!?":
-        return True
     nxt = frag[i + 1:i + 2]
-    if nxt and (nxt.isalnum()):
+    if c == "." and nxt and nxt.isalnum():
         return False
     before = re.sub(r"<[^>]+>", "", frag[max(0, i - 12):i])
-    after = frag[i + 1:i + 40]
-    after_txt = re.sub(r"<[^>]+>", "", after).lstrip(" \t\r\n\xa0")
+    after_txt = re.sub(r"<[^>]+>", "", frag[i + 1:i + 60])
+    # past the closing quotes/brackets that belong to this sentence
+    after_txt = re.sub(r'^(?:[)\]"”’\']|&(?:rdquo|rsquo|quot|#8221|#8217);)+', "", after_txt)
+    after_txt = after_txt.lstrip(" \t\r\n\xa0")
+    if after_txt and (after_txt[0].islower() or after_txt[0] in ",;:)"):
+        return False
+    if c in "!?":
+        return True
     if _ABBR_BEFORE.search(before):
         return False
     if re.search(r"(?:^|\s)et al$", before):
-        return bool(re.match(r"[A-Z“\"(\[]", after_txt)) or not after_txt.strip()
+        return bool(re.match(r"[A-Z“\"]", after_txt)) or not after_txt.strip()
     if re.search(r"(?:^|\s)no$", before, re.I):
         return not re.match(r"\d", after_txt)
     return True
