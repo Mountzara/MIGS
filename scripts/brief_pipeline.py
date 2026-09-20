@@ -2371,6 +2371,24 @@ def breakable_marker_runs(h: str) -> str:
     return re.sub(r'</sup>(?=<sup class="mz-ref")', "</sup>&#8203;", h)
 
 
+def renumber_list_labels(h: str) -> str:
+    """Inline enumerations "(1) … (2) … (3) …" inside one paragraph are
+    consecutive: a removed item left "(1) … (3)" (W24)."""
+    def para(m):
+        body = m.group(2)
+        labels = list(re.finditer(r"\((\d+)\)(?=\s)", body))
+        nums = [int(x.group(1)) for x in labels]
+        if len(nums) < 2 or nums == list(range(1, len(nums) + 1)) or nums[0] != 1:
+            return m.group(0)
+        out, last, n = [], 0, 0
+        for x in labels:
+            n += 1
+            out.append(body[last:x.start()]); out.append(f"({n})"); last = x.end()
+        out.append(body[last:])
+        return m.group(1) + "".join(out) + m.group(3)
+    return re.sub(r"(<p\b[^>]*>)([\s\S]*?)(</p>)", para, h)
+
+
 def normalize_card_ids(h: str) -> str:
     """Card ids in document order: a paper's first card is mz-cite-<pmid>,
     its second mz-cite-<pmid>-2, and so on. After curation removes a first
@@ -3279,6 +3297,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h = recount_headings(h)
     h = normalize_card_ids(h)
     h = refresh_shape_chart(h)
+    h = renumber_list_labels(h)
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -5104,9 +5123,21 @@ def resolve_embedded_markers(W: str, h: str, real: dict) -> tuple:
         # mid-sentence markers per sentence, with the text they sit in
         items, per = [], {}
         for k, (t, e) in enumerate(sents):
-            s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
+            prev_end = sents[k - 1][1] if k >= 1 else 0
+            s0 = _sentence_start(masked, prev_end)
             mids = []
+            # a marker standing BEFORE the sentence's first word, as its
+            # subject ("⟨23⟩ is an RCT of…", "⟨26⟩ joins from the access
+            # side"): the sentence text then starts in lowercase or with a
+            # comma, and the marker sits in the gap after the previous stop
+            if re.match(r"[a-z,;]", t):
+                for sm in SUP_RE.finditer(frag, prev_end, s0):
+                    mids.append(sm)
+                if mids:
+                    s0 = mids[0].start()
             for sm in SUP_RE.finditer(frag, s0, e):
+                if any(sm.start() == x.start() for x in mids):
+                    continue
                 before = H.unescape(re.sub(r"<[^>]+>", "", masked[s0:sm.start()])).rstrip(" \t\r\n\xa0")
                 after = H.unescape(re.sub(r"<[^>]+>", "", masked[sm.end():e])).strip(" \t\r\n\xa0")
                 if before and after and not re.search(r"[.!?][)\]\"\u201d\u2019']*$", before):
@@ -6652,6 +6683,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print("  educational disclaimer added (the brief predates it)")
         h = normalize_card_ids(h)
         h = refresh_shape_chart(h)
+        h = renumber_list_labels(h)
         h = breakable_marker_runs(h)
         h, order = number_citations(h, meta)
         h = build_references(W, h, order, meta)
