@@ -4813,6 +4813,21 @@ def _first_surnames(pmids: list, real: dict) -> dict:
     return out
 
 
+def _near_surname(name: str, known: set) -> bool:
+    """True when a name is the same surname as one the brief holds, spelled a
+    character differently. W29's prose reads "Horasanlı" where the byline lost
+    the dotless i and reads "Horasanl" — one is a prefix of the other, and
+    asking a writer to "correct" that risks making it worse for no gain.
+    """
+    low = name.lower()
+    for k in known:
+        kl = k.lower()
+        if low == kl or low.startswith(kl) or kl.startswith(low):
+            if abs(len(low) - len(kl)) <= 2:
+                return True
+    return False
+
+
 def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
     """Prose credits the paper it cites, by that paper's own authors.
 
@@ -4839,7 +4854,7 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
         edits = []
         for k, (t, e) in enumerate(sents):
             names = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
-                     if x not in _NOT_A_SURNAME and x not in everyone]
+                     if x not in _NOT_A_SURNAME and x not in everyone and not _near_surname(x, everyone)]
             if not names:
                 continue
             s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
