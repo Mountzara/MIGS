@@ -3839,7 +3839,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
 
     # S16: the output is read back before it is written anywhere
     h = audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
-                    {q: "" for q in dropped}, [], real=real, pmids=list(man["pmids"]))
+                    {q: "" for q in dropped}, [], real=real, pmids=list(man["pmids"]), meta=verified_meta)
 
     post["body_html"] = h
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
@@ -8491,8 +8491,29 @@ and {{"defects": []}} when every figure agrees.""", timeout_s=900)
 _MISSING_CITE_RE = re.compile(r"\b(?:no|without|lacks?|missing)\s+(?:a\s+|any\s+)?(?:citation|marker|reference)\b|\buncited\b", re.I)
 
 
+def _renumber_if_unnumbered(W: str, h: str, meta: dict | None) -> str:
+    """A marker showing a PMID has not been through numbering. The audit-stage
+    supply placed twenty-five markers on W21 after numbering had run, and
+    nothing downstream numbered them: the reader would have seen raw PMIDs
+    and the invariant gate would have refused a brief the repair loop could
+    not fix. Numbering is re-run here, and again after any supply, so a
+    marker is never on the page without its number and its reference."""
+    if meta is None:
+        return h
+    marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+             for x in SUP_RE.findall(h)]
+    if not any(re.fullmatch(r"\d{5,9}", m) for m in marks):
+        return h
+    h, order = number_citations(h, meta)
+    h = build_references(W, h, order, meta)
+    h = dedupe_element_ids(h)
+    print(f"  {sum(1 for m in marks if re.fullmatch(chr(92) + 'd{5,9}', m))} marker(s) numbered after the audit supplied them")
+    return h
+
+
 def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None,
-                    _repair: int = 5, real: dict | None = None, pmids: list | None = None) -> str:
+                    _repair: int = 5, real: dict | None = None, pmids: list | None = None,
+                    meta: dict | None = None) -> str:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -8504,6 +8525,7 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
     passed my own checks and were caught a publish cycle later. This reads the
     actual output and looks for what a careful editor would see.
     """
+    after = _renumber_if_unnumbered(W, after, meta)
     # A popover carries ~700 characters of text per marker, so an excerpt
     # capped by bytes showed the auditor a fraction of the narrative and it
     # judged the numbering wrong from what it could not see (the narrative
@@ -8673,6 +8695,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
             after, n_name = cite_named_unique(after, real, W)
             if n_cite or n_name:
                 print(f"  the audit named a missing citation: {n_cite + n_name} citation(s) supplied before the next read")
+                after = _renumber_if_unnumbered(W, after, meta)
                 # every citation the chain places is judged against its
                 # paper's abstract and withdrawn when it is the wrong paper;
                 # a citation supplied here gets the same judgement, not a pass
@@ -8689,7 +8712,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
             _snap_update_body(W, "numbered", repaired)
             print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again "
                   f"({_repair - 1} round(s) left)")
-            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1, real=real, pmids=pmids)
+            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=_repair - 1, real=real, pmids=pmids, meta=meta)
         if n:
             # every rewrite came back identical to what it replaced. Re-reading
             # the same page asks the same question and is served the same
@@ -9118,7 +9141,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
 
-    h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids)
+    h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids, meta=meta)
     faults = reader_prose_faults(h)
     if faults:
         die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
