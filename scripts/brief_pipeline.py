@@ -6564,15 +6564,18 @@ def _prose_passages(h: str) -> list:
         out.append(_Span(h, m.start(), m.end(), b - len("</section>"), b, sid, "prose"))
     for m in re.finditer(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
         out.append(_Span(h, m.start(), m.start(1), m.end(1), m.end(), None, "synthesis"))
-    # A section intro is prose a reader reads, and no pass could see it: never
-    # citation-checked, never corrected against its paper, never read back. It
-    # showed up as a puzzle instead — the auditor saw only the SECOND marker
-    # for a paper whose first citation sits in an intro, and called the
-    # numbering inconsistent. Only intros not already inside a passage above.
-    for m in re.finditer(r'<p class="[^"]*mz-section-intro[^"]*">([\s\S]*?)</p>', h):
-        if any(sp.a <= m.start() < sp.b for sp in out):
-            continue
-        out.append(_Span(h, m.start(), m.start(1), m.end(1), m.end(), None, "prose"))
+    # The lede and the section intros are prose a reader reads, and no pass
+    # could see either: never citation-checked, never corrected against the
+    # paper they name, never read back. The gap showed up as a puzzle rather
+    # than as a gap — a paper first cited in the lede carried the SUFFIXED
+    # popover id on every marker the auditor could see, so the auditor called
+    # the numbering inconsistent on a page where it was right. The lede is the
+    # first thing anyone reads and it carries citations.
+    for cls in ("mz-post-lede", "mz-section-intro"):
+        for m in re.finditer(r'<p class="[^"]*%s[^"]*">([\s\S]*?)</p>' % cls, h):
+            if any(sp.a <= m.start() < sp.b for sp in out):
+                continue
+            out.append(_Span(h, m.start(), m.start(1), m.end(1), m.end(), None, "prose"))
     out.sort(key=lambda s: s.a)
     return out
 
