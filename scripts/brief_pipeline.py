@@ -1682,6 +1682,8 @@ equity sections drift into it most); any number, population, comparator or outco
 understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
 written as a human finding); AI/placeholder language; a dose given as advice; "never"/"always" in the
 clinician's prose; bare "MIGS"; markup not matching the required shape.
+"CBG/MIGS" is the practice's own name for itself and is correct exactly as written — never ask for it
+to be expanded, defined or spelled out, and never refuse a section for using it.
 Judge EVERY section separately. If a section is fixable by tightening or deleting an unsupported
 sentence, return its corrected html in fixed_sections and mark it ok; a section you cannot fix is
 not ok. GENERATED: {json.dumps(draft['sections'])[:60000]}
@@ -2899,7 +2901,15 @@ def reader_prose_faults(h: str) -> list:
         faults.append(f"raw abstract text a reader can see: {m.group(0)!r}")
     if re.search(r"\[Awaiting|\[\s*pending\s*\]|\[TODO", vis, re.I):
         faults.append("an authorship placeholder remains")
-    m = PROVENANCE_RE.search(vis)
+    m = PROVENANCE_RE.search(text)
+    if m:
+        faults.append(f"AI-provenance language in the site's own prose: {m.group(0)!r}")
+    # inside a card or a deep dive, "LLM" is often the PAPER's subject (W20
+    # carries an LLM-chatbot benchmark); only a first-person authorship claim
+    # is provenance there
+    m = re.search(r"\bas an? (?:AI|language model)\b|\bI am an? (?:AI|language model)\b"
+                  r"|\b(?:written|generated|drafted|produced) by (?:an? )?(?:AI|LLM|model|assistant|ChatGPT|Claude)\b"
+                  r"|\b(?:AI|machine|auto)[- ]generated\b", vis, re.I)
     if m:
         faults.append(f"AI-provenance language a reader can see: {m.group(0)!r}")
     m = INTERNAL_RE.search(vis)
@@ -3556,7 +3566,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         die(f"{post_id}: {len(faults)} post-condition(s) failed")
 
     # S16: the output is read back before it is written anywhere
-    audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
+    h = audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
                     {q: "" for q in dropped}, [])
 
     post["body_html"] = h
@@ -6683,7 +6693,65 @@ def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
 
 
 
-def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None) -> None:
+def repair_from_defects(W: str, h: str, defects: list) -> tuple:
+    """Fix what the read-back audit named, in the sentence it quoted.
+
+    Owner, from the beginning: "this code has a way to automatically correct
+    this when there are errors." The audit found stale counts, a pasted
+    abstract, a self-contradicting sentence — and every one of them stopped
+    the brief instead of being repaired, so a person had to intervene. Each
+    blocking defect whose evidence quotes prose is now rewritten in place,
+    with the sentence's citations preserved, and the page is read again.
+    Returns (h, repaired_count)."""
+    done = 0
+    for d in defects:
+        ev = H.unescape(re.sub(r"<[^>]+>", " ", str(d.get("evidence") or "")))
+        ev = H.unescape(re.sub(r"<[^>]+>", " ", ev))
+        runs = sorted((x.strip() for x in re.findall(r"[A-Za-z][A-Za-z ,'\u2019-]{30,}", ev)), key=len, reverse=True)
+        if not runs:
+            continue
+        hit = None
+        for run in runs[:4]:
+            needle = re.sub(r"\s+", " ", run)[:60]
+            for ps in _prose_passages(h):
+                frag = ps.group(1)
+                masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+                flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
+                if needle not in flat:
+                    continue
+                sents = _sentences_of(masked)
+                for i, (t, e) in enumerate(sents):
+                    if needle[:40] in re.sub(r"\s+", " ", t):
+                        a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                        b = ps.start(1) + e
+                        hit = (a, b, t)
+                        break
+                if hit:
+                    break
+            if hit:
+                break
+        if not hit:
+            continue
+        a, b, sentence = hit
+        keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+        v = _ask_cached(W, "audit_fix", f"""An editor reading a clinician-facing evidence brief found this defect in one sentence:
+DEFECT: {json.dumps(str(d.get('what'))[:600])}
+THE SENTENCE: {json.dumps(sentence)}
+Rewrite the sentence so the defect is gone and everything it still says is true, in the same
+first-person surgeon's voice, the same length or shorter. Change nothing the defect does not
+concern; drop a clause that is no longer true rather than inventing a replacement fact. Plain text,
+no citation markup, ending with a full stop.
+Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
+        new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+        if len(new) < 15 or len(new) > max(400, int(len(sentence) * 1.5)):
+            continue
+        h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
+        done += 1
+        print(f"  audit repair: {new[:110]!r}")
+    return h, done
+
+
+def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None, _repair: bool = True) -> str:
     """Read the transformed page and find what my own checks could not.
 
     Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
@@ -6799,10 +6867,16 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
     for d in (v.get("defects") or [])[:12]:
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
+    if blocking and _repair:
+        repaired, n = repair_from_defects(W, after, blocking)
+        if n:
+            print(f"  repaired {n} of {len(blocking)} defect(s) the audit named; reading the page again")
+            return audit_transform(W, before, repaired, dropped, emptied, moved, _repair=False)
     if blocking:
         die(f"the transform audit found {len(blocking)} blocking defect(s) in the output")
     print(f"  transform audit: the output reads correctly"
           + (f" ({len(v.get('defects') or [])} cosmetic note(s))" if v.get("defects") else ""))
+    return after
 
 
 
@@ -7123,7 +7197,10 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
 
-    audit_transform(W, before_html, h, removed, emptied, moved)
+    h = audit_transform(W, before_html, h, removed, emptied, moved)
+    faults = reader_prose_faults(h)
+    if faults:
+        die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
 
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
