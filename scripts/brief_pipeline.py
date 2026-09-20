@@ -4565,14 +4565,28 @@ def _paper_finding(abstract: str) -> str:
 
 
 
+_RUN_BREAK_RE = re.compile(r"(?:&#8203;|&#x200[bB];|\u200b|<wbr\s*/?>)+")
+
+
 def _after_run(frag: str, pos: int) -> int:
     """The index after the run of markers standing at pos, so a new marker
-    joins the end of the run and stacked markers keep mention order."""
+    joins the end of the run and stacked markers keep mention order.
+
+    A published run has zero-width break opportunities between its markers,
+    put there by `breakable_marker_runs` so the run can wrap. This stopped at
+    the first one, so on a published body every caller — the site audit, the
+    audit-stage repairs, the deterministic citation step — saw one marker of
+    three on a sentence, and the audit reported a citation missing that was
+    on the page. The run walker steps over the breaks.
+    """
     while True:
         mm = SUP_RE.match(frag, pos)
         if not mm:
             return pos
         pos = mm.end()
+        br = _RUN_BREAK_RE.match(frag, pos)
+        if br and SUP_RE.match(frag, br.end()):
+            pos = br.end()
 
 
 def _own_papers_for(h: str, ps, topic_spans: list) -> set:
