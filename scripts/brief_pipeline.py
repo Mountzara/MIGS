@@ -5185,7 +5185,14 @@ containing ONLY the paragraphs you changed.""", timeout_s=900)
             h = h[:m.start(2)] + frag_now + h[m.end(2):]
             return h, cut
         still = leftover
-    die(f"the narrative still discusses removed paper(s) after rewriting and cutting: {still}")
+    # a refusal names the sentence, so the next person does not have to
+    # reproduce the run to find it
+    where = []
+    for t, _ in _sentences_of(_mask_noprose(h[m.start(2):m.end(2)])):
+        if any(re.search(r"(?<![\w-])" + re.escape(x) + r"(?:['\u2019]s)?(?![\w-])", t) for x in still):
+            where.append(re.sub(r"\s+", " ", t).strip()[:160])
+    die(f"the narrative still discusses removed paper(s) after rewriting and cutting: {still} — in: "
+        + (" | ".join(where[:3]) if where else "no sentence the cut can see, so the name sits in markup the sentence scan masks"))
 
 
 def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
@@ -5537,6 +5544,64 @@ _NOT_A_SURNAME = {
     "Rotterdam", "Helsinki", "Montreal", "Vienna", "Sydney", "Paris", "Rome", "Amsterdam",
     "Chicago", "Bethesda", "Berlin", "Toronto", "Milan", "Lyon", "Madrid", "Barcelona", "Geneva",
 }
+
+
+def fix_deep_dive_attribution(W: str, h: str, real: dict) -> tuple:
+    """A deep dive's editorial text credits the paper the deep dive is for.
+
+    W21's dialog for the opioid-free-anesthesia paper by Lv, Li and Liu read
+    "the Tian cohort", "Tian et al. studied the combined approach", "Tian et
+    al. excluded chronic-opioid users" — five times, in the Q&A and the
+    section intro a reader sees when they open it. The prose pass corrects
+    the page's sentences and the card pass corrects the card; nothing read
+    the dialog.
+
+    No model here. The authority is the dialog's own PMID, the convention is
+    the first author's surname, and the change is a name for a name in three
+    fixed forms — "X et al.", "the X cohort", "X's finding". A writer's
+    general rules were rejecting these corrections because the passage
+    already broke one of them somewhere else, which is not a reason to leave
+    a wrong name in it. Returns (h, dialogs_corrected).
+    """
+    n = 0
+    out, last = [], 0
+    for m in re.finditer(r"<dialog\b[\s\S]*?</dialog>", h):
+        block = m.group(0)
+        pm = (re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', block) or [None, None])[1]
+        r = real.get(pm) if pm else None
+        first = ((r or {}).get("authors") or "").split(",")[0].strip().split(" ")[0]
+        if not r or len(first) < 2:
+            continue
+        own = set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", r.get("authors", "")))
+        FORMS = (r"(?<![\w-])([A-Z][a-z\u00e0-\u017f]{2,})(?=\s+et\s+al\.)",
+                 r"(?<=\b[Tt]he\s)([A-Z][a-z\u00e0-\u017f]{2,})(?=\s+(?:cohort|trial|study|series|paper|review|analysis|data)\b)",
+                 r"(?<=\b[Tt]his\s)([A-Z][a-z\u00e0-\u017f]{2,})(?=\s+(?:cohort|trial|study|series|paper|review|analysis|data)\b)",
+                 r"(?<![\w-])([A-Z][a-z\u00e0-\u017f]{2,})(?=['\u2019]s\s+(?:cohort|trial|study|series|paper|review|analysis|data|finding|result|OR|HR|RR|aOR|AOR)\b)")
+        changed = 0
+
+        def para(pp):
+            nonlocal changed
+            inner = pp.group(1)
+            if re.search(r"\bPMID\s*:?\s*\d{5,9}", inner):
+                return pp.group(0)
+            def swap(x):
+                nonlocal changed
+                name = x.group(1)
+                if name in _NOT_A_SURNAME or name in own or _near_surname(name, own):
+                    return name
+                changed += 1
+                return first
+            for f in FORMS:
+                inner = re.sub(f, swap, inner)
+            return pp.group(0)[:pp.start(1) - pp.start()] + inner + "</p>"
+
+        new_block = re.sub(r'<p class="mz-jc-(?:qa-answer|section-intro|bottom|question|applicability|kb)[^"]*">([\s\S]*?)</p>', para, block)
+        if changed:
+            n += 1
+            print(f"  deep dive for {pm} credited another name {changed} time(s) — corrected to {first!r}")
+        out.append(h[last:m.start()]); out.append(new_block); last = m.end()
+    out.append(h[last:])
+    return "".join(out), n
 
 
 def fix_card_attribution(W: str, h: str, real: dict) -> tuple:
@@ -6658,6 +6723,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     h, n_attrib = fix_card_attribution(W, h, real)
     if n_attrib:
         print(f"  {n_attrib} card(s) that credited the wrong authors corrected")
+    h, n_dd = fix_deep_dive_attribution(W, h, real)
+    if n_dd:
+        print(f"  {n_dd} deep dive(s) that credited the wrong authors corrected")
     h, orphaned = remove_orphan_studies(W, h, pmids, real)
     if orphaned:
         print(f"  {orphaned} sentence(s) rewritten or removed for reporting a study the brief does not hold")
@@ -7221,6 +7289,10 @@ def _mask_noprose(frag: str) -> str:
     them."""
     out = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
     out = re.sub(r"<details[\s\S]*?</details>", lambda x: " " * len(x.group(0)), out)
+    # a deep-dive dialog has its own editorial text and its own pass
+    # (fix_deep_dive_attribution); the prose passes must not read it as
+    # sentences of the page
+    out = re.sub(r"<dialog\b[\s\S]*?</dialog>", lambda x: " " * len(x.group(0)), out)
     for m in list(re.finditer(r'<(div|table|nav|figure|ul|ol)\b[^>]*\bclass="([^"]*)"', out)):
         if out[m.start()] != "<":
             continue                       # already inside a widget just masked
