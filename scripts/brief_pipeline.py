@@ -5627,6 +5627,53 @@ every total is right.""", timeout_s=600)
     return h, changed
 
 
+ABSTRACT_LABEL_RE = re.compile(r"\b(?:M?ETHODS|R?ESULTS|C?ONCLUSIONS?|B?ACKGROUND|O?BJECTIVES?|P?URPOSE|F?INDINGS)\s*:")
+
+
+def rewrite_pasted_abstract_text(W: str, h: str) -> tuple:
+    """A sentence of the site's own prose carrying an abstract's section label
+    is pasted source text, not writing. W21's infertility synthesis opened
+    "ETHODS: This is a prospective, randomized…". Each such sentence is
+    rewritten in plain clinical words, its citations kept.
+    Returns (h, rewritten)."""
+    done = 0
+    for _round in range(3):
+        target = None
+        for ps in _prose_passages(h):
+            frag = ps.group(1)
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            sents = _sentences_of(masked)
+            for i, (t, e) in enumerate(sents):
+                if ABSTRACT_LABEL_RE.search(t):
+                    a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                    target = (a, ps.start(1) + e, t)
+                    break
+            if target:
+                break
+        if not target:
+            return h, done
+        a, b, sentence = target
+        keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+        v = _ask_cached(W, "audit_fix", f"""This sentence of a clinician-facing evidence brief is pasted abstract text — it still carries the
+abstract's own section label. Rewrite it as the surgeon's own plain clinical prose, first person,
+keeping every fact and figure it states and dropping the label. One or two sentences, at most as long
+as the original, ending with a full stop. Plain text, no markup.
+THE SENTENCE: {json.dumps(sentence)}
+Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
+        new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+        if len(new) < 20 or ABSTRACT_LABEL_RE.search(new):
+            new = ""
+        if not new:
+            # unusable: drop the pasted sentence, keep its citations
+            h = h[:a] + keep + h[b:]
+            print("  removed a pasted-abstract sentence from the site's prose")
+        else:
+            h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
+            print(f"  rewrote pasted abstract text as prose: {new[:100]!r}")
+        done += 1
+    return h, done
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -5639,6 +5686,9 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     its abstract (wrong paper: withdrawn by position; misstated: the sentence
     is rewritten from the abstract and reviewed again; still wrong: refuse).
     Returns (h, citations_added, names_declined)."""
+    h, n_pasted = rewrite_pasted_abstract_text(W, h)
+    if n_pasted:
+        print(f"  {n_pasted} pasted-abstract sentence(s) rewritten as the site's own prose")
     h, n_cards = refresh_card_abstracts(h, real)
     if n_cards:
         print(f"  {n_cards} card(s) given their PubMed abstract and metadata")
