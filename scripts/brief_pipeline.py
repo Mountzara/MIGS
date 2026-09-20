@@ -5145,6 +5145,26 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
         for a, b, sentence, names, papers in sorted(edits, key=lambda x: -x[0]):
             if not _usable_span(h, a, b):
                 continue
+            # Exactly one cited paper and exactly one wrong name is not a
+            # judgement call: the name is that paper's, misattributed. The
+            # writer, allowed to keep a name that belongs to another study
+            # mentioned alongside, kept "Yang et al." on a sentence whose
+            # only citation is the Guzelbag paper and whose only subject is
+            # that paper's finding. The first author's surname goes in, in
+            # the form the sentence already uses, with no one asked.
+            if len(papers) == 1 and len(names) == 1:
+                first = (papers[0].get("authors") or "").split(",")[0].strip().split(" ")[0]
+                if len(first) >= 2:
+                    new = re.sub(r"(?<![\w-])" + re.escape(names[0]) + r"(?=['\u2019]s\b|\s+et\s+al\.|\s+and\s+colleagues|\s+(?:19|20)\d\d\b|\s+Cochrane\b|\s+[a-z][\w-]*\s+(?:signal|finding|cohort|series|data)\b|\s+(?:cohort|trial|study|series|paper|review|analysis|data|RCT|signal|finding|result|evidence)\b)", first, sentence)
+                    if new != sentence:
+                        keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
+                        h = _replace_span(h, a, b, new)
+                        at = _after_run(h, a + len(H.escape(new, quote=False)))
+                        if keep and keep not in h[a:at + len(keep)]:
+                            h = h[:at] + keep + h[at:]
+                        fixed += 1
+                        print(f"  prose credited {names[0]!r} for the one paper it cites, by {first} — corrected without asking")
+                        continue
             v = _ask_cached(W, "attrib", f"""One sentence of a clinician-facing evidence brief credits {json.dumps(names[:3])} with a paper, and
 the paper it actually cites was written by someone else. A reader searching that name finds nothing.
 
