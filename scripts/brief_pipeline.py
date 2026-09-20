@@ -5139,6 +5139,50 @@ def refresh_card_abstracts(h: str, real: dict) -> tuple:
     return re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', card, h), n
 
 
+def refresh_deep_dive_meta(h: str, real: dict) -> tuple:
+    """The deep-dive modal names its paper's authors, journal and year too.
+
+    Every other place a paper is named — the popover, the cite card, the
+    reference entry — is rebuilt from the PubMed-verified record. The modal's
+    own citation line was not, so one brief showed the same paper as
+    "Golinska M, Wołyniak M, Kulesza P et al. · Front Immunol · 2025"
+    everywhere and "Golinska M, Kulesza P, Fendler W" inside the modal. A
+    reader who opens the deep dive sees a different paper described.
+    Returns (h, lines_rewritten).
+    """
+    n = 0
+
+    def one(m):
+        nonlocal n
+        block = m.group(0)
+        pm = (re.search(r'<dialog[^>]*\bid="dd-(\d{5,9})"', block) or [None, None])[1]
+        r = real.get(pm) if pm else None
+        if not r or not (r.get("authors") or r.get("journal")):
+            return block
+        line = (H.escape(r.get("authors", ""), quote=False)
+                + (f' \u00b7 <em>{H.escape(r.get("journal", ""), quote=False)}</em>' if r.get("journal") else "")
+                + (f' \u00b7 {H.escape(str(r.get("year", "")), quote=False)}' if r.get("year") else ""))
+        out, hit = [], 0
+        last = 0
+        for c in re.finditer(r'<p class="mz-jc-modal-cite"[^>]*>[\s\S]*?</p>', block):
+            # never trade a line that names a journal for one that cannot:
+            # a lean record would otherwise strip real information
+            if not r.get("journal") and "\u00b7" in re.sub(r"<[^>]+>", "", c.group(0)):
+                out.append(block[last:c.end()]); last = c.end()
+                continue
+            new = f'<p class="mz-jc-modal-cite">{line}</p>'
+            if new != c.group(0):
+                hit += 1
+            out.append(block[last:c.start()]); out.append(new); last = c.end()
+        if not hit:
+            return block
+        out.append(block[last:])
+        n += hit
+        return "".join(out)
+
+    return re.sub(r"<dialog\b[\s\S]*?</dialog>", one, h), n
+
+
 def cite_every_card(W: str, h: str, real: dict, force_new: set | None = None) -> tuple:
     """Every paper carded under a heading is cited somewhere in the prose.
 
@@ -7734,6 +7778,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, badges = renumber_card_badges(h, order)
         if badges:
             print(f"  {badges} card badge(s) renumbered to the citation they belong to")
+        h, modal_meta = refresh_deep_dive_meta(h, real)
+        if modal_meta:
+            print(f"  {modal_meta} deep-dive citation line(s) rebuilt from PubMed")
         # numbering can leave a legacy marker without a popover (W20's 8 and
         # 20); the browser gate refuses the page for it, so fill them here
         h, filled_pops = refresh_popovers_from_abstracts(W, h, real)
