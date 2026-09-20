@@ -5370,10 +5370,18 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
         re.sub(r"\s*·.*$", "", H.unescape((re.search(r'mz-cite-design">([^<]*)<', c) or [None, ""])[1])).strip()
         for c in all_cards)
     designs.pop("", None)
+    # the deep-dive (journal club) section: "N papers worth a careful read" and
+    # "the M papers not deep-read" are derived from it
+    jc = re.search(r'<section class="[^"]*mz-journal-club[^"]*"[^>]*>', h)
+    deep = 0
+    if jc:
+        jb = _element_end(h, "section", jc.end())
+        deep = len(re.findall(r'class="mz-jc-card', h[jc.end():jb])) or len(re.findall(r"<article\b", h[jc.end():jb]))
     facts = {"papers_in_this_brief": total, "topics": len(per), "per_topic": per,
              "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {},
-             "papers_by_study_design": dict(designs)}
-    allowed = {total, len(per)} | {x["papers"] for x in per} | set(facts["percent_of_total"].values()) | set(designs.values())
+             "papers_by_study_design": dict(designs),
+             "deep_dive_papers": deep, "papers_not_deep_dived": max(total - deep, 0)}
+    allowed = {total, len(per), deep, max(total - deep, 0)} | {x["papers"] for x in per} | set(facts["percent_of_total"].values()) | set(designs.values())
     changed = 0
     all_edits = []
     for ps in [p for p in _prose_passages(h) if p.kind == "prose"]:
