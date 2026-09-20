@@ -5179,18 +5179,29 @@ def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict)
         papers = [{"pmid": u["pmid"], "title": (real.get(u["pmid"]) or {}).get("title", ""),
                    "what_is_wrong": u["why"],
                    "abstract": ((real.get(u["pmid"]) or {}).get("abstract") or "")[:3000]} for u in us]
-        v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates a paper it cites. Rewrite ONLY that
+        new, note = "", ""
+        for attempt in range(3):
+            v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates a paper it cites. Rewrite ONLY that
 sentence so that every figure, comparison and direction of effect it attributes to each paper below
 comes from that paper's abstract, in the same first-person surgeon's voice, the same length or
 shorter, ending with a full stop. Keep everything in the sentence that is not about these papers
 exactly as it is. If an abstract does not support the point at all, state what that paper actually
-found instead. Plain text; no citation markup; no HTML.
+found instead. Plain text; no citation markup; no HTML.{note}
 THE SENTENCE: {json.dumps(us[0]["sentence"])}
 THE PAPERS IT MISSTATES: {json.dumps(papers, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
-        new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) < 20 or len(new) > max(400, int(len(us[0]["sentence"]) * 1.4)):
-            print(f"  could not correct the sentence citing {[u['pmid'] for u in us]}; leaving it and reporting")
+            cand = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+            limit = max(400, int(len(us[0]["sentence"]) * 1.6) + 80)
+            if 20 <= len(cand) <= limit:
+                new = cand
+                break
+            # a rejected rewrite was silently re-served from the cache on the
+            # second round, so "two corrections" were one; the retry asks
+            # differently
+            note = (f"\nA PREVIOUS ATTEMPT WAS REJECTED: it was {len(cand)} characters; the sentence must stay under "
+                    f"{limit} characters — change only the part about the paper, nothing else.")
+        if not new:
+            print(f"  could not correct the sentence citing {[u['pmid'] for u in us]} in three attempts")
             continue
         h = _replace_span(h, a, b, new)
         done += 1
