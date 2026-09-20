@@ -6949,10 +6949,20 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
     same defect again, the identical prompt is served from cache, and three
     repair rounds change nothing. Find them all.
     """
-    runs = sorted((x.strip() for x in re.findall(r"[A-Za-z][A-Za-z0-9 ,'\u2019()%=.–-]{30,}", ev)),
-                  key=len, reverse=True)
+    # The evidence names both sides, and nothing in it is punctuation this
+    # pattern stops at — "…(AOR 0.61) AND Wang et al., …(AOR 0.42)" matched as
+    # ONE run whose first sixty characters could only ever find the first
+    # sentence. Split it the ways an auditor separates two quotes, and try the
+    # pieces as well as the whole.
+    parts = [ev]
+    parts += re.split(r"\s+(?:AND|and)\s+", ev)
+    parts += re.findall(r"['\"\u2018\u2019\u201c\u201d]([^'\"\u2018\u2019\u201c\u201d]{30,})", ev)
+    runs = []
+    for part in parts:
+        runs += [x.strip() for x in re.findall(r"[A-Za-z][A-Za-z0-9 ,'\u2019()%=.–-]{30,}", part)]
+    runs = sorted(dict.fromkeys(runs), key=len, reverse=True)
     sites: list = []
-    for run in runs[:8]:
+    for run in runs[:14]:
         needle = re.sub(r"\s+", " ", run)[:60]
         for ps in _prose_passages(h):
             masked = _mask_noprose(ps.group(1))
