@@ -5508,19 +5508,20 @@ Reply with ONLY {{"text": "<the corrected text>"}}""", timeout_s=600)
     return "".join(out), n
 
 
-def cite_cards_without_headings(W: str, h: str, real: dict) -> tuple:
-    """Cite every carded paper in a brief that has no topic headings.
+def cite_uncited_cards(W: str, h: str, real: dict) -> tuple:
+    """Backstop: every carded paper is cited somewhere, whatever the shape.
 
-    `cite_every_card` walks topic sections, and the whole trend generation has
-    none, so those briefs fell straight through it: a paper could carry a card
-    and a deep dive and be cited nowhere at all. The read-back audit caught it
-    as four cards against three papers cited. Each uncited card is given a
-    sentence in the prose passage that introduces it — the last one ending
-    before the card — written from the paper's own abstract, and that sentence
-    is reviewed like any other afterwards. Returns (h, sentences_added).
+    `cite_every_card` walks topic sections and cites a missing paper in its
+    section's synthesis paragraph. It misses a paper twice over: a trend brief
+    has no topic sections at all, and a weekly section with no synthesis
+    paragraph is skipped along with every uncited card under it — W21 went to
+    the audit with 72 cards and 71 papers cited, the odd one carded under
+    Infertility and cited nowhere. This runs last and asks only the question
+    that matters: is this paper cited anywhere? If not, it gets a sentence in
+    the prose passage that introduces its card, written from the paper's own
+    abstract and reviewed like any other afterwards.
+    Returns (h, sentences_added).
     """
-    if _topic_sections(h):
-        return h, 0
     added = 0
     for m in list(re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h)):
         q = ((re.search(CARD_ID_RE, m.group(0)) or re.search(r"openDeepDive\('dd-(\d+)'", m.group(0))
@@ -6546,9 +6547,6 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     if named2:
         print(f"  inserted {named2} more citation(s) on sentences that name a covered paper's author")
     named += named2
-    h, flat = cite_cards_without_headings(W, h, real)
-    if flat:
-        print(f"  {flat} carded paper(s) with no citation anywhere given one")
     h, by_sent, appended = cite_every_card(W, h, real)
     if by_sent or appended:
         print(f"  every card cited: {by_sent} placed on the sentence that reports the paper, "
@@ -6639,6 +6637,10 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     # old generator had stacked menopause papers onto infertility sentences;
     # eighteen went). Every card is cited again, and what that adds is reviewed.
     h, by3, app3 = cite_every_card(W, h, real)
+    h, flat = cite_uncited_cards(W, h, real)
+    if flat:
+        print(f"  {flat} carded paper(s) cited nowhere given a sentence of their own")
+        app3 += flat
     if by3 or app3:
         print(f"  after the review, every card cited again: {by3} placed, {app3} sentence(s) written")
         named += by3 + app3
@@ -8152,6 +8154,8 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
             # without topic headings — this is the difference that explains
             # cite_cards exceeding distinct_papers_cited, and the audit read
             # that difference as a missing citation on a brief that had none
+            "distinct_papers_carded": len({(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+                                           for c in re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', after)} - {None}),
             "extra_cards_for_papers_carded_twice": (
                 len(re.findall(r'<article class="mz-cite-card', after))
                 - len({(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
@@ -8190,9 +8194,11 @@ and never the whole list: its length says nothing about how many popovers the pa
 count in "counts" does. Never report popovers as missing by comparing those two against a count. A paper that belongs under two headings is carded under both — two cite cards, the
 second with a suffixed id (mz-cite-<pmid>-2) — so the card count may exceed the paper count; that is
 by design, not a defect, and duplicate ids are measured and reported in counts. This holds whether or
-not the brief has topic headings: "extra_cards_for_papers_carded_twice" is exactly how far
-"cite_cards" may exceed "distinct_papers_cited" for that reason alone, so that difference is NOT a
-paper missing a citation. For the same reason
+not the brief has topic headings. Three counts close the arithmetic and none of them is guesswork:
+"cite_cards" minus "distinct_papers_carded" is "extra_cards_for_papers_carded_twice", and
+"distinct_papers_carded" minus "distinct_papers_cited" is how many carded papers carry no marker —
+THAT is the number to report, and it should be zero. Do not subtract "distinct_papers_cited" from
+"cite_cards" and compare the result to the double-carding figure; those measure different things. For the same reason
 the per-heading counts a reader could add up sum to MORE than the brief's paper total, which counts
 each paper ONCE: "sum_of_topic_section_counts" exceeding "distinct_papers_cited" is that design and
 is NOT a contradiction. A stated total is wrong only when it disagrees with "distinct_papers_cited". Which heading a paper
