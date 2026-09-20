@@ -4924,7 +4924,7 @@ def refresh_card_abstracts(h: str, real: dict) -> tuple:
     return re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', card, h), n
 
 
-def cite_every_card(W: str, h: str, real: dict) -> tuple:
+def cite_every_card(W: str, h: str, real: dict, force_new: set | None = None) -> tuple:
     """Every paper carded under a heading is cited somewhere in the prose.
 
     The read-back audit refused W33 for six cards with no marker anywhere.
@@ -4960,7 +4960,7 @@ def cite_every_card(W: str, h: str, real: dict) -> tuple:
             listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
             ab = re.sub(r"\s+", " ", r.get("abstract") or "")
             paper_json = json.dumps({"pmid": q, "title": r.get("title", ""), "abstract": ab[:1800]}, ensure_ascii=False)
-            v = _ask_cached(W, "place", f"""One paper in a section of a clinician-facing evidence brief has a card but no citation in the
+            v = None if (force_new and q in force_new) else _ask_cached(W, "place", f"""One paper in a section of a clinician-facing evidence brief has a card but no citation in the
 section's opening paragraph. Which numbered sentence, if any, reports THIS paper — its finding,
 design, population or numbers? Match on the claim, not on a name alone.
 THE PAPER: {paper_json}
@@ -5601,7 +5601,7 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                         if m.start() in pos:
                             h = h[:m.start()] + h[m.end():]
                     print(f"  withdrew {len(pos)} citation(s) from sentences that are not about them")
-                    h, by4, app4 = cite_every_card(W, h, real)
+                    h, by4, app4 = cite_every_card(W, h, real, force_new={u["pmid"] for u in again_unsupported})
                     if by4 or app4:
                         print(f"  gave {by4 + app4} paper(s) a citation of their own")
                         named += by4 + app4
@@ -5627,8 +5627,21 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
             h, n3 = correct_unsupported_sentences(W, h, unsup3, real, round_no=2)
             wrong3b, unsup3b = review_inserted_citations(W, h, real)
             if unsup3b:
-                die("sentence(s) written for uncited cards still misstate their papers: "
-                    + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in unsup3b[:4]))
+                # the sentence is not about this paper: take the citation off
+                # it and write the paper its own sentence from the abstract
+                pos = {u["_at"] for u in unsup3b}
+                for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                    if m.start() in pos:
+                        h = h[:m.start()] + h[m.end():]
+                print(f"  withdrew {len(pos)} citation(s) from sentences that are not about them")
+                h, by5, app5 = cite_every_card(W, h, real, force_new={u["pmid"] for u in unsup3b})
+                if by5 or app5:
+                    print(f"  wrote {by5 + app5} sentence(s) from the abstracts for those papers")
+                    named += by5 + app5
+                wrong3b, unsup3b = review_inserted_citations(W, h, real)
+                if unsup3b:
+                    die("sentences written from the abstracts still misstate their papers: "
+                        + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in unsup3b[:4]))
             wrong3 |= wrong3b
         if wrong3:
             for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
