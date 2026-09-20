@@ -96,11 +96,12 @@ def main():
     except Exception as e:
         print(f"could not enumerate published briefs: {e}")
         return 1
-    bad = 0
+    bad = checked = 0
     for r in routes:
         pid = r.split("?id=", 1)[1]
         if ONLY and not any(o in pid for o in ONLY):
             continue
+        checked += 1
         p = bp.curl_json(f"{BASE}/api/posts/_admin/{pid}", auth=True)
         h = (p.get("post", p)).get("body_html") or ""
         if not h:
@@ -122,11 +123,16 @@ def main():
         else:
             print(f"  ✓ {pid}")
     print()
+    # the summary counts what was CHECKED. With --only it once said "every
+    # one of 16 published briefs is clean" after looking at one of them.
+    scope = f"{checked} of {len(routes)} published brief(s)" if ONLY else f"all {len(routes)} published brief(s)"
     if bad:
-        print(f"🛑 {bad} of {len(routes)} published brief(s) carry a defect that has shipped before")
+        print(f"🛑 {bad} of the {checked} checked carry a defect that has shipped before ({scope} checked)")
+    elif ONLY:
+        print(f"{scope} checked and clean — the other {len(routes) - checked} were NOT checked")
     else:
-        print(f"every one of {len(routes)} published brief(s) is clean: markers numbered, cards and "
-              f"citations in step, names matching their papers, markup a browser can read")
+        print(f"{scope} clean: markers numbered, cards and citations in step, names matching "
+              f"their papers, markup a browser can read")
     return bad
 
 
