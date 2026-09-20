@@ -3874,9 +3874,18 @@ def preview_and_verify(W: str, post_id: str, kind_route: str) -> None:
             ["python3", os.path.join(ROOT, "scripts/audit_citation_popovers.py"), base, "--routes=/preview.html"],
             ["python3", os.path.join(ROOT, "scripts/audit_light_text.py"), base, "--routes=/preview.html"],
         ]
+        # A flat 2400 s budget was a guess, and W21 (249 markers, each hovered
+        # AND tapped) blew through it — the gate was killed mid-run and the
+        # brief could not publish even though nothing was wrong with it. Budget
+        # from the work itself: every marker is exercised twice, so give each
+        # pass a real per-marker allowance plus browser start-up.
+        markers = len(re.findall(r'<sup[^>]*class="[^"]*mz-ref', body))
+        budget = min(9000, max(2400, 300 + markers * 2 * 8))
+        if markers:
+            print(f"  {markers} marker(s) to exercise — render-check budget {budget}s")
         try:
             for cmd in checks:
-                r = subprocess.run(cmd, capture_output=True, text=True, timeout=2400,
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=budget,
                                    cwd=os.path.join(ROOT, "scripts"))
                 if r.returncode != 0:
                     tail = (r.stdout + r.stderr).strip().splitlines()[-10:]

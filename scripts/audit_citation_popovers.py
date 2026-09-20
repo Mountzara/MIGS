@@ -83,58 +83,101 @@ def duplicate_ids(page, route):
     return [f"{route}: duplicate element id on the rendered page: {d}" for d in dupes[:10]]
 
 
-def check_marker(page, sup, route, i, mode):
-    """One citation, as a reader meets it: number, reveal, summary, link."""
+def marker_facts(page, route):
+    """Everything a citation must be that can be read without touching it.
+
+    The number, the reference it resolves to, and the summary and link inside
+    its popover are all in the DOM before anyone hovers anything. Reading them
+    for every marker in ONE pass costs a single round trip instead of five per
+    marker; W21's 249 markers spent most of a 40-minute budget on round trips
+    that never needed a browser. The browser is then only asked the one
+    question it alone can answer: does the popover actually appear.
+    """
+    facts = page.evaluate("""() => {
+        const out = [];
+        for (const sup of document.querySelectorAll('sup.mz-ref')) {
+            const a = sup.querySelector('a.mz-ref-link');
+            const pop = sup.querySelector('.mz-ref-pop');
+            const href = a ? (a.getAttribute('href') || '') : '';
+            let target = true;
+            if (href.startsWith('#')) {
+                try { target = !!document.querySelector(href); } catch (e) { target = false; }
+            }
+            const txt = pop ? ((pop.innerText || pop.textContent || '').trim()) : '';
+            out.push({
+                marker: a ? (a.textContent || '').trim() : null,
+                href: href,
+                target: target,
+                popLen: pop ? txt.length : -1,
+                popLink: pop ? !!pop.querySelector('a.mz-ref-pop-src') : false,
+            });
+        }
+        return out;
+    }""")
     fails = []
-    try:
-        marker = (sup.locator("a.mz-ref-link").first.inner_text() or "").strip()
-    except Exception:
-        return [f"{route}: citation {i} has no marker link"]
-    if not re.fullmatch(r"\d{1,4}", marker):
-        return [f"{route}: citation {i} shows {marker!r} — a marker is its number, not a PMID"]
-    href = sup.locator("a.mz-ref-link").first.get_attribute("href") or ""
-    if href.startswith("#") and page.locator(href).count() == 0:
-        fails.append(f"{route}: marker {marker} points at {href}, which is not on the page")
-    # Three attempts. On the touch pass the previous marker's popover stays
-    # open (the site's tap handler toggles it) and can lie over the next
-    # marker, so a click is intercepted and times out — W34 was unpublished
-    # for exactly one such tap, on a page whose preview had passed. Every
-    # attempt first closes any open popover and centres the marker.
+    for i, f in enumerate(facts):
+        m = f["marker"]
+        if m is None:
+            fails.append(f"{route}: citation {i} has no marker link")
+            continue
+        if not re.fullmatch(r"\d{1,4}", m):
+            fails.append(f"{route}: citation {i} shows {m!r} — a marker is its number, not a PMID")
+            continue
+        if not f["target"]:
+            fails.append(f"{route}: marker {m} points at {f['href']}, which is not on the page")
+        if f["popLen"] < 0:
+            fails.append(f"{route}: marker {m} carries no popover at all")
+        elif f["popLen"] < 120:
+            fails.append(f"{route}: popover for marker {m} has no real summary ({f['popLen']} chars)")
+        if f["popLen"] >= 0 and not f["popLink"]:
+            fails.append(f"{route}: popover for marker {m} has no link to the study")
+    return facts, fails
+
+
+# Attempt 0 is the fast path and must FAIL FAST: a marker covered by the
+# previous popover fails Playwright's hit-target check and sits there until the
+# timeout expires, so a 15-second first attempt turned a handful of stacked
+# markers into tens of minutes. Short first, patient second, forced third.
+HOVER_TIMEOUTS = (2500, 6000, 12000)
+REVEAL_TIMEOUTS = (1500, 3000, 5000)
+
+
+def check_reveal(page, sup, route, i, mode, marker):
+    """The one thing only a browser can answer: does the popover appear when a
+    reader hovers it (CSS :hover) or taps it (a delegated click handler)?"""
     last = ""
     for attempt in range(3):
         try:
-            page.evaluate("document.querySelectorAll('.mz-ref.mz-open').forEach(e => e.classList.remove('mz-open'))")
-            sup.evaluate("el => el.scrollIntoView({block: 'center', inline: 'nearest'})")
-            page.wait_for_timeout(250 if attempt == 0 else 700)
+            # close any popover still open over this marker AND centre this one,
+            # in a single round trip
+            sup.evaluate("""el => {
+                document.querySelectorAll('.mz-ref.mz-open').forEach(e => {
+                    if (e !== el) e.classList.remove('mz-open');
+                });
+                el.scrollIntoView({block: 'center', inline: 'nearest'});
+            }""")
             if mode == "hover":
-                # markers stack in runs, and the PREVIOUS marker's popover sits
+                # markers stack in runs and the PREVIOUS marker's popover sits
                 # over the next one: hovering there lands on the popover and the
                 # next marker never opens (W20's markers 8 and 20). Park the
-                # pointer away first so no popover is under it.
+                # pointer away first so no popover is under it. The settle wait
+                # only costs anything on the retries that actually needed it.
                 page.mouse.move(1, 1)
-                page.wait_for_timeout(120)
-                sup.hover(timeout=15000, force=(attempt == 2))
+                if attempt:
+                    page.wait_for_timeout(200)
+                sup.hover(timeout=HOVER_TIMEOUTS[attempt], force=(attempt == 2))
             else:
-                sup.click(timeout=15000, force=(attempt == 2))
-            page.wait_for_timeout(350)
-            last = ""
-            break
+                if attempt:
+                    page.wait_for_timeout(200)
+                sup.click(timeout=HOVER_TIMEOUTS[attempt], force=(attempt == 2))
+            # poll for the popover instead of sleeping a fixed 350 ms every
+            # time: a page that reveals in 30 ms should cost 30 ms
+            sup.locator(".mz-ref-pop").first.wait_for(
+                state="visible", timeout=REVEAL_TIMEOUTS[attempt])
+            return []
         except Exception as e:
-            last = str(e)[:60]
-    if last:
-        return fails + [f"{route}: marker {marker} could not be {mode}ed after 3 attempts ({last})"]
-    pop = sup.locator(".mz-ref-pop").first
-    if not pop.is_visible():
-        return fails + [f"{route}: {mode} on marker {marker} reveals no popover"]
-    txt = (pop.inner_text() or "").strip()
-    if len(txt) < 120:
-        fails.append(f"{route}: popover for marker {marker} has no real summary ({len(txt)} chars)")
-    if pop.locator("a.mz-ref-pop-src").count() == 0:
-        fails.append(f"{route}: popover for marker {marker} has no link to the study")
-    if mode != "hover":
-        # leave the page as the next marker needs it: nothing open over it
-        page.evaluate("document.querySelectorAll('.mz-ref.mz-open').forEach(e => e.classList.remove('mz-open'))")
-    return fails
+            last = str(e).strip().splitlines()[0][:70] if str(e).strip() else repr(e)[:70]
+    return [f"{route}: {mode} on marker {marker} reveals no popover after 3 attempts ({last})"]
 
 
 def audit(page, route, mode="hover"):
@@ -148,9 +191,17 @@ def audit(page, route, mode="hover"):
         return [f"{route}: no inline citations on the rendered page"]
     fails += duplicate_ids(page, route)
     fails += disclaimer_visible(page, route)
+    facts, static_fails = marker_facts(page, route)
+    # the number, the anchor and the popover's contents are the same document in
+    # both viewports — report them once so a defect is not counted twice
+    if mode == "hover":
+        fails += static_fails
     limit = min(n, MAX_CHECKED) if MAX_CHECKED else n
     for i in range(limit):
-        fails += check_marker(page, sups.nth(i), route, i, mode)
+        m = facts[i]["marker"] if i < len(facts) else None
+        if not m:
+            continue  # already reported by the static pass
+        fails += check_reveal(page, sups.nth(i), route, i, mode, m)
         if len(fails) > 40:
             fails.append(f"{route}: stopping after 40 problems ({limit - i - 1} marker(s) unchecked)")
             break
