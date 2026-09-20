@@ -2313,6 +2313,23 @@ by content, not by check. Every guarantee now runs for every shape, and
 `body_invariant_faults` checks the result regardless of which pass was
 meant to hold it.
 
+**WHERE A TREND BRIEF IS CURATED (2026-09-20).** Two paths, both now
+covered. The scheduled `run trend-*` path: `prepare_trend` writes one
+`topics/<tid>.json` per item of the claim and `cmd_curate` judges every
+paper against its item with `CURATE_PROMPT` and the library — this always
+ran. The republish `renumber` path on a rendered body: no `topic-` sections
+exist, so `curate_live` never ran and no published trend brief had ever
+been curated; `curate_flat` now judges every carded paper against the
+brief's own title. An adversarial workflow over the seven published trend
+briefs found four papers both passes reject (a KEEPS-Cog baseline analysis
+in the MHT brief; a pregnancy-outcomes synthesis and a post-op-suppression
+meta-analysis in the H1/H2 brief; a rat lipid-metabolism review in the
+GLP-1 brief) and one the adversary rescued as a legitimate comparator (the
+Cochrane laparoscopy review). Cause: `scripts/_authoring/tb_*.py` carded a
+shared "treatment-landscape" trio by disease keyword. Those files, and
+`purge_w2*_offtopic.py` beside them, are dead one-offs from earlier
+sessions — hand-patches, wired to nothing; the pipeline supersedes them.
+
 **MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
 · `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`
 · `scripts/_lib_brief_routes.py` · `scripts/audit_page_canvas.py` ·
