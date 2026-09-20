@@ -7537,6 +7537,21 @@ def _looks_broken(t: str) -> bool:
     return not t[:1].isupper() and not t[:1].isdigit() and t[:1] not in "\u201c\"("
 
 
+def _inside_tag(h: str, i: int) -> bool:
+    """True when index i sits between a tag's "<" and its ">"."""
+    lt = h.rfind("<", 0, i)
+    return lt >= 0 and h.find(">", lt, i) < 0
+
+
+def _usable_span(h: str, a: int, b: int) -> bool:
+    """A span worth replacing: non-empty, in range, and starting and ending in
+    prose rather than in the middle of a tag. A repair once located a
+    zero-length span at the ">" of an opening tag and spliced a whole sentence
+    in there, leaving `<span class="mz-rec-text"Laparoscopic…>` for a reader.
+    """
+    return 0 <= a < b <= len(h) and not _inside_tag(h, a) and not _inside_tag(h, b)
+
+
 def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
     """Every sentence the audit's evidence quotes, as (start, end, text).
 
@@ -7572,6 +7587,8 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
                     continue
                 a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
                 b = ps.start(1) + e
+                if not _usable_span(h, a, b):
+                    continue
                 if any(a < y and x < b for x, y, _ in sites):
                     continue          # already have this sentence
                 sites.append((a, b, t))
@@ -7671,7 +7688,13 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
                     q and _has_card(h, q) for q in (_pmid_of(x.group(0)) for x in SUP_RE.finditer(keep))):
                 print(f"  audit repair rejected (it denies holding a paper it cites): {new_s[:90]!r}")
                 continue
-            h = h[:a] + H.escape(new_s, quote=False) + keep + h[b:]
+            if not _usable_span(h, a, b):
+                print(f"  audit repair skipped (the quoted span is not prose): {new_s[:80]!r}")
+                continue
+            h = _replace_span(h, a, b, new_s)
+            at = _after_run(h, a + len(H.escape(new_s, quote=False)))
+            if keep and keep not in h[a:at + len(keep)]:
+                h = h[:at] + keep + h[at:]
             done += 1
             print(f"  audit repair: {new_s[:110]!r}")
     return h, done
