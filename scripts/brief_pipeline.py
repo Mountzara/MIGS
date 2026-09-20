@@ -4902,9 +4902,10 @@ def cite_missing_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
 it. Name every study the sentence reports that is NOT among those — a study named by an author or
 described by its design, population, numbers or findings ("a Korean protocol (LIFE-Repro, n=200)",
 "one review makes the case for…, and another catalogs…") — and give the covered paper it is. A
-sentence reporting three studies carries three citations. Match on what the sentence claims against
-each paper's title and abstract; give nothing for a sentence whose studies are all cited or that
-reports none.
+sentence reporting three studies carries three citations; a sentence that says "five qualitative
+studies on X in Ghana, South Africa and HSCT" reports five, and each of the five is to be found among
+the covered papers by its setting and design. Match on what the sentence claims against each paper's
+title and abstract; give nothing for a sentence whose studies are all cited or that reports none.
 SENTENCES: {json.dumps(rows[c0:c0 + 25], ensure_ascii=False)}
 COVERED PAPERS: {covered_json}
 Reply with ONLY {{"additions": [{{"sentence": <number>, "pmids": ["..."]}}, ...]}} (an empty list when nothing is missing).""",
@@ -5941,6 +5942,7 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         "counts": {
             "citations": len(SUP_RE.findall(after)),
             "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
+            "duplicate_element_ids_(measured)": len([i for i, n in __import__("collections").Counter(re.findall(r'\bid="([^"]+)"', after)).items() if n > 1]),
             "popovers_(one_per_citation_marker)": len(re.findall(r'class="mz-ref-pop"', after)),
             "deep_dive_dialogs_(one_per_carded_paper_not_per_marker)": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "reference_entries": len(re.findall(r'<li id="ref-\d+">', after)),
