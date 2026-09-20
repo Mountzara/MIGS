@@ -5027,6 +5027,19 @@ stated count is right.""", timeout_s=600)
             new = re.sub(r"\s+", " ", str(c.get("rewrite") or "")).strip()
             if not (1 <= idx <= len(sents)) or len(new) < 20 or len(new) > len(sents[idx - 1][0]) + 80:
                 continue
+            if re.sub(r"\s+", " ", sents[idx - 1][0]).strip() == new:
+                # the model flagged the count and then handed the sentence
+                # back unchanged (W28: "Two fibroid papers" over three cards)
+                v2 = _ask_cached(W, "counts", f"""This sentence from a section of a clinician-facing evidence brief states a count of papers that does
+not match the section, which holds {len(cards)} papers in all:
+{json.dumps(cards, ensure_ascii=False)}
+SENTENCE: {json.dumps(sents[idx - 1][0])}
+Rewrite it with the correct count (the number of papers of the kind it counts, from the list above)
+and nothing else changed; plain text, no citation markup.
+Reply with ONLY {{"rewrite": "<text>"}}""", timeout_s=600)
+                new = re.sub(r"\s+", " ", str((v2 or {}).get("rewrite") or "")).strip()
+                if not new or new == re.sub(r"\s+", " ", sents[idx - 1][0]).strip():
+                    die(f"a stated count in {t.tid} could not be corrected: {sents[idx - 1][0][:100]!r}")
             a = base + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
             b = base + sents[idx - 1][1]
             edits.append((a, b, new))
