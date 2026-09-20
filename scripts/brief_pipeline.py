@@ -4951,8 +4951,22 @@ abstract states it. At most 45 words, plain text, no citation markup, ending wit
 THE PAPER: {json.dumps({"title": r.get("title", ""), "abstract": ab[:2500]}, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
             text = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
-            if len(text) < 30 or len(text) > 420:
-                die(f"could not write a sentence for uncited card {q} under {t.tid}")
+            ab_norm = re.sub(r"[^a-z0-9]", "", ab.lower())
+            t_norm = re.sub(r"[^a-z0-9]", "", text.lower())
+            if (len(text) < 30 or len(text) > 420
+                    or re.search(r"\b(?:M?ETHODS?|RESULTS?|CONCLUSIONS?|BACKGROUND|OBJECTIVES?|DESIGN|SETTING)\s*:", text)
+                    or (len(t_norm) > 60 and t_norm[:60] in ab_norm)):
+                # W21: the model pasted the abstract's METHODS paragraph
+                w = _ask_cached(W, "resynth", f"""Write ONE sentence, in Dr. Mabini's first person, reporting this paper's main finding with its key
+number as the abstract states it — in your own plain clinical words, NOT copied from the abstract, no
+section labels like METHODS or RESULTS. At most 45 words, plain text, ending with a full stop.
+THE PAPER: {json.dumps({"title": r.get("title", ""), "abstract": ab[:2500]}, ensure_ascii=False)}
+Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
+                text = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
+                t_norm = re.sub(r"[^a-z0-9]", "", text.lower())
+                if (len(text) < 30 or len(text) > 420 or re.search(r"\b[A-Z]{5,}\s*:", text)
+                        or (len(t_norm) > 60 and t_norm[:60] in ab_norm)):
+                    die(f"could not write a sentence for uncited card {q} under {t.tid}")
             sup = _sup_markup(q, real, W)
             if not sup:
                 die(f"no hover card could be written for {q}")
@@ -5049,11 +5063,11 @@ _NUM_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "s
 def _leading_count(text: str):
     """The count a synthesis opens with — "Three fibroid papers…", "15
     infertility papers…", "Only two PCOS entries…" — or None."""
-    m = re.match(r"\s*(?:only\s+|just\s+)?(\d+|[a-z]+)\s+(?:[\w&/-]+\s+){0,4}?(?:papers?|entries|studies)\b", text, re.I)
+    m = re.match(r"\s*(?:only\s+|just\s+)?(\d+|[a-z]+(?:-[a-z]+)?)\s+(?:[\w&/-]+\s+){0,4}?(?:papers?|entries|studies)\b", text, re.I)
     if not m:
         return None
-    w = m.group(1).lower()
-    return int(w) if w.isdigit() else _NUM_WORDS.get(w)
+    nums = _numbers_in(m.group(1))
+    return next(iter(nums)) if nums else None
 
 
 _NUM_TO_WORD = {v: k for k, v in _NUM_WORDS.items()}
@@ -5062,11 +5076,18 @@ _NUM_TO_WORD = {v: k for k, v in _NUM_WORDS.items()}
 def _set_leading_count(text: str, n: int) -> str:
     """"Three chronic-pelvic-pain papers…" with n=1 → "One chronic-pelvic-pain
     paper…"; digits stay digits, words stay words, the noun agrees."""
-    m = re.match(r"(\s*(?:only\s+|just\s+)?)(\d+|[a-z]+)(\s+(?:[\w&/-]+\s+){0,4}?)(papers?|entries|studies)\b", text, re.I)
+    m = re.match(r"(\s*(?:only\s+|just\s+)?)(\d+|[a-z]+(?:-[a-z]+)?)(\s+(?:[\w&/-]+\s+){0,4}?)(papers?|entries|studies)\b", text, re.I)
     if not m:
         return text
     w = m.group(2)
-    word = str(n) if w.isdigit() else (_NUM_TO_WORD.get(n, str(n)).capitalize() if w[0].isupper() else _NUM_TO_WORD.get(n, str(n)))
+    def words(k):
+        if k in _NUM_TO_WORD:
+            return _NUM_TO_WORD[k]
+        tens = {v: kk for kk, v in _TENS.items()}
+        if k < 100 and (k // 10) * 10 in tens:
+            return tens[(k // 10) * 10] + ("-" + _NUM_TO_WORD[k % 10] if k % 10 else "")
+        return str(k)
+    word = str(n) if w.isdigit() else (words(n).capitalize() if w[0].isupper() else words(n))
     noun = m.group(4)
     if noun.lower().startswith("paper"):
         noun = "paper" if n == 1 else "papers"
@@ -5435,7 +5456,7 @@ every total is right.""", timeout_s=600)
             if new == re.sub(r"\s+", " ", sents[idx - 1][0]).strip():
                 continue
             # every number the rewrite introduces must be one of the facts
-            fresh = sorted(_numbers_in(new) - _numbers_in(sents[idx - 1][0]) - allowed)
+            fresh = sorted((_numbers_in(new) - _numbers_in(sents[idx - 1][0]) - allowed) | ({0} & _numbers_in(new)))
             if fresh:
                 print(f"  total rewrite rejected (introduces {fresh[:3]} not in the facts): {new[:80]!r}")
                 continue
