@@ -5099,7 +5099,7 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                 again_wrong, again_unsupported = review_inserted_citations(W, h, real)
                 if again_unsupported:
                     # once more, with the re-review's reason, before refusing
-                    h, n2 = correct_unsupported_sentences(W, h, again_unsupported, real)
+                    h, n2 = correct_unsupported_sentences(W, h, again_unsupported, real, round_no=2)
                     if n2:
                         print(f"  {n2} sentence(s) corrected a second time — reviewing again")
                         again_wrong, again_unsupported = review_inserted_citations(W, h, real)
@@ -5247,7 +5247,7 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
     return rejected, unsupported
 
 
-def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict) -> tuple:
+def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict, round_no: int = 1) -> tuple:
     """Rewrite each sentence the reviewer judged to misstate its own paper so
     that it says what the abstract says, keeping the citation.
 
@@ -5271,6 +5271,13 @@ def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict)
                    "what_is_wrong": u["why"],
                    "abstract": ((real.get(u["pmid"]) or {}).get("abstract") or "")[:3000]} for u in us]
         new, note = "", ""
+        if round_no >= 2:
+            # the first rewrite was judged still wrong; the same question
+            # would be answered from the cache with the same wrong sentence
+            note = ("\nTHIS SENTENCE HAS ALREADY BEEN REWRITTEN ONCE AND THE REVIEWER STILL REJECTS IT for the reason "
+                    "in what_is_wrong. Make the specific change the reason names — replace the wrong description, "
+                    "design or figure with the correct one taken from the abstract — even if that means changing "
+                    "words you would otherwise keep.")
         for attempt in range(3):
             v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates a paper it cites. Rewrite ONLY that
 sentence so that every figure, comparison and direction of effect it attributes to each paper below
