@@ -5142,6 +5142,26 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
                         if m.start() in again_wrong:
                             h = h[:m.start()] + h[m.end():]
                     print(f"  withdrew {len(again_wrong)} citation(s) judged the wrong paper on re-review")
+    # A withdrawal can leave a card with no citation in its section (W24: the
+    # old generator had stacked menopause papers onto infertility sentences;
+    # eighteen went). Every card is cited again, and what that adds is reviewed.
+    h, by3, app3 = cite_every_card(W, h, real)
+    if by3 or app3:
+        print(f"  after the review, every card cited again: {by3} placed, {app3} sentence(s) written")
+        named += by3 + app3
+        wrong3, unsup3 = review_inserted_citations(W, h, real)
+        if unsup3:
+            h, n3 = correct_unsupported_sentences(W, h, unsup3, real, round_no=2)
+            wrong3b, unsup3b = review_inserted_citations(W, h, real)
+            if unsup3b:
+                die("sentence(s) written for uncited cards still misstate their papers: "
+                    + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in unsup3b[:4]))
+            wrong3 |= wrong3b
+        if wrong3:
+            for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                if m.start() in wrong3:
+                    h = h[:m.start()] + h[m.end():]
+            print(f"  withdrew {len(wrong3)} citation(s) judged the wrong paper after the second every-card pass")
     return h, named, declined
 
 
