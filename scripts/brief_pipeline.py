@@ -7499,6 +7499,7 @@ def kb_area_context(W: str, title: str) -> str:
     if hit is not None:
         return hit
     path = W + "_kbq.json"
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     json.dump({"query": q, "kind": "brief_curation", "topK": 6, "maxChars": 3500}, open(path, "w"))
     last = None
     for attempt in range(3):
