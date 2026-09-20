@@ -81,12 +81,29 @@ def faults(pid, h):
                     r"\b(?:expression\s+of\s+concern|retract(?:ion|ed|s)|correction\s+to|erratum|corrigendum"
                     r"|comment(?:ary)?\s+on|repl(?:y|ies)\s+to|response\s+to|withdrawn)\b", t, re.I):
                 continue
-            names = unknown(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
-            if not names:
+            cand = [x for x in dict.fromkeys(
+                re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t)
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})['\u2019]s\s+(?:OR|HR|RR|aOR|AOR|n\b|cohort|trial|review|study|series|data|finding|result|analysis|meta)", t)
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", t))
+                if x not in bp._NOT_A_SURNAME]
+            if not cand:
                 continue
             s0 = bp._sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
-            if any(bp._pmid_of(x.group(0)) for x in bp.SUP_RE.finditer(frag, s0, bp._after_run(frag, e))):
-                out.append(f"prose credits {names[0]} et al. for a paper nobody of that name wrote")
+            cites = [q for q in dict.fromkeys(bp._pmid_of(x.group(0)) for x in bp.SUP_RE.finditer(frag, s0, bp._after_run(frag, e))) if q]
+            if not cites:
+                continue
+            # the authority is the sentence's own citations: their bylines as
+            # the page prints them in the popover meta
+            cited_names = set()
+            for q in cites:
+                mm = re.search(r'id="ref-pop-%s(?:-\d+)?"[\s\S]{0,600}?mz-ref-pop-meta">([^<]*)' % q, h)
+                if mm:
+                    cited_names |= _surnames(bp.H.unescape(mm.group(1)))
+            if not cited_names:
+                continue
+            names = [x for x in cand if x not in cited_names and not bp._near_surname(x, cited_names)]
+            if names:
+                out.append(f"prose credits {names[0]} for a paper by {sorted(cited_names)[:2]}")
     return list(dict.fromkeys(out))
 
 

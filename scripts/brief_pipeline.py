@@ -2413,6 +2413,25 @@ def breakable_marker_runs(h: str) -> str:
 _SPLIT_TAG_RE = re.compile(r'(<[a-z][a-z0-9]*(?:\s+[a-z-]+="[^"]*")+)(?=[^\s/>])([^<>]{0,900})>')
 
 
+# A wrapper emptied beside its own text: `<li><span class="mz-rec-text"></span>Text…</li>`.
+# The text was meant to be inside the span. The shape is unambiguous — an
+# empty inline wrapper immediately followed by text with no other element
+# between — and the mend is exact: put the text back in.
+_STRANDED_RE = re.compile(r'(<span class="mz-rec-text"[^>]*>)\s*</span>([^<]+?)(?=<(?:sup|/li|/p|br|em|strong)\b)')
+
+
+def mend_stranded_text(h: str) -> tuple:
+    """Move text stranded beside an emptied wrapper back inside it. (h, mended)."""
+    n = 0
+
+    def one(m):
+        nonlocal n
+        n += 1
+        return m.group(1) + m.group(2).strip() + "</span>"
+
+    return _STRANDED_RE.sub(one, h), n
+
+
 def repair_split_tags(h: str) -> tuple:
     """Close an opening tag whose ">" was pushed past the text. (h, repaired)."""
     n = 0
@@ -3085,6 +3104,8 @@ def body_invariant_faults(h: str) -> list:
     if pmid_like:
         out.append(f"{len(pmid_like)} of {len(marks)} citation marker(s) show a PMID, not a number")
     out += malformed_tag_faults(h)[:2]
+    if _STRANDED_RE.search(h):
+        out.append("a recommendation's wrapper is empty with its own text stranded beside it")
     blanks = [m for m in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h)
               if not re.sub(r"[\s\u00a0]|&nbsp;", "",
                             H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub("", m.group(1)))))]
@@ -4970,14 +4991,29 @@ def fix_prose_attribution(W: str, h: str, real: dict) -> tuple:
                     r"\b(?:expression\s+of\s+concern|retract(?:ion|ed|s)|correction\s+to|erratum|corrigendum"
                  r"|comment(?:ary)?\s+on|repl(?:y|ies)\s+to|response\s+to|withdrawn)\b", t, re.I):
                 continue
-            names = [x for x in dict.fromkeys(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t))
-                     if x not in _NOT_A_SURNAME and x not in everyone and not _near_surname(x, everyone)]
-            if not names:
+            # Three ways prose credits a paper: "Beni et al.", "Beni's OR 0.08",
+            # "Beni 2026". The detector knew one of them, so W21's "Beni's OR
+            # 0.08" on a paper by Kizildemir went straight past it.
+            cand = [x for x in dict.fromkeys(
+                re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+et\s+al\.", t)
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})['\u2019]s\s+(?:OR|HR|RR|aOR|AOR|n\b|cohort|trial|review|study|series|data|finding|result|analysis|meta)", t)
+                + re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\s+(?:19|20)\d\d\b", t))
+                if x not in _NOT_A_SURNAME]
+            if not cand:
                 continue
             s0 = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0)
             cites = [q for q in dict.fromkeys(_pmid_of(m.group(0))
                                               for m in SUP_RE.finditer(frag, s0, _after_run(frag, e))) if q]
             if not cites:
+                continue
+            # The authority is THIS sentence's own citations, not the whole
+            # brief: "Liang et al." beside a marker to a paper not by Liang is
+            # wrong even when some other paper in the brief has a Liang.
+            cited_names = set()
+            for q in cites:
+                cited_names |= set(re.findall(r"\b([A-Z][a-z\u00e0-\u017f]{2,})\b", (real.get(q) or {}).get("authors", "")))
+            names = [x for x in cand if x not in cited_names and not _near_surname(x, cited_names)]
+            if not names:
                 continue
             papers = [{"pmid": q, "authors": (real.get(q) or {}).get("authors", ""),
                        "title": ((real.get(q) or {}).get("title") or "")[:130],
@@ -5496,6 +5532,10 @@ _NOT_A_SURNAME = {
     "January", "February", "March", "April", "May", "June", "July", "August",
     "September", "October", "November", "December",
     "Cochrane", "PubMed", "Medline", "Embase", "Trial", "Study", "Review", "Guideline",
+    # criteria and consensus statements named for a city: "Rotterdam 2003"
+    # is the PCOS criteria, not a person
+    "Rotterdam", "Helsinki", "Montreal", "Vienna", "Sydney", "Paris", "Rome", "Amsterdam",
+    "Chicago", "Bethesda", "Berlin", "Toronto", "Milan", "Lyon", "Madrid", "Barcelona", "Geneva",
 }
 
 
@@ -6147,6 +6187,9 @@ Reply with ONLY {{"rewrites": [{{"sentence": <number>, "text": "<the sentence wi
             markers = "".join(dict.fromkeys(sm.group(0) for sm in mids))
             # remove the embedded markers, replace the prose, re-attach the
             # markers after the sentence's run
+            if not _usable_span(frag_out, s0, e):
+                print(f"  embedded-marker rewrite skipped (the span is not prose): {got[k][:70]!r}")
+                continue
             body = frag_out[s0:e]
             for sm in mids:
                 body = body.replace(sm.group(0), "", 1)
@@ -6551,7 +6594,16 @@ Reply with ONLY {{"sentence": "<the rewritten prose>"}}""", timeout_s=600)
             h = h[:a] + keep + h[b:]
             print("  removed a pasted-abstract sentence from the site's prose")
         else:
-            h = h[:a] + H.escape(new, quote=False) + keep + h[b:]
+            # through the tag-aware replacer like every other writer: a raw
+            # splice here is how a corrected sentence could still land beside
+            # an emptied wrapper
+            if not _usable_span(h, a, b):
+                print(f"  correction skipped (the span is not prose): {new[:80]!r}")
+                continue
+            h = _replace_span(h, a, b, new)
+            at = _after_run(h, a + len(H.escape(new, quote=False)))
+            if keep and keep not in h[a:at + len(keep)]:
+                h = h[:at] + keep + h[at:]
             print(f"  rewrote pasted abstract text as prose: {new[:100]!r}")
         done += 1
     return h, done
@@ -8791,6 +8843,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, bars = fix_pyramid_bars(h)
         if bars:
             print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
+        h, stranded = mend_stranded_text(h)
+        if stranded:
+            print(f"  {stranded} wrapper(s) emptied beside their own text mended")
         h, split = repair_split_tags(h)
         if split:
             print(f"  {split} opening tag(s) whose '>' had been pushed past their text closed")
