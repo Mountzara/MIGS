@@ -2432,6 +2432,17 @@ def mend_stranded_text(h: str) -> tuple:
     return _STRANDED_RE.sub(one, h), n
 
 
+_BRACKET_RESIDUE_RE = re.compile(r"\s*\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,?\s*\]")
+
+
+def drop_bracket_residue(h: str) -> tuple:
+    """"[Bafort 2020, ]" — a legacy bracket whose marker a later pass withdrew.
+    The bracket named the paper before the marker did; with the marker gone
+    it names nothing. It goes. (h, dropped)."""
+    out, n = _BRACKET_RESIDUE_RE.subn("", h)
+    return out, n
+
+
 def repair_split_tags(h: str) -> tuple:
     """Close an opening tag whose ">" was pushed past the text. (h, repaired)."""
     n = 0
@@ -3106,8 +3117,10 @@ def body_invariant_faults(h: str) -> list:
     out += malformed_tag_faults(h)[:2]
     if _STRANDED_RE.search(h):
         out.append("a recommendation's wrapper is empty with its own text stranded beside it")
-    if re.search(r"\[\s*[A-Z][A-Za-z\u00e0-\u017f' \u2019-]{1,40}?,\s*<sup class=\"mz-ref\"", h):
+    if re.search(r"\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,\s*<sup class=\"mz-ref\"", h):
         out.append("a surname is bracketed around a citation marker, the pre-marker way of naming a paper")
+    if _BRACKET_RESIDUE_RE.search(re.sub(r"<[^>]+>", "", h)):
+        out.append("an empty citation bracket — \"[Name, ]\" — left where a marker was withdrawn")
     blanks = [m for m in re.finditer(r"<li\b[^>]*>([\s\S]*?)</li>", h)
               if not re.sub(r"[\s\u00a0]|&nbsp;", "",
                             H.unescape(re.sub(r"<[^>]+>", "", SUP_RE.sub("", m.group(1)))))]
@@ -7463,7 +7476,8 @@ def normalize_legacy_markup(h: str) -> str:
     # name was wrong twice (Tian, for a paper by Lv). No pass read it: it is
     # neither a marker nor an "et al.", and the narrative cut refused the
     # brief over it. The reader keeps the number and loses the bracket.
-    h = re.sub(r"\s*\[\s*[A-Z][A-Za-z\u00e0-\u017f' \u2019-]{1,40}?,\s*(<sup class=\"mz-ref\">[\s\S]*?</sup>)\s*\]", r"\1", h)
+    # "[Bafort 2020, <marker>]" too: the name may carry a year
+    h = re.sub(r"\s*\[\s*[A-Z][A-Za-z0-9\u00e0-\u017f' \u2019-]{1,40}?,\s*(<sup class=\"mz-ref\">[\s\S]*?</sup>)\s*\]", r"\1", h)
     # the break opportunities `breakable_marker_runs` adds are removed here so
     # every run walker in the chain sees adjacent markers
     h = re.sub(r"</sup>(?:&#8203;|\u200b|<wbr>)+(?=<sup class=\"mz-ref\")", "</sup>", h)
@@ -9012,6 +9026,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, bars = fix_pyramid_bars(h)
         if bars:
             print(f"  {bars} evidence-pyramid row(s) redrawn to match the count printed on them")
+        h, residue = drop_bracket_residue(h)
+        if residue:
+            print(f"  {residue} empty citation bracket(s) left by a withdrawn marker removed")
         h, stranded = mend_stranded_text(h)
         if stranded:
             print(f"  {stranded} wrapper(s) emptied beside their own text mended")
