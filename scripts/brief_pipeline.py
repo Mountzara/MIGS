@@ -8567,7 +8567,7 @@ _WRONG_CITE_RE = re.compile(r"\b(?:marker|citation)\b[^.]{0,80}\b(?:wrong|mispla
                             r"|\b(?:wrong|misplaced|displaced)\s+(?:marker|citation)\b", re.I)
 
 
-def _renumber_if_unnumbered(W: str, h: str, meta: dict | None) -> str:
+def _renumber_if_unnumbered(W: str, h: str, meta: dict | None, force: bool = False) -> str:
     """A marker showing a PMID has not been through numbering. The audit-stage
     supply placed twenty-five markers on W21 after numbering had run, and
     nothing downstream numbered them: the reader would have seen raw PMIDs
@@ -8578,7 +8578,10 @@ def _renumber_if_unnumbered(W: str, h: str, meta: dict | None) -> str:
         return h
     marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
              for x in SUP_RE.findall(h)]
-    if not any(re.fullmatch(r"\d{5,9}", m) for m in marks):
+    # `force`: an edit removed markers — a withdrawal, a deleted sentence, a
+    # deduped run — so a first appearance may have moved and every number
+    # after it is stale. Numbering is deterministic; re-run it.
+    if not force and not any(re.fullmatch(r"\d{5,9}", m) for m in marks):
         return h
     h, dup = dedupe_run_markers(h)
     h, order = number_citations(h, meta)
@@ -8786,7 +8789,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
                     if mm.start() in wrong_w:
                         after = after[:mm.start()] + after[mm.end():]
                 print(f"  the audit named a misplaced marker: {len(wrong_w)} citation(s) withdrawn as the wrong paper for their sentence")
-                after = _renumber_if_unnumbered(W, after, meta)
+                after = _renumber_if_unnumbered(W, after, meta, force=True)
         if real and pmids and any(_MISSING_CITE_RE.search(f"{d.get('what', '')} {d.get('evidence', '')}") for d in blocking):
             after, n_cite = cite_missing_studies(W, after, pmids, real)
             after, n_name = cite_named_unique(after, real, W)
@@ -8802,6 +8805,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
                         if mm.start() in wrong_a:
                             after = after[:mm.start()] + after[mm.end():]
                     print(f"  {len(wrong_a)} supplied citation(s) withdrawn as the wrong paper for their sentence")
+                    after = _renumber_if_unnumbered(W, after, meta, force=True)
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
         if n and repaired != after:
             # bank it: a later round may refuse, and a resume must not start
@@ -9203,7 +9207,15 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, talk0 = drop_process_commentary(h)
         if talk0:
             print(f"  {talk0} sentence(s) of commentary about the pipeline itself removed")
-        h = _renumber_if_unnumbered(W, h, meta)
+        # numbering is deterministic and cheap; the post-conditions below
+        # compare every marker with the citation ORDER, so after any edit at
+        # load the order is rebuilt from the page rather than trusted from
+        # the checkpoint
+        h, dup_ = dedupe_run_markers(h)
+        h, order = number_citations(h, meta)
+        h = build_references(W, h, order, meta)
+        h = dedupe_element_ids(h)
+        _snap_put(W, "numbered", h, order=order)
 
     # post-conditions, on exactly the two things reported plus what they touch
     faults = []
