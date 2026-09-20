@@ -1094,6 +1094,15 @@ That a paper also fits — or already sits under — another heading in this bri
 remove it from this one. (Owner, 2026-09-19, on a removal made for exactly that reason:
 "adenomyosis can cause pelvic pain — you should know this.")
 
+A HEADING MAY ALSO NAME AN INTERVENTION rather than an area — a supplement ("N-acetylcysteine",
+"Pycnogenol"), a drug, a device, a technique. Then the brief's own subject is the condition (the
+title says which), and a paper belongs under that heading when it studies THAT intervention in that
+condition or its mechanism — a trial, a mechanistic study, a review of it. A paper that reviews
+several of the brief's interventions together, or the class as a whole, belongs under whichever one
+it covers most, or under a general heading when the brief has one; it is never dropped for spanning
+them. A paper about the condition with no bearing on any of the brief's interventions does not
+belong.
+
 A PAPER BELONGS when it is about the heading's clinical area in women's health — including
 non-pharmacological management, epidemiology, diagnostics, education, health services, basic science
 and preclinical work. Breadth within the area is the point of a weekly brief. Adjacency to the
