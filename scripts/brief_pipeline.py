@@ -8781,6 +8781,7 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
     if blocking and _repair > 0:
+        before_supply = after
         # A defect that names a MISSING citation cannot be repaired by
         # rewriting the sentence — the repair loop only writes prose — so it
         # burned every round and refused the brief. Supply the citation: the
@@ -8819,6 +8820,14 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
                     print(f"  {len(wrong_a)} supplied citation(s) withdrawn as the wrong paper for their sentence")
                     after = _renumber_if_unnumbered(W, after, meta, force=True)
         repaired, n = repair_from_defects(W, after, blocking, sample.get("counts"))
+        # a supply or a withdrawal above changed the page even when the prose
+        # repair had nothing to rewrite — a defect that quotes a list of
+        # markers rather than a sentence — and W21 refused with five freshly
+        # supplied citations on a page nobody read again
+        if after != before_supply and not (n and repaired != after):
+            _snap_update_body(W, "numbered", after)
+            print(f"  the page changed at the audit stage; reading it again ({_repair - 1} round(s) left)")
+            return audit_transform(W, before, after, dropped, emptied, moved, _repair=_repair - 1, real=real, pmids=pmids, meta=meta)
         if n and repaired != after:
             # bank it: a later round may refuse, and a resume must not start
             # again from the body these repairs have already corrected
