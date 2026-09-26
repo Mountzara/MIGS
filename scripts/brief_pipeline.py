@@ -3949,6 +3949,9 @@ def prose_faults(W: str, h: str, man: dict) -> list:
     for q in man["pmids"]:
         dm = re.search(r'<dialog[^>]*id="dd-%s"[^>]*>([\s\S]*?)</dialog>' % re.escape(q), h)
         if not dm:
+            # a paper with no deep dive at all was skipped in silence while a
+            # deep dive missing one section was faulted (standards-check)
+            faults.append(f"[dialog:{q}] no deep dive for this carded paper (S15)")
             continue
         for key in JC_KEYS:
             sm = re.search(r'id="dd-%s-%s"[^>]*>([\s\S]*?)</section>' % (re.escape(q), re.escape(key)), dm.group(1))
@@ -8277,6 +8280,12 @@ def trend_format_faults(h: str) -> list:
                 for m in re.finditer(r'<p\b[^>]*\bclass="[^"]*\bmz-framing\b[^"]*"[^>]*>([\s\S]*?)</p>', h)]
     if not any(f in FRAMINGS for f in framings):
         faults.append('[S13] no framing label: no <p class="mz-framing"> whose text is one of the fixed framings')
+    # one framing label PER ITEM where the brief has items: each <h3
+    # class="mz-subhead"> subsection carries its own label from the fixed list
+    for tid, after in re.findall(r'<h3 class="mz-subhead" id="([^"]+)"[^>]*>[\s\S]{0,600}?(<p class="mz-framing"[^>]*>(?:<strong>)?[^<]+|</h3>[\s\S]{0,600}?<h3\b)', h):
+        lab = re.search(r'<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)', after)
+        if not lab or lab.group(1).strip() not in FRAMINGS:
+            faults.append(f"[S13] item {tid} has no framing label from the fixed list under its subheading")
     for f in framings:
         if f not in FRAMINGS:
             faults.append(f"[S13] framing label outside the fixed list: {f!r}")
@@ -10650,7 +10659,10 @@ def _manifest_of_page(W: str, h: str, fmt: str, real: dict | None = None) -> dic
         pf = W + f"papers/{pm}.json"
         if not os.path.exists(pf) and (real or {}).get(pm):
             json.dump(_paper_record(pm, real[pm]), open(pf, "w"), ensure_ascii=False)
-    topics = [t.tid for t in _topic_sections(h)] if fmt != "trend" else []
+    # a trend brief's items are its <h3 class="mz-subhead"> subsections (the
+    # authoring path's shape); a legacy single-claim brief has none
+    topics = ([t.tid for t in _topic_sections(h)] if fmt != "trend"
+              else re.findall(r'<h3 class="mz-subhead" id="([^"]+)"', h))
     return {"pmids": pmids, "format": fmt, "topics": topics}
 
 
