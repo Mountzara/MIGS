@@ -2721,6 +2721,73 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
     return h, written
 
 
+_PROSE_FAULT_RE = re.compile(r'^\[(?!card:|dialog:|headings)([^\]]+)\] (.+?): "(.*?)" \((.*)\)$', re.S)
+
+
+def fix_placement(W: str, h: str, faults: list, real: dict) -> tuple:
+    """A sentence whose markers sit bunched after several claims is rewritten
+    with each marker placed after the claim it supports — split into more
+    sentences where that is what it takes — every marker kept exactly once.
+    (h, rewritten). The markers are ⟦PMID⟧ tokens to the model and are put
+    back as the markup they were, in order."""
+    done = 0
+    for f in faults:
+        m = _PROSE_FAULT_RE.match(f)
+        if not m or "citation does not follow each claim" not in m.group(2):
+            continue
+        for a, b, _t in _quoted_sites(h, m.group(3))[:1]:
+            b = _after_run(h, b)
+            span = h[a:b]
+            marks = list(SUP_RE.finditer(span))
+            if not marks:
+                continue
+            tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", span)
+            plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
+            pmids = [q for q in dict.fromkeys(_pmid_of(x.group(0)) for x in marks) if q]
+            papers = _papers_for_prompt(real_from_work(W, pmids) or {q: real[q] for q in pmids if q in real}, pmids)
+            v = _ask_cached(W, "placement", f"""One sentence of a clinician-facing evidence brief carries its citations bunched at the end, after
+several distinct claims. Each ⟦token⟧ is a citation to one paper. Rewrite so that every claim is followed
+IMMEDIATELY by the token of the paper that supports it — split into two or three sentences if that is what
+it takes — keeping the wording otherwise, first person surgeon's voice, plain text, no markup. Use every
+token exactly once and add none; a claim no listed paper supports is dropped rather than left uncited.
+THE SENTENCE: {json.dumps(plain, ensure_ascii=False)}
+THE PAPERS (pmid, title, abstract): {json.dumps(papers, ensure_ascii=False)[:30000]}
+Return ONLY {{"text": "<rewritten>"}}""")
+            new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
+            if not new or sorted(re.findall(r"⟦\d+⟧", new)) != sorted(re.findall(r"⟦\d+⟧", plain)):
+                print(f"  placement: no usable rewrite for {plain[:70]!r}")
+                continue
+            if writer_reject(re.sub(r"⟦\d+⟧", " ", new).strip()):
+                print(f"  placement: rewrite refused by the writer's rules for {plain[:70]!r}")
+                continue
+            by_pm: dict = {}
+            for x in marks:
+                by_pm.setdefault(_pmid_of(x.group(0)), []).append(x.group(0))
+            pieces = re.split(r"(⟦\d+⟧)", new)
+            rebuilt = "".join(by_pm[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm.get(x[1:-1]) else H.escape(x, quote=False)
+                              for x in pieces)
+            h = _replace_span(h, a, b, rebuilt)
+            done += 1
+    return h, done
+
+
+def repair_prose_findings(W: str, h: str, faults: list, real: dict) -> tuple:
+    """The per-sentence audit's findings on the site's prose, repaired: a
+    placement finding by fix_placement, every other by repair_from_defects
+    with the sentence's cited abstracts in hand. (h, repaired)."""
+    h, n_place = fix_placement(W, h, faults, real)
+    defects = []
+    for f in faults:
+        m = _PROSE_FAULT_RE.match(f)
+        if not m or "citation does not follow each claim" in m.group(2):
+            continue
+        defects.append({"what": f"{m.group(2)} — {m.group(4)}", "evidence": m.group(3)})
+    n_fix = 0
+    if defects:
+        h, n_fix = repair_from_defects(W, h, defects)
+    return h, n_place + n_fix
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -4183,8 +4250,11 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     # advice-prone text on the page, and nothing exhaustive read it before
     # headings are reader-visible prose too: the per-sentence audit strips them
     # from every other fragment, so they are submitted as their own fragment
+    # a deep dive's section labels ("2 · Study scaffolding — PICO") are the
+    # journal-club template's, visible by design, and the auditor called them
+    # "internal"; the dialogs' editorial text is audited on its own
     head_txt = " ".join(H.unescape(re.sub(r"<[^>]+>", " ", x)).strip().rstrip(".") + "."
-                        for x in re.findall(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", h))
+                        for x in re.findall(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", re.sub(r"<dialog\b[\s\S]*?</dialog>", " ", h)))
     if head_txt.strip():
         frags.append((f"<p>{H.escape(head_txt, quote=False)}</p>", None, "headings"))
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
@@ -4507,12 +4577,17 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             g += trend_prose_audit(W, h, man)
         for _round in range(2):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
-            if not att:
+            pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
+            if not att and not pro:
                 break
-            h, n_att = fix_attributed_text(W, h, att, real)
-            if not n_att:
+            n_att = n_pro = 0
+            if att:
+                h, n_att = fix_attributed_text(W, h, att, real)
+            if pro:
+                h, n_pro = repair_prose_findings(W, h, pro, real)
+            if not (n_att or n_pro):
                 break
-            print(f"  {n_att} card / deep-dive text(s) rewritten from their papers' abstracts — auditing again")
+            print(f"  {n_att} card / deep-dive text(s) and {n_pro} prose sentence(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if man.get("format") == "trend" else [])
             g += reader_prose_faults(h)
         for f_ in g:
@@ -9259,6 +9334,35 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
                 break
         if len(sites) >= limit:
             break
+    if not sites:
+        # W29's sentence sat in a topic section's recommendation list — no
+        # passage — and the repair never saw it. Every <p>/<li> outside the
+        # attributed containers is searched when the passages hold nothing
+        outside = re.sub(r"<dialog\b[\s\S]*?</dialog>|<article class=\"mz-cite-card[\s\S]*?</article>|<details[\s\S]*?</details>",
+                         lambda x: " " * len(x.group(0)), h)
+        for run in runs[:14]:
+            needle = re.sub(r"\s+", " ", run)[:60]
+            for em in re.finditer(r"<(p|li)\b[^>]*>([\s\S]*?)</\1>", outside):
+                inner = h[em.start(2):em.end(2)]
+                if re.search(r"<(?:p|li)\b", inner):
+                    continue
+                masked = _mask_noprose(inner)
+                flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
+                if needle[:40] not in flat:
+                    continue
+                sents = _sentences_of(masked)
+                for i, (t, e) in enumerate(sents):
+                    if needle[:40] not in re.sub(r"\s+", " ", t):
+                        continue
+                    a = em.start(2) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
+                    b = em.start(2) + e
+                    if _usable_span(h, a, b) and not any(a < y and x < b for x, y, _ in sites):
+                        sites.append((a, b, t))
+                    break
+                if sites:
+                    break
+            if len(sites) >= limit:
+                break
     return sites
 
 
@@ -9284,6 +9388,13 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
         ev = H.unescape(re.sub(r"<[^>]+>", " ", str(d.get("evidence") or "")))
         ev = H.unescape(re.sub(r"<[^>]+>", " ", ev))
         sites = _quoted_sites(h, ev)
+        # the finding often names the offending phrase itself ('refers back to
+        # "these alternatives"'); a sentence holding that phrase is a site too
+        phrases = [q for q in re.findall(r'["\u201c]([^"\u201d]{12,160})["\u201d]', str(d.get("what") or "")) if q.strip()]
+        for ph in phrases[:3]:
+            for site in _quoted_sites(h, ph):
+                if not any(site[0] < y and x < site[1] for x, y, _ in sites):
+                    sites.append(site)
         if not sites:
             continue
         cited = [q for q in dict.fromkeys(
@@ -11189,12 +11300,17 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # paper, and the same audit judges the rewrite on the next round
         for _round in range(2):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
-            if not att:
+            pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
+            if not att and not pro:
                 break
-            h, n_att = fix_attributed_text(W, h, att, real)
-            if not n_att:
+            n_att = n_pro = 0
+            if att:
+                h, n_att = fix_attributed_text(W, h, att, real)
+            if pro:
+                h, n_pro = repair_prose_findings(W, h, pro, real)
+            if not (n_att or n_pro):
                 break
-            print(f"  {n_att} card / deep-dive text(s) rewritten from their papers' abstracts — auditing again")
+            print(f"  {n_att} card / deep-dive text(s) and {n_pro} prose sentence(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if fmt == "trend" else [])
             g += reader_prose_faults(h)
         for f_ in g:
