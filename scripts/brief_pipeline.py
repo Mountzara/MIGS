@@ -10618,6 +10618,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             # which papers the brief holds and `real` is in hand, and before
             # cite_and_review — so what it writes is cited and reviewed like
             # every other sentence, and a --from=curated resume authors it.
+            # The gauge goes here too: stage 0 retired it on the page as
+            # published, but a resume from `curated` enters here with the
+            # banked page, gauge and all
+            h, gauge1 = retire_verdict_gauge(h)
+            if gauge1:
+                print(f"  {gauge1} verdict gauge(s) retired")
             h, notes = conform_trend_brief(W, h, real)
             for note in notes:
                 print(f"  trend: {note}")
