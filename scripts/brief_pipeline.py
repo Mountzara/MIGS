@@ -4444,6 +4444,11 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         got = re.search(r'<span class="mz-ref-pop-meta">([\s\S]*?)</span>', sup)
         if not got or H.unescape(re.sub(r"<[^>]+>", "", got.group(1))).strip() != want:
             faults.append(f"[popover:{pmv}] the journal/year line is not the one PubMed gives")
+        fnd = re.search(r'<span class="mz-ref-pop-finding">([\s\S]*?)</span>', sup)
+        pab = (json.load(open(W + f"papers/{pmv}.json")).get("pubmed_abstract") or "") if os.path.exists(W + f"papers/{pmv}.json") else ""
+        if fnd and pab and not _synopsis_words_in_abstract(H.unescape(re.sub(r"<[^>]+>", " ", fnd.group(1))), pab):
+            faults.append(f"[popover:{pmv}] the summary's first words are not the abstract's — the deploy's structural gate refuses it")
+            break
             break
     for href in set(re.findall(r'<a class="mz-ref-link" href="#(ref-\d+)"', h)):
         if f'id="{href}"' not in h:
@@ -5097,6 +5102,20 @@ def repair(W: str, msg: str) -> list:
 # the result in a browser, and republishes.
 
 
+def _synopsis_words_in_abstract(finding: str, abstract: str) -> bool:
+    """The deploy's structural gate (scripts/audit_inline_refs.py) refuses a
+    hover card whose first eight content words are none of them in the
+    abstract. Same test, so a card is never written into that refusal:
+    four cards opened "No effect sizes are reported — this is a…" because
+    the writer was told to say so for a paper without figures."""
+    ab = (abstract or "").lower()
+    if len(ab) < 40:
+        return True
+    words = [w for w in re.findall(r"[a-z]{5,}", (finding or "").lower())
+             if w not in ("study", "results", "patients", "associated", "between", "compared")]
+    return not words or any(w in ab for w in words[:8])
+
+
 def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
     """A plain-language finding written FROM the abstract, cached on disk.
 
@@ -5110,8 +5129,10 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
     """
     cache = W + "findings.json"
     store = json.load(open(cache)) if os.path.exists(cache) else {}
-    if store.get(pmid):
+    if store.get(pmid) and _synopsis_words_in_abstract(store[pmid], abstract):
         return store[pmid]
+    if store.get(pmid):
+        print(f"  the cached hover card for {pmid} opens with words not in the abstract — rewritten")
     if len((abstract or "").strip()) < 120:
         return ""
     src = _pool_tokens(abstract)
@@ -5142,8 +5163,9 @@ WRITE IT LIKE THIS:
 PLAIN CLINICAL ENGLISH. Write for a busy surgeon, not for an abstract. No throat-clearing ("This
 study aimed to..."), no hedging filler, no jargon the number does not need.
 LENGTH: 280-600 characters, and it MUST end with a complete sentence — never cut off mid-word.
-EVERY NUMBER must appear in the abstract above. If the abstract genuinely reports no figures, say the
-finding in words and say plainly that no effect size is reported.{note}
+EVERY NUMBER must appear in the abstract above. If the abstract reports no figures, the FIRST SENTENCE
+states the abstract's own conclusion in the abstract's own terms — its key nouns and verbs — plainly;
+never a sentence about what the paper does not report ("no effect sizes are reported" is not a finding).{note}
 Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
         t = (v or {}).get("finding", "").strip()
         if not t:
@@ -5177,6 +5199,11 @@ Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
             note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: it used the number(s) " + ", ".join(stray[:4])
                     + ", which do not appear in the abstract. Use only figures the abstract states, "
                       "or none at all.")
+            t = ""
+            continue
+        if not _synopsis_words_in_abstract(t, abstract):
+            note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: its opening words are not the abstract's. Open with what "
+                    "the abstract itself concludes, in the abstract's own terms.")
             t = ""
             continue
         t_norm = re.sub(r"[^a-z0-9]", "", t.lower())
@@ -10957,6 +10984,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, exp1 = fix_invented_experience(W, h)
         if exp1:
             print(f"  {exp1} sentence(s) claiming the clinician's own experience rewritten from the paper at resume")
+        # hover cards are rewritten from the abstracts here too: cached
+        # findings replay, and one that opens with words not in the abstract
+        # is written again (four shipped that way)
+        h, pops1 = refresh_popovers_from_abstracts(W, h, real)
+        if pops1:
+            print(f"  {pops1} hover card(s) refreshed from the papers' abstracts at resume")
         h, abs_n = fix_absolute_words(W, h, real)
         if abs_n:
             print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
