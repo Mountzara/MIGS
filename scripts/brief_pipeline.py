@@ -9855,6 +9855,11 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
     actual output and looks for what a careful editor would see.
     """
     after = _renumber_if_unnumbered(W, after, meta)
+    # spacing around markers is tidied before every read-back: a repair
+    # spliced the next sentence flush against a marker run, and the auditor
+    # rightly named the glued sentence on every round while the prose repair
+    # rewrote its words (H1/H2 brief)
+    after = tidy_prose_spacing(after)
     # A popover carries ~700 characters of text per marker, so an excerpt
     # capped by bytes showed the auditor a fraction of the narrative and it
     # judged the numbering wrong from what it could not see (the narrative
