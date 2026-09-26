@@ -11326,7 +11326,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # and the deep dives' verbatim abstracts: W24's page carried 1,578 of a
         # 2,304-character abstract, and the S5 gate reported it as a label
         # mismatch at character 0
-        h, _reps, n_abs = write_abstracts(W, h, real)
+        h, _reps, n_abs = write_abstracts(W, _manifest_of_page(W, h, fmt, real), h, [])
         if n_abs:
             print(f"  {n_abs} deep-dive abstract(s) restored to PubMed's text at resume")
         h, abs_n = fix_absolute_words(W, h, real)
