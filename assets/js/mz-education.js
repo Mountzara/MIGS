@@ -179,8 +179,13 @@
         if (!pop) return;
         pop.classList.remove('mz-flip', 'mz-edge-left', 'mz-edge-right');
         var r = sup.getBoundingClientRect();
+        // A closed popover is display:none (so it cannot widen the page);
+        // measure it through the measuring class, then let the CSS show it.
+        var measured = pop.offsetHeight === 0;
+        if (measured) pop.classList.add('mz-measuring');
         var h = pop.offsetHeight || 220;
         var w = pop.offsetWidth || Math.min(380, window.innerWidth * 0.92);
+        if (measured) pop.classList.remove('mz-measuring');
         // Below the marker when there is no room above (including the
         // fixed nav), and above only when that fits.
         var topLimit = 76;
@@ -190,7 +195,9 @@
         else if (centre + w / 2 > window.innerWidth - 8) pop.classList.add('mz-edge-right');
     }
     function clearOpenPopovers(except) {
-        doc.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) { if (s !== except) s.classList.remove('mz-open'); });
+        var n = 0;
+        doc.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) { if (s !== except) { s.classList.remove('mz-open'); n++; } });
+        return n;
     }
     function initPopovers() {
         if (window.__mzPopFlip) return;
@@ -212,7 +219,10 @@
         doc.addEventListener('pointerover', function (ev) { var s = supOf(ev.target); if (s) placePopover(s); }, true);
         doc.addEventListener('focusin', function (ev) { var s = supOf(ev.target); if (s) placePopover(s); }, true);
         doc.addEventListener('keydown', function (ev) {
-            if (ev.key === 'Escape') clearOpenPopovers(null);
+            // Escape closes an open popover and stops there: the modal's own
+            // Escape listener (registered later on the document) must not
+            // also close the modal on the same keypress.
+            if (ev.key === 'Escape' && clearOpenPopovers(null)) ev.stopImmediatePropagation();
         });
     }
 

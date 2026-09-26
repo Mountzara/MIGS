@@ -406,8 +406,13 @@ section.panel .subhead { font-size: 13px; color: var(--ink-3); margin: 18px 0 8p
 sup.mz-ref { display: inline-block; font-size: 0.7em; line-height: 1; vertical-align: super; position: relative; margin-left: 1px; cursor: pointer; }
 sup.mz-ref > a { color: #6d28d9; font-weight: 600; text-decoration: none; padding: 0 2px; border-radius: 3px; transition: background 0.15s, color 0.15s; }
 sup.mz-ref:hover > a, sup.mz-ref.mz-open > a, sup.mz-ref:focus > a, sup.mz-ref:focus-within > a { background: #6d28d9; color: #fff; outline: none; }
+/* Closed popovers are display:none, not visibility:hidden — a hidden but
+   laid-out 300px box beside a marker near the right edge still counts as
+   page overflow, and mobile Chrome then widens the whole layout viewport
+   (measured: 492px on a 390px phone). @starting-style keeps the fade-in
+   on browsers that support it; older ones show the popover at once. */
 sup.mz-ref .mz-ref-pop {
-    visibility: hidden; opacity: 0;
+    display: none; opacity: 0;
     position: absolute; bottom: 100%; left: 50%;
     transform: translate(-50%, -6px);
     width: min(380px, 92vw);
@@ -421,12 +426,17 @@ sup.mz-ref .mz-ref-pop {
     color: #4A4658; font-size: 12.5px; line-height: 1.5; font-weight: 400;
     letter-spacing: normal; text-transform: none;
     z-index: 3000; text-align: left; pointer-events: none;
-    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    transition: opacity 0.18s, transform 0.18s;
     box-shadow: 0 18px 50px rgba(26, 23, 38, 0.28);
     white-space: normal;
 }
 sup.mz-ref .mz-ref-pop::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 16px; }
-sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop, sup.mz-ref.mz-open .mz-ref-pop { pointer-events: auto; visibility: visible; opacity: 1; transform: translate(-50%, -10px); }
+sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop, sup.mz-ref.mz-open .mz-ref-pop { display: block; pointer-events: auto; opacity: 1; transform: translate(-50%, -10px); }
+@starting-style {
+    sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop, sup.mz-ref.mz-open .mz-ref-pop { opacity: 0; }
+}
+/* the script measures a closed popover before placing it */
+sup.mz-ref .mz-ref-pop.mz-measuring { display: block; visibility: hidden; opacity: 0; transition: none; }
 sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
 sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
 sup.mz-ref:hover .mz-ref-pop.mz-flip, sup.mz-ref:focus-within .mz-ref-pop.mz-flip, sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
