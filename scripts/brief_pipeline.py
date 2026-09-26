@@ -483,7 +483,7 @@ def standards_audit(W: str, post_id: str) -> None:
     """
     kind = "trend" if json.load(open(W + "manifest.json")).get("format") == "trend" else "weekly"
     prompt = f"""You are auditing a published-ready clinical brief ({kind} brief) for Dr. Mabini's site, as a
-careful reader would. Read {W}body.applied.html — every section under every heading (nothing on the
+careful reader would. Read {W}body.applied.html (sha256 {_sha_file(W + "body.applied.html")}) — every section under every heading (nothing on the
 page is out of scope: opening, narrative or editorial, EVERY topic synthesis or item subsection, the
 shape-of-evidence section, the cite cards, the reference list) and at least two deep-dive dialogs.
 {STANDARDS}
@@ -497,7 +497,9 @@ Reply with ONLY a JSON object:
 {{"passed": <true only if every applicable standard is met>,
   "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S16": {{...}}}},
   "blocking": ["S<n>: what fails, with evidence", ...], "notes": "one or two sentences"}}"""
-    v = _claude(prompt, timeout_s=1200)
+    # cached on the prompt, which names the body's digest: a resume replays
+    # the verdict for the same body and asks again for a different one
+    v = _ask_cached(W, "standards", prompt, timeout_s=1200)
     if not v or "passed" not in v:
         die("standards audit returned no verdict")
     blocking = v.get("blocking") or []
@@ -3910,7 +3912,7 @@ def trend_prose_audit(W: str, h: str, man: dict) -> list:
                      "text": H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", m.group(3))))[:6000]})
     subs = [{"id": a, "subheading": H.unescape(re.sub(r"<[^>]+>", "", b)).strip()}
             for a, b in re.findall(r'<h3 class="mz-subhead" id="([^"]+)"[^>]*>([\s\S]*?)</h3>', h)]
-    v = _claude(f"""You are judging a brief that checks a viral health claim against the literature. The reader may be the
+    v = _ask_cached(W, "trend_prose", f"""You are judging a brief that checks a viral health claim against the literature. The reader may be the
 person who made the claim; the brief exists to inform them, not to score against them.
 For EACH section: is its heading a clear, specific signpost a reader can navigate by (not a label, not
 a scoreboard, not vague)? Is every sentence free of sneering, gotcha framing, or language that treats
@@ -3996,7 +3998,7 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
                        | ({card_pm} if card_pm else set()))
         ctx = {c: abstracts[c] for c in cited if c in abstracts}
         listing = "\n".join(f"[{n}] {sn}" for n, sn in enumerate(sents, 1))
-        v = _claude(f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
+        v = _ask_cached(W, "grounding", f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
 appear as ⟦PMID⟧ tokens inside the sentence they belong to.
 SENTENCES:
 {listing}
@@ -10826,6 +10828,19 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     dup = [k for k, v in _C(re.findall(r'\sid="([^"]+)"', h)).items() if v > 1]
     if dup:
         faults.append(f"duplicate element ids remain: {dup[:4]}")
+    if not faults:
+        # the apply path's per-sentence model audits — S1/S6/S8 (a claim
+        # without its citation, an overstatement built from numbers that ARE
+        # in the abstract, advice in any phrasing) and S13's tone and
+        # headings — on the republished body too, once the mechanical gates
+        # pass, so a malformed body is not paid for twice. Until now this
+        # path published on regex alone for all four
+        g = grounding_audit(W, h, man) + popover_audit(W, h)
+        if fmt == "trend":
+            g += trend_prose_audit(W, h, man)
+        for f_ in g:
+            print("  GROUNDING:", f_)
+        faults += g
     if faults:
         for f_ in faults:
             print("  FAULT:", f_)
@@ -10837,6 +10852,11 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
+    json.dump(man, open(W + "manifest.json", "w"), ensure_ascii=False)
+    # S16 as the apply path has it: a reader given nothing but THE STANDARDS
+    # and the page. audit_transform above reads for the transformation's own
+    # defects; this reads for the owner's requirements
+    standards_audit(W, post_id)
 
     aud = subprocess.run(["node", "-e",
         "import('%s/functions/_lib/post_format.js').then(m=>{const p=JSON.parse(require('fs')"
@@ -10856,6 +10876,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         print(f"DRY RUN OK — {post_id} passes every check; nothing was written to the site")
         return
 
+    # what cmd_publish requires before it writes, this path requires too
+    require_patient_pages_dose_free()
+    require_standards(W)
     import hashlib as _hl
     receipt = {"body_sha256": _hl.sha256(h.encode("utf-8")).hexdigest(),
                "standards_passed": True, "grounding_passed": True,
