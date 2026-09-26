@@ -2505,6 +2505,118 @@ def drop_process_commentary(h: str) -> tuple:
     return h, cut
 
 
+# A fault the gates raise on a CARD's or a DEEP DIVE's own text: a figure the
+# paper's abstract does not state, a clinical absolute, advice, the bare
+# practice name. The repair loop cannot reach these — it finds a quoted
+# sentence in the prose passages and takes the paper from the sentence's
+# markers, and an attributed container has neither.
+_ATTRIBUTED_FAULT_RE = re.compile(r'^\[(card|dialog):(\d{5,9})\] (.+?): "(.*?)" \((.*)\)$', re.S)
+
+
+def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
+    """Rewrite, from the paper's own abstract, the card and deep-dive text
+    the per-sentence model audit faulted. (h, elements_rewritten).
+
+    grounding_audit judges every sentence of a card and a deep dive against
+    the paper the container attributes it to; before this, its finding on
+    such a sentence could only refuse the page — the repair loop finds a
+    quoted sentence in the prose passages and takes the paper from the
+    sentence's markers, and an attributed container has neither. Here the
+    container names the paper: the element holding the faulted sentence is
+    rewritten with that abstract and the audit's own complaint in hand,
+    citation markers kept as tokens, a data cell kept as a value, and the
+    result is judged again by the same audit on the next round. What the
+    model cannot make right is left for the gate to refuse, by name."""
+    wanted: dict = {}
+    for f in faults:
+        m = _ATTRIBUTED_FAULT_RE.match(f)
+        if m:
+            wanted.setdefault((m.group(1), m.group(2)), []).append((m.group(3), m.group(4), m.group(5)))
+    done = 0
+    for (kind, pm), items in wanted.items():
+        paper = real.get(pm) or {}
+        abstract = paper.get("abstract") or ""
+        if not abstract:
+            continue
+        if kind == "card":
+            cm = (re.search(r'<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-%s"[\s\S]*?</article>' % pm, h)
+                  or next((x for x in CARD_RE.finditer(h) if f"openDeepDive('dd-{pm}')" in x.group(0)), None))
+        else:
+            cm = re.search(r'<dialog[^>]*\bid="dd-%s"[\s\S]*?</dialog>' % pm, h)
+        if not cm:
+            continue
+        cont = cm.group(0)
+        blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
+        edits, taken = [], set()
+        for what, shown, note in items:
+            needle = re.sub(r"\s+", " ", H.unescape(shown)).strip()[:40]
+            if len(needle) < 12:
+                continue
+            for em in re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked):
+                if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
+                    continue
+                inner = cont[em.start(2):em.end(2)]
+                marks = list(SUP_RE.finditer(inner))
+                tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", inner)
+                plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
+                if needle not in re.sub(r"⟦\d+⟧", "", plain).replace("  ", " "):
+                    continue
+                is_cell = em.group(1) in ("dd", "dt", "td")
+                shape = ("THIS IS A DATA CELL of a summary table (Sample, Comparator, Outcome…): return a short value — a phrase "
+                         "or one plain sentence, no first person, no commentary — stating the figure exactly as the abstract gives it."
+                         if is_cell else
+                         "THIS IS A PARAGRAPH: keep its point and its length (1-4 sentences), first person, Dr. Mabini's DO + CBG/MIGS voice.")
+                new_plain, feedback = None, ""
+                for attempt in range(2):
+                    v = _ask_cached(W, "attributed_fix", f"""Rewrite ONE piece of a clinician's journal-club analysis of a paper so that it says only what the
+paper's abstract supports. It sits in the {'cite card' if kind == 'card' else 'deep-dive analysis'} for this paper and is attributed
+to it by its container, so it needs no citation of its own.
+{shape}
+THE PAPER: {paper.get('title', '')} — {paper.get('authors', '')} · {paper.get('journal', '')} · {paper.get('year', '')}
+THE ABSTRACT (the ONLY source of any figure, population, comparator or finding):
+{abstract[:4000]}
+THE TEXT: {json.dumps(plain, ensure_ascii=False)}
+WHAT AN AUDITOR FOUND WRONG WITH IT: {what} — {note}
+RULES: state only figures the abstract gives, exactly as it gives them — drop or make qualitative any
+figure it does not state. No "never"/"always" as clinical absolutes. Address no patient ("you should…",
+"take…"). Write "CBG/MIGS", never bare "MIGS". Plain text, no markup, no PMID, no author-year bracket.
+Every ⟦token⟧ in the text is a citation marker: keep each one exactly where its claim is, verbatim, and
+add none.{feedback}
+Return ONLY {{"text": "<rewritten text>"}}""")
+                    cand = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
+                    if not cand:
+                        feedback = "\nA PREVIOUS ATTEMPT RETURNED NOTHING."
+                        continue
+                    if sorted(re.findall(r"⟦\d+⟧", cand)) != sorted(re.findall(r"⟦\d+⟧", plain)):
+                        feedback = "\nA PREVIOUS ATTEMPT changed the citation tokens; keep exactly the tokens the text has."
+                        continue
+                    cb = re.sub(r"⟦\d+⟧", " ", cand).strip()
+                    judged = cb if not is_cell else (cb.rstrip(".") + ".")[:1].upper() + (cb.rstrip(".") + ".")[1:]
+                    bad = writer_reject(judged)
+                    if not bad and is_cell and re.search(r"\b(?:I|my|we|our)\b", cb):
+                        bad = "first person in a data cell"
+                    if bad:
+                        feedback = f"\nA PREVIOUS ATTEMPT WAS REFUSED for: {bad}. Write one free of it."
+                        continue
+                    new_plain = cand
+                    break
+                if new_plain is None:
+                    print(f"  {kind} {pm}: the text could not be rewritten from the abstract — left for the gate: {needle!r}")
+                    break
+                pieces = re.split(r"(⟦\d+⟧)", new_plain)
+                marks_iter = iter(marks)
+                rebuilt = "".join(next(marks_iter).group(0) if re.fullmatch(r"⟦\d+⟧", x) else H.escape(x, quote=False) for x in pieces)
+                edits.append((em.start(2), em.end(2), rebuilt))
+                taken.add(em.start(2))
+                break
+        for a, b, new in sorted(edits, reverse=True):
+            cont = cont[:a] + new + cont[b:]
+            done += 1
+        if edits:
+            h = h[:cm.start()] + cont + h[cm.end():]
+    return h, done
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -3731,15 +3843,10 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             jrn = (pjc.get("journal") or "").lower()
             if jrn and jrn.split()[0] not in card_txt:
                 faults.append(f"[card:{pmc}] the card does not carry the paper's journal line")
-    for pm, card in card_texts(h):
-        ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
-        if re.search(r"(?<!CBG/)\bMIGS\b", ct, re.I) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
-            faults.append(f"[card:{pm}] bare MIGS, never/always, or advice in the lens paragraph")
-
-        for t in _num_tokens(ct):
-            if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
-                faults.append(f"[card:{pm}] number {t} is not in the paper's abstract")
-                break
+    # (a card's figures, absolutes and advice are judged sentence by sentence
+    # by grounding_audit, with the abstract in hand — a token test called
+    # "1,084,110 women" written as "1.08 million" an invented number, and a
+    # word test called the comparator "never-users" a clinical absolute)
     for x in uncited_claims:
         faults.append(f"{x[:x.index(']') + 1]} sentence states a number or study with no citation: {x[x.index(']') + 2:]}")
     for x in bad_numbers:
@@ -3810,6 +3917,11 @@ def prose_faults(W: str, h: str, man: dict) -> list:
     # deep-dive sections are the clinician's prose too: terms, advice, styling
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
         body_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        # the legacy shape keeps the verbatim abstract in mz-jc-abstract-body,
+        # not in a section, and the modal's title and meta line are the
+        # paper's words too: "more likely than never users" in the Million
+        # Women Study's abstract was reported as the clinician's "never"
+        body_d = _blank_paper_text(body_d)
         body_d = strip_template(body_d)
         # "Where this sits in the established literature" cites guidelines and
         # prior work ON PURPOSE — an ACOG recommendation to give antibiotics
@@ -3824,19 +3936,10 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         # Headings come out exactly as the S15 check above strips them.
         body_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", body_d)
         body_d = re.sub(r"Paper\s*#\s*\d+", " ", body_d)
-        dt = H.unescape(re.sub(r"<[^>]+>", " ", body_d))
-        if re.search(r"(?<!CBG/)\bMIGS\b", dt, re.I):
-            faults.append(f"[dialog:{pm}] bare MIGS"); 
-        if re.search(r"\b(?:never|always)\b", dt, re.I):
-            faults.append(f"[dialog:{pm}] never/always in the clinician's prose")
-        if ADVICE_RE.search(dt):
-            faults.append(f"[dialog:{pm}] reads as advice to a patient")
+        # terms are practice_name_faults' (own_text reads the dialogs); figures,
+        # absolutes and advice are grounding_audit's, sentence by sentence
         if re.search(r'<section class="mz-jc-section[^"]*" id="dd-\d+-(?!abstract)[a-z_]+"[^>]*>[\s\S]*?style="[^"]*(?:color|background)', body_d):
             faults.append(f"[dialog:{pm}] inline colour styling in authored content")
-        for t in _num_tokens(dt):
-            if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
-                faults.append(f"[dialog:{pm}] number {t} is not in the paper's abstract")
-                break
     for frag in prose_fragments(h) + [c for _, c in card_texts(h)]:
         if re.search(r'style="[^"]*(?:color|background)', frag):
             faults.append("inline colour styling in authored prose")
@@ -3981,6 +4084,7 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
         frags.append((f"<p>{H.escape(head_txt, quote=False)}</p>", None, "headings"))
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
         secs_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        secs_d = _blank_paper_text(secs_d)      # the legacy abstract body, the modal's title and meta
         secs_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", secs_d)
         if re.sub(r"<[^>]+>", "", secs_d).strip():
             frags.append((secs_d, pm, f"dialog:{pm}"))
@@ -4262,6 +4366,16 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         g = grounding_audit(W, h, man) + popover_audit(W, h)
         if man.get("format") == "trend":
             g += trend_prose_audit(W, h, man)
+        for _round in range(2):
+            att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
+            if not att:
+                break
+            h, n_att = fix_attributed_text(W, h, att, real)
+            if not n_att:
+                break
+            print(f"  {n_att} card / deep-dive text(s) rewritten from their papers' abstracts — auditing again")
+            g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if man.get("format") == "trend" else [])
+            g += reader_prose_faults(h)
         for f_ in g:
             print("  GROUNDING:", f_)
         faults += g
@@ -10838,6 +10952,18 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         g = grounding_audit(W, h, man) + popover_audit(W, h)
         if fmt == "trend":
             g += trend_prose_audit(W, h, man)
+        # the model's finding on a card or a deep dive is repaired from the
+        # paper, and the same audit judges the rewrite on the next round
+        for _round in range(2):
+            att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
+            if not att:
+                break
+            h, n_att = fix_attributed_text(W, h, att, real)
+            if not n_att:
+                break
+            print(f"  {n_att} card / deep-dive text(s) rewritten from their papers' abstracts — auditing again")
+            g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if fmt == "trend" else [])
+            g += reader_prose_faults(h)
         for f_ in g:
             print("  GROUNDING:", f_)
         faults += g
