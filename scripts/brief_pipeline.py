@@ -3168,6 +3168,193 @@ def _vis_text(h: str) -> str:
     return H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)))
 
 
+# ---------------------------------------------------------------------------
+# The practice's name, corrected on the site's OWN text and nowhere else.
+#
+# "CBG/MIGS" is the practice's name for itself (S10); a bare "MIGS" reads as
+# minimally invasive glaucoma surgery and "MIGS & CBG" is the wrong order, and
+# the deploy's live audit (audit_live_post.py §1.2) refuses a page for either.
+# W34 published carrying 22 bare ones and W33 16, every one inside a deep-dive
+# dialog's editorial <p>/<li>, and W28 one in a topic synthesis. reader_prose_
+# faults never saw them: prose_fragments reads the page's prose sections and
+# _mask_noprose blanks every <dialog>, so the pipeline's idea of "the site's
+# own text" was smaller than the reader's — and smaller than the audit's,
+# which scans ALL visible text. The two gates disagreed about what the page
+# was, and the page shipped into a refusal.
+#
+# The fix cannot be a page-wide substitution. A paper's own words — its
+# title, meta line, verbatim abstract, its line in the reference list — are
+# quoted, not written (S5), and may not be rewritten even when they say
+# "MIGS". Nor may a tag: `class="mz-post-do-migs"` carries the same four
+# letters and a case-insensitive sweep over the markup would have renamed a
+# CSS hook. So the page is split into two kinds of text — the paper's and the
+# site's — by element, and only text NODES of the site's kind are edited. A
+# paper that says "MIGS" in its own words is reported as a NOTE, not a fault:
+# the pipeline must not edit the quote, and it must not publish into the
+# audit's refusal without saying why.
+# ---------------------------------------------------------------------------
+
+# Every opener that begins an element of the PAPER's words (or of no words a
+# reader sees). Comments, scripts and styles are matched whole; the others are
+# located by opener and bounded with _element_end, because a deep dive's
+# abstract body nests <div>s and a popover title can hold a <span>.
+_PAPER_TEXT_RE = re.compile(
+    r"<!--[\s\S]*?-->"
+    r"|<(?P<raw>script|style)\b[^>]*>[\s\S]*?</(?P=raw)\s*>"
+    r"|<(?P<tag>details|div|section|h2|h3|p|span|ol)\b(?P<attrs>[^>]*)>", re.I)
+
+# Which (tag, class) pairs are the paper's; every <details> is a card's
+# verbatim abstract, and a deep dive's abstract section is known by its id.
+_PAPER_TEXT_CLASSES = {
+    "details": None,
+    "div": {"mz-jc-abstract-body"},
+    "h3": {"mz-cite-title"},
+    "p": {"mz-cite-title", "mz-cite-meta", "mz-jc-modal-meta"},
+    "h2": {"mz-jc-modal-title"},
+    "span": {"mz-ref-pop-title", "mz-ref-pop-meta"},
+    "ol": {"mz-references-list"},
+}
+_ABSTRACT_SECTION_ID_RE = re.compile(r"^dd-\d{5,9}-abstract$")
+
+# The same test the deploy's audit runs (audit_live_post.py BARE_MIGS /
+# WRONG_ORDER), so the pipeline and the gate agree on what a hit is: "MIGS"
+# as a word, not already behind "CBG/" or "CBG-", and not the fellowship's
+# "FMIGS". The wrong-order forms are listed first so "MIGS & CBG" is consumed
+# whole rather than as a bare "MIGS" followed by a stray "& CBG".
+_BARE_MIGS_RE = re.compile(r"(?<!CBG/)(?<!CBG-)(?<!F)\bMIGS\b", re.I)
+_WRONG_ORDER_RE = re.compile(r"\bMIGS\s*(?:&amp;|&|·|/)\s*CBG\b", re.I)
+_PRACTICE_NAME_RE = re.compile(_WRONG_ORDER_RE.pattern + "|" + _BARE_MIGS_RE.pattern, re.I)
+PRACTICE_NAME = "CBG/MIGS"
+
+
+def _paper_text_spans(h: str) -> list:
+    """Every stretch of h that is a paper's own words or invisible to a
+    reader, as sorted, merged (start, end) pairs: card abstracts (<details>),
+    deep-dive abstract bodies and sections, card and modal titles and meta
+    lines, popover titles and meta, the reference list, and every comment,
+    script and style block."""
+    spans, cursor = [], 0
+    for m in _PAPER_TEXT_RE.finditer(h):
+        if m.start() < cursor:
+            continue                       # an opener inside a span already taken
+        if m.group("tag") is None:
+            spans.append((m.start(), m.end()))
+            cursor = m.end()
+            continue
+        tag = m.group("tag").lower()
+        classes = set(_attr(m.group(0), "class").split())
+        want = _PAPER_TEXT_CLASSES.get(tag)
+        if tag == "section":
+            if not (_ABSTRACT_SECTION_ID_RE.match(_attr(m.group(0), "id")) or "mz-jc-abstract" in classes):
+                continue
+        elif want is None and tag != "details":
+            continue
+        elif want is not None and not (classes & want):
+            continue
+        end = _element_end(h, tag, m.end())
+        spans.append((m.start(), end))
+        cursor = end
+    merged = []
+    for a, b in sorted(spans):
+        if merged and a <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return merged
+
+
+def _blank_paper_text(h: str) -> str:
+    """h with every paper-text span replaced by spaces of the same length, so
+    an index into the result is an index into h."""
+    last, parts = 0, []
+    for a, b in _paper_text_spans(h):
+        parts.append(h[last:a])
+        parts.append(" " * (b - a))
+        last = b
+    parts.append(h[last:])
+    return "".join(parts)
+
+
+def own_text(h: str) -> str:
+    """The site's own reader-visible text: what is left once the paper's
+    words, scripts, styles and comments are blanked and the tags stripped.
+    This is the surface S10 governs, and it includes what prose_fragments
+    leaves out — dialog editorial sections, card lens paragraphs, popover
+    findings, headings, ledes."""
+    return H.unescape(re.sub(r"<[^>]+>", " ", _blank_paper_text(h)))
+
+
+def canonical_practice_name(h: str) -> tuple:
+    """Write the practice's name as CBG/MIGS wherever the SITE's own text
+    names it: every bare MIGS and every wrong-order form (MIGS & CBG,
+    MIGS &amp; CBG, MIGS · CBG, MIGS/CBG) in a text node outside the paper's
+    words, tags, attributes, scripts, styles and comments. Returns (h, n).
+
+    Edits are located on a blanked copy of the page (paper spans as spaces)
+    and applied to the original at the same indices, so nothing inside a
+    span, and nothing inside a tag, is ever a candidate: a text node is a
+    run between ">" and "<" of the blanked copy, and the blanked copy holds
+    no "<" but a real tag's. Idempotent — CBG/MIGS is excluded by the
+    lookbehind, so a second call finds nothing.
+    """
+    mk = _blank_paper_text(h)
+    edits = []
+    for node in re.finditer(r"<[^>]*>|[^<]+", mk):
+        if node.group(0)[0] == "<":
+            continue                       # a tag: its attributes are hooks, not prose
+        for m in _PRACTICE_NAME_RE.finditer(mk, node.start(), node.end()):
+            edits.append((m.start(), m.end()))
+    if not edits:
+        return h, 0
+    out, last = [], 0
+    for a, b in edits:
+        out.append(h[last:a])
+        out.append(PRACTICE_NAME)
+        last = b
+    out.append(h[last:])
+    return "".join(out), len(edits)
+
+
+def practice_name_faults(h: str) -> list:
+    """S10 on the whole page, split the way the page is.
+
+    A fault line (blocking) when the site's own text still carries a bare
+    MIGS or a wrong-order form — count and one snippet, so the reader of the
+    log can find it. A line beginning "NOTE:" (advisory, never a fault) when
+    a PAPER's own words — a title, meta line, abstract or reference — carry
+    bare MIGS: those words may not be rewritten, but the deploy's live audit
+    (§1.2) scans all visible text and will refuse the page for them, so the
+    run must know before it publishes into that refusal. Callers append the
+    whole list to their faults; a caller that blocks on faults should count
+    only the lines that do not start with "NOTE:".
+    """
+    out = []
+    own = own_text(h)
+    hits = list(_PRACTICE_NAME_RE.finditer(own))
+    if hits:
+        m = hits[0]
+        snippet = re.sub(r"\s+", " ", own[max(0, m.start() - 40):m.end() + 40]).strip()[:80]
+        out.append(f"the site's own text names the practice as bare MIGS or MIGS & CBG "
+                   f"({len(hits)}×) — write CBG/MIGS: {snippet!r}")
+    paper = []
+    for a, b in _paper_text_spans(h):
+        # a reader never sees a comment, script or style, and the audit strips
+        # them too — but they are stripped INSIDE each span, not by skipping a
+        # span that starts with one: a comment abutting the reference list
+        # merges with it into one span, and skipping that span lost the list
+        piece = re.sub(r"<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?</\1\s*>", " ", h[a:b], flags=re.I)
+        paper.append(H.unescape(re.sub(r"<[^>]+>", " ", piece)))
+    ptext = " ".join(paper)
+    phits = list(_PRACTICE_NAME_RE.finditer(ptext))
+    if phits:
+        m = phits[0]
+        snippet = re.sub(r"\s+", " ", ptext[max(0, m.start() - 40):m.end() + 40]).strip()[:80]
+        out.append(f"NOTE: a paper's own words (title, meta, abstract or reference) say bare MIGS "
+                   f"({len(phits)}×): {snippet!r} — not rewritten, but the deploy's §1.2 gate "
+                   f"will refuse the page for it")
+    return out
+
+
 def body_invariant_faults(h: str) -> list:
     """What must be true of a finished brief, checked on the brief itself.
 
@@ -3238,6 +3425,14 @@ def body_invariant_faults(h: str) -> list:
         lab = re.search(r"Paper\s*#\s*(\d+)", d.group(0))
         if q and lab and q in first and lab.group(1) != first[q]:
             out.append(f"the deep dive for {q} says Paper #{lab.group(1)} where its marker says {first[q]}")
+    # S10 on the whole page, dialog editorial text included: the deploy's live
+    # audit refused W34, W33 and W28 for bare MIGS no prose gate could see. A
+    # NOTE line (a paper's own words say MIGS) is printed, not counted
+    for f_ in practice_name_faults(h):
+        if f_.startswith("NOTE:"):
+            print("  " + f_)
+        else:
+            out.append(f_)
     return out
 
 
@@ -3746,6 +3941,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h = refresh_shape_chart(h)
     h = renumber_list_labels(h)
     h = tidy_prose_spacing(h)
+    h, migs0 = canonical_practice_name(h)
+    if migs0:
+        print(f"  {migs0} bare MIGS / wrong-order name(s) in the site's own text written as CBG/MIGS")
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -9035,6 +9233,10 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     post = post.get("post", post)
     if stage == 0:
         h = normalize_legacy_markup(post["body_html"])
+        # the practice's name, on the site's own text only (dialogs included)
+        h, migs0 = canonical_practice_name(h)
+        if migs0:
+            print(f"  {migs0} bare MIGS / wrong-order name(s) in the site's own text written as CBG/MIGS")
         before_html = h
         before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
                   for x in SUP_RE.findall(h)]
@@ -9256,6 +9458,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, talk0 = drop_process_commentary(h)
         if talk0:
             print(f"  {talk0} sentence(s) of commentary about the pipeline itself removed")
+        h, migs1 = canonical_practice_name(h)
+        if migs1:
+            print(f"  {migs1} bare MIGS / wrong-order name(s) written as CBG/MIGS at resume")
         # a repair without the byline flipped two corrected names back (W21:
         # Yang for Guzelbag, Liu for Shen); the attribution pass reads the
         # banked page here so a resume corrects them without a full run
@@ -9324,6 +9529,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         die(f"{post_id}: renumbering did not hold")
 
     h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids, meta=meta)
+    h, migs2 = canonical_practice_name(h)       # a repair may write the bare name
+    if migs2:
+        print(f"  {migs2} bare MIGS / wrong-order name(s) written as CBG/MIGS after the audit repair")
     faults = reader_prose_faults(h)
     if faults:
         die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
