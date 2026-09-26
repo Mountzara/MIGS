@@ -2134,6 +2134,8 @@ and every step in it is one an earlier version got wrong:
 | **the model judges a card's and a deep dive's text; code applies its fix; the model re-judges** (`fix_attributed_text`) | the regex tests that decided MEANING on attributed containers are gone (a token test called "1,084,110 women" written as "1.08 million" an invented number; a word test called the comparator "never-users" an absolute). `grounding_audit` judges every sentence of a card and a deep dive against the container's paper — told, in the prompt, that those sentences carry no marker by design, and that the "established literature" section discusses work beyond the abstract on purpose — and its finding on such a sentence is repaired by `fix_attributed_text`: the element is rewritten with the paper's abstract and the audit's own complaint (markers kept as tokens, a data cell kept as a value, `writer_reject` on the result) and the same audit judges the rewrite on the next round, in both publish paths | the first republish of the MHT brief under the full gates: five figures no abstract states and one "never" in hand-written cards and deep dives, and no repair could reach them; then 141 sentences faulted for a marker they were not meant to carry |
 | S10 is the words (`_ABSOLUTE_WORD_RE`, `fix_absolute_words`) | "never"/"always" is read on the site's whole own text — prose, cards, deep dives, headings, popover findings — "never-users" excepted; before the gate refuses, the model rewrites each such sentence (prose through `repair_from_defects`, a card's or a deep dive's through `fix_attributed_text`) | `reader_prose_faults` claimed a word ban it did not perform, and the test it did perform read the prose containers alone |
 | S9 on the post's own fields (`post_field_faults`) | title, summary, verdict and the two social drafts are refused for AI-provenance wording, an internal name or spec reference, a placeholder or a build comment — not only for the practice's name | the summary once read "MIGS Monday Morning — §0.8 KB-anchored synthesis … verified PMIDs" on the live listing |
+| S15: a carded paper with no deep dive | `prose_faults` faults "[dialog:pmid] no deep dive for this carded paper" — a deep dive missing one section was faulted while a paper with none at all was skipped in silence | the standards-check |
+| S13 per item on republish | `_manifest_of_page` derives a trend brief's items from its `<h3 class="mz-subhead">` subsections; `trend_format_faults` walks each item's block to the next heading and requires a framing label from the fixed list there — a legacy single-claim brief has no items and keeps the one whole-brief label | on republish `topics` was always empty for a trend brief, so the per-item check never ran |
 | `auditPublishable` (node) → `preview_and_verify` (Playwright, every marker, hover + tap) | the site's own gate and a browser, BEFORE anything is written | |
 | `--dry` stops here: **`DRY RUN OK`**, nothing written | receipt → PUT → approve → `verify_rendered` on the live route, otherwise | |
 
@@ -2374,6 +2376,23 @@ Cochrane laparoscopy review). Cause: `scripts/_authoring/tb_*.py` carded a
 shared "treatment-landscape" trio by disease keyword. Those files, and
 `purge_w2*_offtopic.py` beside them, are dead one-offs from earlier
 sessions — hand-patches, wired to nothing; the pipeline supersedes them.
+
+**A LEAK IS WHAT A VISITOR SEES, NOT WHAT A REGEX FINDS (2026-09-26).**
+The 2026-09-02 strip of the KB-anchor manifests cut the endometriosis
+page's manifest at a `-->` written INSIDE its own JSON note and left the
+rest — `…surfaced rather than silently kept." } -->` — as page text on
+the live page and its portal mirror, with no banned token in it. The
+owner found it. `scripts/audit_no_internal_leakage.py` now also parses
+every deployable page the way a browser does (`html.parser`, scripts /
+styles / templates skipped) and refuses rendered comment delimiters,
+KB-anchor vocabulary, manifest fields, local paths, JSON and spec marks
+(legal section citations exempt); it refuses the pre-fix pages and
+passes the fixed ones. `scripts/audit_citation_popovers.py` retries a
+navigation that fails on the network and, before launching the browser,
+imports the sandbox proxy's current CA into Chromium's NSS store when it
+is not there — the proxy rotated its CA at 20:28 that day and every live
+route failed `ERR_CERT_AUTHORITY_INVALID` until then; TLS verification is
+never switched off.
 
 **MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
 · `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`
