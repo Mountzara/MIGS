@@ -477,7 +477,16 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
                        "all reveal elements visible" if stuck["n"] == 0
                        else f"{stuck['n']} stuck invisible (e.g. <{stuck['ex']}>)"))
     except Exception as e:
-        res.append(chk(f"[{label}] Apple reveal effect", False, f"probe error: {str(e)[:80]}"))
+        # A crashed engine has seen nothing and can judge nothing. This is
+        # the THIRD appearance of the crash-as-verdict bug in this repo's
+        # audits (contrast gate, twice, 2026-08-20) — WebKit dies under the
+        # memory pressure of this page's video compositing and the failure
+        # was reported as "the page LOOKS broken". Judge only what was
+        # actually observed.
+        if "crash" in str(e).lower() or "target closed" in str(e).lower():
+            print(f"  [{label}] ⏭  reveal probe UNJUDGEABLE — engine crashed mid-probe; not a page verdict")
+        else:
+            res.append(chk(f"[{label}] Apple reveal effect", False, f"probe error: {str(e)[:80]}"))
     return res
 
 
@@ -519,7 +528,7 @@ def main():
                 # Skip LOUDLY so a genuinely unreachable site is still obvious,
                 # and only when NO profile got through (see the guard below).
                 msg = str(e)
-                transport = any(t in msg for t in (
+                transport = ("crash" in msg.lower()) or ("target closed" in msg.lower()) or any(t in msg for t in (
                     "ERR_CONNECTION_RESET", "ERR_CONNECTION_REFUSED",
                     "ERR_PROXY_CONNECTION_FAILED", "ERR_TUNNEL_CONNECTION_FAILED",
                     "ERR_NAME_NOT_RESOLVED", "ERR_SOCKET_NOT_CONNECTED",

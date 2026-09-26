@@ -8,10 +8,10 @@
 <link rel="icon" href="/favicon.ico">
 <style>
 :root {
-    --bg: #120f1b;
-    --ink: #f5f5f7;
-    --ink-mute: rgba(245,245,247,0.72);
-    --ink-faint: rgba(245,245,247,0.46);
+    --bg: #FBFAF8;
+    --ink: #1A1726;
+    --ink-mute: #6E6A7C;
+    --ink-faint: #8B8698;
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
     --hairline: rgba(255,255,255,0.10);
@@ -32,29 +32,29 @@ header .mark { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
     font-weight: 200; font-size: 18px; letter-spacing: -0.02em; }
 header .sep { color: var(--ink-faint); }
 header .crumb { font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-    text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
+    text-transform: uppercase; color: #6d28d9; }
 h1 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
     font-weight: 200; letter-spacing: -0.022em;
     font-size: clamp(26px, 4vw, 36px); margin: 0 0 10px; }
 .lede { font-size: 15.5px; color: var(--ink-mute); max-width: 56ch; margin: 0 0 26px; }
-.card { background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+.card { background: rgba(255,255,255,0.72); border: 1px solid var(--hairline);
     border-radius: 14px; padding: 20px 18px;
     -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
     margin-bottom: 14px; }
 .scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 6px; margin: 14px 0 6px; }
 .scale button { aspect-ratio: 1; min-width: 0; border-radius: 9px; cursor: pointer;
-    background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.72); border: 1.5px solid rgba(255,255,255,0.18);
     color: var(--ink); font-family: inherit; font-size: 14.5px; font-weight: 600;
     transition: background 0.18s, border-color 0.18s, transform 0.18s; }
-.scale button:hover { border-color: rgba(var(--glow-purple), 0.6); transform: translateY(-2px); }
+.scale button:hover { border-color: #6d28d9; transform: translateY(-2px); }
 .scale button.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
 .scale-ends { display: flex; justify-content: space-between; font-size: 11.5px;
     color: var(--ink-faint); margin-bottom: 4px; }
 textarea { width: 100%; min-height: 110px; margin-top: 10px; padding: 12px;
-    border-radius: 10px; background: rgba(255,255,255,0.05);
+    border-radius: 10px; background: rgba(255,255,255,0.72);
     border: 1.5px solid rgba(255,255,255,0.2); color: var(--ink);
     font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical; }
-textarea:focus { outline: none; border-color: rgba(var(--glow-purple), 0.6); }
+textarea:focus { outline: none; border-color: #6d28d9; }
 .q-label { font-size: 15px; font-weight: 600; margin: 0; }
 .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%;
     margin-top: 18px; padding: 15px 24px; border: none; border-radius: 12px;
@@ -69,7 +69,7 @@ textarea:focus { outline: none; border-color: rgba(var(--glow-purple), 0.6); }
 #thanks h2 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
     font-weight: 200; font-size: 28px; margin: 0 0 10px; }
 #thanks p { color: var(--ink-mute); font-size: 15px; }
-#thanks a { color: rgba(var(--glow-purple), 0.95); }
+#thanks a { color: #6d28d9; }
 footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hairline);
     font-size: 12px; color: var(--ink-faint); }
 @media (prefers-reduced-motion: reduce) {
@@ -83,14 +83,14 @@ footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hairli
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -118,7 +118,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -126,7 +126,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -139,7 +139,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
 <div class="shell">
   <header>
     <span class="mark">Mount Zara</span>
@@ -249,5 +249,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     });
 })();
 </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

@@ -32,7 +32,14 @@ import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.
 import { requireRole, nowMs } from "../../../../_lib/auth.js";
 import { logAudit } from "../../../../_lib/audit.js";
 import { newId } from "../../../../_lib/db.js";
-import { getVisitType, isValidVisitTypeKey } from "../../../../_lib/visit_types.js";
+import {
+    getVisitType,
+    isValidVisitTypeKey,
+    isTelehealthOnly,
+    isBookableVisitTypeKey,
+    requiresHandsOn,
+} from "../../../../_lib/visit_types.js";
+import { recordAcknowledgment, hasAcknowledged } from "../../../../_lib/acknowledgments.js";
 import { dateStringToMs } from "../../../../_lib/scheduling.js";
 import {
     getLicensedStates,
@@ -96,6 +103,7 @@ export async function onRequestPost(ctx) {
         SELECT id, intake_id, patient_id,
                ai_visit_type, ai_duration_min, ai_in_person_required,
                clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_in_person_required,
                final_visit_type, final_duration_min, clinician_reviewed_at,
                appointment_id
         FROM appointment_triage WHERE id = ? AND patient_id = ?
@@ -177,15 +185,70 @@ export async function onRequestPost(ctx) {
         ? body.duration_min
         : (triage.final_duration_min || triage.clinician_override_duration_min || triage.ai_duration_min || vt.duration_min);
 
-    // Modality validation against triage.
-    if (triage.ai_in_person_required && modality !== "in_person") {
+    // Modality validation against triage. The override wins when he made
+    // one (?? not ||: an override TO telehealth is stored as 0, which || 
+    // would discard). Book and available MUST resolve this identically, or
+    // the slots offered and the bookings accepted disagree — that split is
+    // exactly how the in-person checkbox managed to do nothing for months.
+    const inPersonRequired = !!(triage.clinician_override_in_person_required
+        ?? triage.ai_in_person_required);
+
+    // -----------------------------------------------------------------
+    // TELEHEALTH-ONLY PRACTICE. This is the last gate before a row is
+    // written, so it is the one that has to be right: a booking the
+    // practice cannot deliver must not reach the appointments table,
+    // whatever the UI sent or a stale triage row says.
+    //
+    // Note the order. The stored in_person_required is NOT consulted
+    // while telehealth-only is in force — every live triage row carries
+    // ai_in_person_required = 1, so honouring it here would reject every
+    // booking the calendar just offered.
+    // -----------------------------------------------------------------
+    const telehealthOnly = isTelehealthOnly();
+    if (telehealthOnly) {
+        if (!isBookableVisitTypeKey(visit_type)) {
+            return err(409, "visit_type_not_offered",
+                "This visit needs an in-person examination, and in-person visits, office procedures and surgery are not currently offered through this practice at this time. "
+                + "He has been notified and will contact you about the right next step. If you would like to know where he sees patients in person and performs surgery, ask through Get in touch on mountzara.com.");
+        }
+        if (modality !== "telehealth") {
+            return err(409, "telehealth_only",
+                "Dr. Mabini is seeing patients by video only at this time, so this visit is booked as a telehealth visit.");
+        }
+    } else if (inPersonRequired && modality !== "in_person") {
         return err(409, "in_person_required",
             "This visit type requires in-person attendance.");
     }
-    const procedureOrOmt = vt && (vt.category === "procedure" || visit_type === "omt_treatment");
-    if (procedureOrOmt && modality === "telehealth") {
+
+    // ------------------------------------------------------------------
+    // TELEHEALTH CONSENT, DOCUMENTED. Illinois (225 ILCS 150) and
+    // California (Bus. & Prof. Code §2290.5) both provide for telehealth
+    // consent documented in the record. The consent PAGE has said "the
+    // portal asks you to acknowledge" since it was written; this is the
+    // code that actually asks. Version-sensitive: a materially revised
+    // consent (a bumped DOC_VERSIONS entry) requires re-acknowledgment.
+    // 428 Precondition Required, so the client can distinguish "show the
+    // consent" from every other booking failure.
+    // ------------------------------------------------------------------
+    if (modality === "telehealth") {
+        const already = await hasAcknowledged(env, session.patient_id, "telehealth_consent");
+        if (!already && body.telehealth_consent_ack !== true) {
+            return err(428, "telehealth_consent_required",
+                "Before your first telehealth visit, please review the telehealth consent at /telehealth-consent/ and confirm it when booking.");
+        }
+        if (!already) {
+            await recordAcknowledgment(env, {
+                patient_id: session.patient_id, doc_key: "telehealth_consent", request,
+            });
+        }
+    }
+    // Hands-on visit types can never be video. This used to key off
+    // `category === "procedure"`, which also caught `pre_op` — a
+    // counselling visit with nothing to examine — and refused it over
+    // telehealth for no clinical reason.
+    if (requiresHandsOn(visit_type) && modality === "telehealth") {
         return err(409, "in_person_required",
-            "Procedure / OMT visits must be in-person.");
+            "Osteopathic treatment, office procedures and the annual exam require an in-person visit.");
     }
 
     // Phase 17 R1 — Chaperone enforcement on telehealth bookings.
@@ -207,8 +270,8 @@ export async function onRequestPost(ctx) {
         if (!chaperone_confirmed) {
             return err(409, "chaperone_confirmation_required",
                 "This visit type involves a pelvic-area examination component. " +
-                "Telehealth is offered only if an adult chaperone (partner, family member, or staff) " +
-                "will be present in the room. Please confirm chaperone availability or choose an in-person slot.",
+                "It is offered by video only if an adult chaperone (partner, family member, or staff) " +
+                "will be present in the room. Please confirm who your chaperone will be.",
                 { chaperone_rationale: vt.chaperone_rationale || "" });
         }
         if (!ALLOWED_CHAPERONE_METHODS.has(chaperone_confirmation_method)) {
@@ -343,7 +406,9 @@ export async function onRequestPost(ctx) {
     // the patient is marked dirty for snapshot regeneration. Best-effort.
     try {
         const startsDate = new Date(starts_at);
-        const summary = `Appointment booked: ${vt?.display_name || visit_type}`
+        // The catalogue field is `label`; display_name has never existed, so
+        // every encounter event read "Appointment booked: new_patient_standard".
+        const summary = `Appointment booked: ${vt?.label || visit_type}`
             + ` on ${startsDate.toISOString().slice(0, 10)} (${modality})`;
         const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
         await recordEncounterEvent(env, {

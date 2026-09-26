@@ -15,10 +15,12 @@
 // =====================================================================
 
 export async function onRequest({ request, env }) {
+    // Built first, then the admin-session cookie is appended before return.
+    const clearAdmin = (await import("../_lib/admin_session.js")).clearAdminSessionCookie();
     // Always return 401 with a new realm. The browser clearing happens
     // because the realm differs from "Mount Zara Admin" used everywhere
     // else; the cache is keyed by (origin, realm).
-    return new Response(`<!doctype html>
+    const resp = new Response(`<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -31,17 +33,17 @@ export async function onRequest({ request, env }) {
         html, body {
             margin: 0; padding: 0;
             background:
-                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(167, 139, 250, 0.18), transparent 60%),
-                #120b22;
-            color: #ffffff;
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(167,139,250,.10), transparent 60%),
+                #FBFAF8;
+            color:#1A1726;
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
             -webkit-font-smoothing: antialiased;
         }
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background:rgba(255,255,255,0.72);
+            border:1px solid #E9E5EE;
             border-radius: 14px;
             padding: 36px 40px;
             text-align: center;
@@ -59,12 +61,12 @@ export async function onRequest({ request, env }) {
             font-weight: 200;
             font-size: 30px;
             letter-spacing: -0.02em;
-            color: #ffffff;
+            color:#1A1726;
             margin: 0 0 12px 0;
         }
         p {
             font-size: 14.5px; line-height: 1.6;
-            color: #ffffff;
+            color:#1A1726;
             margin: 0 0 18px 0;
         }
         a.btn {
@@ -72,7 +74,7 @@ export async function onRequest({ request, env }) {
             text-decoration: none;
             font-size: 13.5px; font-weight: 500;
             color: rgba(167, 139, 250, 0.98);
-            background: rgba(167, 139, 250, 0.12);
+            background: rgba(167,139,250,.10);
             border: 1px solid rgba(167, 139, 250, 0.45);
             border-radius: 9px;
             padding: 10px 18px;
@@ -80,30 +82,31 @@ export async function onRequest({ request, env }) {
         }
         a.btn:hover {
             transform: translateY(-1px);
-            color: #ffffff;
+            color:#1A1726;
             background: rgba(167, 139, 250, 0.22);
         }
         a.btn.secondary {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.12);
+            color:#1A1726;
+            background:rgba(255,255,255,0.72);
+            border-color:#E9E5EE;
             margin-left: 8px;
         }
-        a.btn.secondary:hover { color: #ffffff; }
+        a.btn.secondary:hover { color:#1A1726; }
         .small {
             margin-top: 22px;
             font-size: 11.5px;
-            color: #ffffff;
+            color:#1A1726;
             line-height: 1.55;
         }
-    </style>
+      button,button:hover,.btn,.btn:hover{color:#fff}
+</style>
 </head>
 <body>
     <div class="card">
         <div class="eyebrow">Signed out</div>
         <h1>You're signed out of the admin.</h1>
         <p>Your browser has dropped the cached admin credentials. Close this tab when you're done, or click below to sign back in.</p>
-        <a class="btn" href="/admin/">Sign back in</a>
+        <a class="btn" href="/admin/_login">Sign back in</a>
         <a class="btn secondary" href="/">Go home</a>
         <div class="small">
             If the next admin page still loads without prompting, fully quit and reopen your browser to be certain — some browsers stubbornly cache Basic Auth credentials per-window.
@@ -122,7 +125,13 @@ export async function onRequest({ request, env }) {
             "cache-control": "no-store, max-age=0",
             // Strip any member portal session cookie that might be in the
             // same browser. Idempotent if no cookie present.
+            // Signing out must kill the ADMIN SESSION as well, or the
+            // cookie keeps the backend open after the operator believes
+            // they have left. A second Set-Cookie needs Headers.append,
+            // so the response is rebuilt below.
             "set-cookie": "mz_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0",
         },
     });
+    resp.headers.append("Set-Cookie", clearAdmin);
+    return resp;
 }

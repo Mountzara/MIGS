@@ -46,6 +46,7 @@ import {
     BRIDGE_KINDS, bridgeKindAllowed, deidentifyForBridge,
     rehydrate, unresolvedTokens,
 } from "../../../../_lib/bridge_context.js";
+import { groundClinical, groundingInstruction } from "../../../../_lib/clinical_grounding.js";
 import { newId } from "../../../../_lib/db.js";
 
 // A claim older than this is considered abandoned and may be re-claimed,
@@ -186,7 +187,21 @@ async function rawContextFor(env, kind, refId) {
             } catch { body = "(message body unavailable)"; }
             parts.push(`${m.from_role === "patient" ? "PATIENT" : "PRACTICE"}: ${body}`);
         }
-        return { text: parts.join("\n\n"), knownNames: [...names] };
+        // The KB block travels with the job. It is reference knowledge, not
+        // patient data, so it is safe to send to the CLI bridge — and
+        // without it a bridge-routed draft would be the one path that
+        // still answered from the model's general training.
+        const kb = await groundClinical(env, {
+            kind: "message_draft",
+            query: parts.join(" ").slice(0, 2000),
+        });
+        return {
+            text: parts.join("\n\n"),
+            knownNames: [...names],
+            kb_instruction: kb.grounded ? groundingInstruction(kb) : null,
+            kb_citations: kb.grounded ? kb.citations : [],
+            kb_allowed_ids: kb.grounded ? kb.allowed_doc_ids : [],
+        };
     }
 
     if (kind === "intake_summary") {
@@ -247,13 +262,18 @@ async function rawContextFor(env, kind, refId) {
 
     if (kind === "visit_summary") {
         const enc = await env.DB.prepare(
-            `SELECT id, patient_id, visit_date, visit_type_actual, chief_complaint, note_r2_key
+            `SELECT id, patient_id, visit_date, visit_type_actual, chief_complaint,
+                    note_r2_key, note_wrapped_dek, note_aad, note_key_lost
                FROM encounters WHERE id = ? LIMIT 1`
         ).bind(refId).first();
         if (!enc?.note_r2_key) return null;
+        // No key means no note. Returning null here refuses the bridge job
+        // rather than shipping an empty prompt that would produce a
+        // confidently invented visit summary. See schema/0038.
+        if (enc.note_key_lost || !enc.note_wrapped_dek) return null;
         let note = "";
         try {
-            const got = await getPhiObject(env, enc.note_r2_key, null, null);
+            const got = await getPhiObject(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
             note = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
         } catch { return null; }
         if (!note.trim()) return null;
@@ -266,10 +286,17 @@ async function rawContextFor(env, kind, refId) {
             for (const n of [pt?.first_name, pt?.last_name, pt?.preferred_name]) if (n) names.add(n);
         } catch { /* scrubber still runs */ }
 
+        const kbVs = await groundClinical(env, {
+            kind: "visit_summary",
+            query: `${enc.chief_complaint || ""} ${enc.visit_type_actual || ""} ${note}`.slice(0, 3000),
+        });
         return {
             text: `VISIT: ${enc.visit_type_actual || "office visit"} on ${enc.visit_date}\n`
                 + `REASON: ${enc.chief_complaint || "not recorded"}\n\nNOTE:\n${note}`,
             knownNames: [...names],
+            kb_instruction: kbVs.grounded ? groundingInstruction(kbVs) : null,
+            kb_citations: kbVs.grounded ? kbVs.citations : [],
+            kb_allowed_ids: kbVs.grounded ? kbVs.allowed_doc_ids : [],
         };
     }
 
@@ -453,6 +480,14 @@ export async function onRequest(ctx) {
                 ok: true, kind, phi: false,
                 text: deid.text,
                 catalog: raw.catalog || null,
+                // The practice library block, for the clinical kinds. This is
+                // reference knowledge, never patient data, so it does not go
+                // through de-identification — and it must travel with the job
+                // or a bridge-routed draft becomes the one remaining path
+                // that answers from the model's general training.
+                kb_instruction: raw.kb_instruction || null,
+                kb_citations: raw.kb_citations || [],
+                kb_allowed_ids: raw.kb_allowed_ids || [],
                 deid: {
                     applied: true, verified: true,
                     removed: deid.findings,

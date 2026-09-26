@@ -18,6 +18,7 @@
 
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { requireRole } from "../../../../_lib/auth.js";
+import { checkWindow } from "../../../../_lib/iso_date.js";
 
 function err(status, code, message, extra = {}) {
     return new Response(JSON.stringify({ error: code, message, ...extra }), {
@@ -25,7 +26,8 @@ function err(status, code, message, extra = {}) {
         headers: { "content-type": "application/json", "cache-control": "no-store" },
     });
 }
-function isDate(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+// Shape-only date checks accepted 2026-02-31 and an unbounded window.
+// Both now go through _lib/iso_date.js::checkWindow.
 function todayISO() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -52,9 +54,18 @@ export async function onRequestGet(ctx) {
     const to = url.searchParams.get("to") || todayISO();
     const from = url.searchParams.get("from") || addDaysISO(to, -30);
     if (!key) return err(400, "missing_key");
-    if (!isDate(from)) return err(400, "invalid_from");
-    if (!isDate(to)) return err(400, "invalid_to");
-    if (to < from) return err(400, "invalid_window");
+    // A range query with no ceiling is a denial of service on our own
+    // database and on the patient's phone: ?from=1900-01-01 returned a
+    // 46,000-point series in 1.6 MB of JSON, to be drawn in a chart 300
+    // pixels wide. 400 days is a bound on one REQUEST, not on what may
+    // be stored — a patient with five years of entries reads all of it, a
+    // window at a time.
+    const win = checkWindow(from, to, 400);
+    if (!win.ok) {
+        return err(400, win.error, win.error === "window_too_large"
+            ? `that is ${win.days} days; ask for at most ${win.max_days} at a time`
+            : undefined);
+    }
 
     // Look up the symptom in the catalog so we know how to extract the value.
     const def = await env.DB.prepare(`
