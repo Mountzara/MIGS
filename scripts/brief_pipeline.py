@@ -3412,6 +3412,72 @@ def practice_name_faults(h: str) -> list:
     return out
 
 
+# The deploy's live audit scans the post's OTHER text too — title, summary,
+# verdict, the LinkedIn and Instagram drafts — and W34 and W33 failed it on
+# "#MIGS" in both social drafts after their bodies were clean: the pipeline
+# had never read those fields and its PUT carried only the body.
+POST_TEXT_FIELDS = ("title", "summary", "verdict", "linkedin_draft", "instagram_draft")
+_HASHTAG_MIGS_RE = re.compile(r"#MIGS\b", re.I)
+
+
+def canonical_practice_name_text(t: str) -> tuple:
+    """The practice's name in a plain-text field: "#MIGS" becomes "#CBGMIGS"
+    (kept once), a wrong-order form and a bare "MIGS" become "CBG/MIGS".
+    Returns (text, replacements)."""
+    if not t:
+        return t, 0
+    n = 0
+    t, k = _HASHTAG_MIGS_RE.subn("#CBGMIGS", t); n += k
+    if k and t.count("#CBGMIGS") > 1:
+        first = t.find("#CBGMIGS")
+        t = t[:first + len("#CBGMIGS")] + re.sub(r"\s*#CBGMIGS\b", "", t[first + len("#CBGMIGS"):])
+    t, k = _WRONG_ORDER_RE.subn(PRACTICE_NAME, t); n += k
+    t, k = _BARE_MIGS_RE.subn(PRACTICE_NAME, t); n += k
+    return t, n
+
+
+def canonical_post_fields(post: dict) -> tuple:
+    """Every text field the deploy's audit reads, written with the practice's
+    name. Returns ({field: corrected} for the fields that changed, count)."""
+    changed, n = {}, 0
+    for f in POST_TEXT_FIELDS:
+        v = post.get(f)
+        if isinstance(v, str):
+            new, k = canonical_practice_name_text(v)
+            if k:
+                changed[f] = new; n += k
+    return changed, n
+
+
+def post_field_faults(post: dict) -> list:
+    """A post-condition with the deploy's own test on the fields its audit
+    scans, so a run cannot publish a body the deploy will pass beside a
+    draft it will refuse."""
+    out = []
+    for f in POST_TEXT_FIELDS:
+        v = post.get(f)
+        if isinstance(v, str) and (_BARE_MIGS_RE.search(v) or _WRONG_ORDER_RE.search(v)):
+            out.append(f"the post's {f} names the practice as bare MIGS — write CBG/MIGS (#CBGMIGS)")
+    return out
+
+
+def cmd_canonical_fields(post_id: str, *_a, **_k) -> None:
+    """Correct the practice's name in a published post's text fields, PUT
+    only the fields that changed. `renumber` does this with the body; this
+    is for the fields alone, when the body is already right."""
+    post = curl_json(f"{BASE}/api/posts/{post_id}")
+    post = post.get("post", post)
+    changed, n = canonical_post_fields(post)
+    if not changed:
+        print(f"{post_id}: every text field already names the practice as CBG/MIGS")
+        return
+    W = os.path.join(SCRATCH, "fields", post_id) + "/"
+    os.makedirs(W, exist_ok=True)
+    json.dump(changed, open(W + "_put.json", "w"), ensure_ascii=False)
+    print(f"{post_id}: {n} correction(s) in {sorted(changed)}")
+    print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json"))[:200])
+
+
 def body_invariant_faults(h: str) -> list:
     """What must be true of a finished brief, checked on the brief itself.
 
@@ -4560,7 +4626,13 @@ def cmd_publish(post_id: str, dry: bool = False) -> None:
         return
     body = open(W + "body.applied.html", encoding="utf-8").read()
     receipt = json.load(open(W + ".ledger/receipt.json"))
-    json.dump({"body_html": body, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
+    fields, n_fields = canonical_post_fields(post)
+    if n_fields:
+        print(f"  {n_fields} correction(s) to the practice's name in the post's {sorted(fields)}")
+    post.update(fields)
+    if post_field_faults(post):
+        die(f"{post_id}: {'; '.join(post_field_faults(post))}")
+    json.dump({"body_html": body, "pipeline_receipt": receipt, **fields}, open(W + "_put.json", "w"), ensure_ascii=False)
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json")))
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json")))
@@ -4595,6 +4667,12 @@ def cmd_publish_trend(post_id: str, dry: bool = False) -> None:
     r = curl_json(f"{BASE}/api/posts", "POST", auth=True, data_file=W + "_post.json")
     print("CREATE:", json.dumps(r)[:300])
     if isinstance(r, dict) and r.get("error") and "exist" in json.dumps(r).lower():
+        fields, n_fields = canonical_post_fields(doc)
+        if n_fields:
+            print(f"  {n_fields} correction(s) to the practice's name in the post's {sorted(fields)}")
+        doc.update(fields)
+        if post_field_faults(doc):
+            die(f"{sid}: {'; '.join(post_field_faults(doc))}")
         json.dump({k: v for k, v in doc.items() if k not in ("id", "kind")}, open(W + "_put.json", "w"), ensure_ascii=False)
         print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{sid}", "PUT", auth=True, data_file=W + "_put.json"))[:300])
     json.dump({}, open(W + "_approve.json", "w"))
@@ -9738,7 +9816,13 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
                          f"(S16); every marker checked in a browser before publishing."),
                "checked_at": datetime.datetime.utcnow().isoformat() + "Z"}
     json.dump(receipt, open(W + ".ledger/receipt.json", "w"), indent=1)
-    json.dump({"body_html": h, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
+    fields, n_fields = canonical_post_fields(post)
+    if n_fields:
+        print(f"  {n_fields} correction(s) to the practice's name in the post's {sorted(fields)}")
+    post.update(fields)
+    if post_field_faults(post):
+        die(f"{post_id}: {'; '.join(post_field_faults(post))}")
+    json.dump({"body_html": h, "pipeline_receipt": receipt, **fields}, open(W + "_put.json", "w"), ensure_ascii=False)
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json"))[:200])
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json"))[:200])
@@ -9830,7 +9914,8 @@ if __name__ == "__main__":
     _cmd = sys.argv[1]
     _fn = {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids,
            "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish,
-           "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(_cmd)
+           "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber,
+           "canonical-fields": cmd_canonical_fields}.get(_cmd)
     if not _fn:
         die(f"unknown stage {_cmd}")
     _from = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--from=")), None)
