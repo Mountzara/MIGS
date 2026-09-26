@@ -2593,7 +2593,7 @@ to it by its container, so it needs no citation of its own.
 {shape}
 THE PAPER: {paper.get('title', '')} — {paper.get('authors', '')} · {paper.get('journal', '')} · {paper.get('year', '')}
 THE ABSTRACT (the ONLY source of any figure, population, comparator or finding):
-{abstract[:4000]}
+{abstract[:9000]}
 THE TEXT: {json.dumps(plain, ensure_ascii=False)}
 WHAT AN AUDITOR FOUND WRONG WITH IT: {what} — {note}
 RULES: state only figures the abstract gives, exactly as it gives them — drop or make qualitative any
@@ -2609,7 +2609,7 @@ Return ONLY {{"text": "<rewritten text>"}}""")
                     if sorted(re.findall(r"⟦\d+⟧", cand)) != sorted(re.findall(r"⟦\d+⟧", plain)):
                         feedback = "\nA PREVIOUS ATTEMPT changed the citation tokens; keep exactly the tokens the text has."
                         continue
-                    cb = re.sub(r"⟦\d+⟧", " ", cand).strip()
+                    cb = re.sub(r"\s+([.,;:])", r"\1", re.sub(r"\s+", " ", re.sub(r"⟦\d+⟧", " ", cand))).strip()
                     judged = cb if not is_cell else (cb.rstrip(".") + ".")[:1].upper() + (cb.rstrip(".") + ".")[1:]
                     bad = writer_reject(judged)
                     if not bad and is_cell and re.search(r"\b(?:I|my|we|our)\b", cb):
@@ -2757,8 +2757,12 @@ Return ONLY {{"text": "<rewritten>"}}""")
             if not new or sorted(re.findall(r"⟦\d+⟧", new)) != sorted(re.findall(r"⟦\d+⟧", plain)):
                 print(f"  placement: no usable rewrite for {plain[:70]!r}")
                 continue
-            if writer_reject(re.sub(r"⟦\d+⟧", " ", new).strip()):
-                print(f"  placement: rewrite refused by the writer's rules for {plain[:70]!r}")
+            _cb = re.sub(r"\s+([.,;:])", r"\1", re.sub(r"\s+", " ", re.sub(r"⟦\d+⟧", " ", new))).strip()
+            _why = writer_reject(_cb)
+            if _why:
+                # a removed token leaves a doubled space, which _looks_broken
+                # reads as damage — the text is judged collapsed
+                print(f"  placement: rewrite refused by the writer's rules ({_why}) for {plain[:70]!r}")
                 continue
             by_pm: dict = {}
             for x in marks:
@@ -4173,7 +4177,7 @@ def popover_audit(W: str, h: str) -> list:
             continue
         pj = json.load(open(pf))
         items.append({"pmid": pm, "finding": H.unescape(re.sub(r"<[^>]+>", " ", f.group(1))).strip(),
-                      "paper_title": pj.get("title", ""), "abstract": (pj.get("pubmed_abstract") or pj.get("abstract") or "")[:3500]})
+                      "paper_title": pj.get("title", ""), "abstract": (pj.get("pubmed_abstract") or pj.get("abstract") or "")[:9000]})
     faults = []
     for i in range(0, len(items), 8):
         chunk = items[i:i + 8]
@@ -5300,7 +5304,7 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str, complaint: str 
         v = _ask_cached(W, "findings", f"""Write the hover card a clinician sees when they hover a citation.
 PAPER: {json.dumps(title)}
 ABSTRACT (the only source; use nothing else):
-{abstract[:6000]}
+{abstract[:9000]}
 
 WHAT THIS CARD IS FOR: the reader has just met a claim and wants to know, in three seconds, WHAT THIS
 STUDY ACTUALLY FOUND and whether to believe it. Give them the result, not a description of the paper.
@@ -9683,7 +9687,7 @@ def _confirm_numeric_claims(W: str, blocking: list, h: str) -> list:
         # sentence was then rewritten wrong
         _cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:_after_run(h, b)])) if q]
         _abs = real_from_work(W, _cited)
-        _src = "\n".join(f"PMID {q}: {(_abs[q].get('abstract') or '')[:2500]}" for q in _cited if q in _abs)
+        _src = "\n".join(f"PMID {q}: {(_abs[q].get('abstract') or '')[:6000]}" for q in _cited if q in _abs)
         v = _ask_cached(W, "confirm", f"""A first reader of a clinician-facing evidence brief reported this defect:
 CLAIM: {json.dumps(str(d.get("what"))[:600])}
 THE SENTENCE(S) EXACTLY AS THE PAGE HAS THEM:
