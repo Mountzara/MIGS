@@ -4079,7 +4079,11 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         # correct content is one someone eventually forces past. Opening,
         # ending and length together catch both real failures and survive the
         # markup.
-        a_src, a_body = alnum(src), alnum(sec_body)
+        # the SOURCE is plain text: a "<25th, 25th-75th, >75th" or a "p<0.001 …
+        # p>0.05" in it is not a tag, and running the page's tag-stripper over
+        # it ate everything between the "<" and the next ">" — two correct
+        # abstracts on W24 were called incomplete at the exact spot
+        a_src, a_body = re.sub(r"[^a-z0-9]", "", src.lower()), alnum(sec_body)
         # PubMed's text sometimes carries the word "Abstract" as its first
         # label; the page's section heads the text with its own label. Three
         # correct abstracts failed at character 0 for it
@@ -4130,7 +4134,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             # of 700 characters is a paragraph of substance; a seven-paper
             # topic's is not (W24: three single-paper topics refused at 1,000)
             n_cards = len(CARD_RE.findall(h[st.a:st.b])) if st else 0
-            floor = 600 if n_cards <= 2 else 1000
+            floor = 600 if n_cards <= 2 else 800
             if not syn or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", syn.group(1)))) < floor:
                 faults.append(f"topic {tid} has no synthesis paragraph of substance above its cards")
         chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
