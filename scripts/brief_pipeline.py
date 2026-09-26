@@ -9301,7 +9301,7 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
                         "topic_sections", "toc_chips") if k in counts}))
         numbered = json.dumps([{"index": i, "sentence": t} for i, (_, _, t) in enumerate(sites)],
                               ensure_ascii=False)
-        v = _ask_cached(W, "audit_fix", f"""An editor reading a clinician-facing evidence brief found this defect:
+        prompt = f"""An editor reading a clinician-facing evidence brief found this defect:
 DEFECT: {json.dumps(str(d.get('what'))[:600])}
 
 THE SENTENCES IT QUOTES, every place on the page the defect shows:
@@ -9324,14 +9324,28 @@ population each sentence names, and a sentence naming the subgroup must not carr
 cohort's number. W21 described the direct-marker finding of an adenomyosis cohort and gave the
 overall estimate, which the paper's own title exists to distinguish. Where a count of papers, topics or references is in dispute, the measured figures above
 are the truth. Never carry a figure no source shown here supports; drop the clause instead.
-Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sentence>"}}, ...]}}""",
-                        timeout_s=900)
+Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sentence>"}}, ...]}}"""
+        v = _ask_cached(W, "audit_fix", prompt, timeout_s=900)
         out = {}
-        for e in ((v or {}).get("sentences") or []):
-            try:
-                out[int(e.get("index"))] = re.sub(r"\s+", " ", str(e.get("sentence") or "")).strip()
-            except (TypeError, ValueError):
-                continue
+
+        def _take(reply):
+            for e in ((reply or {}).get("sentences") or []):
+                try:
+                    out.setdefault(int(e.get("index")), re.sub(r"\s+", " ", str(e.get("sentence") or "")).strip())
+                except (TypeError, ValueError):
+                    continue
+        _take(v)
+        # a reply that answers for some of the sentences has not repaired: W29's
+        # reply covered index 0 alone and left "four women (30.7%)" — the
+        # sentence the defect was about — unanswered, and the run refused with
+        # nothing changed. The omission is named and asked once more
+        missing = [i for i in range(len(sites)) if i not in out]
+        if missing:
+            _take(_ask_cached(W, "audit_fix", prompt + f"\nYOUR PREVIOUS REPLY OMITTED index {missing}: return one entry for EVERY index above, "
+                              "including any sentence you leave unchanged.", timeout_s=900))
+            still = [i for i in range(len(sites)) if i not in out]
+            if still:
+                print(f"  audit repair: no rewrite came back for sentence(s) {still} of the defect's {len(sites)}")
         # apply from the END so an earlier rewrite cannot move a later offset
         for i in sorted(out, reverse=True):
             if i >= len(sites):
