@@ -4102,8 +4102,17 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
                        | ({card_pm} if card_pm else set()))
         ctx = {c: abstracts[c] for c in cited if c in abstracts}
         listing = "\n".join(f"[{n}] {sn}" for n, sn in enumerate(sents, 1))
+        # a card or a deep dive is its paper's attributed container: the
+        # auditor read a missing token there as "unsupported" and faulted
+        # 141 sentences of one brief for the absence of a marker they are
+        # not meant to carry — the rule is stated to it, not inferred
+        attributed = (f"\nTHESE SENTENCES SIT INSIDE THE {'CITE CARD' if pc.startswith('card') else 'DEEP-DIVE ANALYSIS'} OF PAPER "
+                      f"{card_pm}: the container attributes every one of them to that paper, so they carry no ⟦PMID⟧ token by "
+                      f"design. Judge `supported` against that abstract alone. The absence of a token is NEVER a reason for "
+                      f"supported=false; return cited=true and placement=null for every sentence here."
+                      if card_pm else "")
         v = _ask_cached(W, "grounding", f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
-appear as ⟦PMID⟧ tokens inside the sentence they belong to.
+appear as ⟦PMID⟧ tokens inside the sentence they belong to.{attributed}
 SENTENCES:
 {listing}
 CITED ABSTRACTS (the only permitted sources for these sentences):
