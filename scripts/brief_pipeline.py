@@ -9454,7 +9454,11 @@ def _confirm_numeric_claims(W: str, blocking: list, h: str) -> list:
     kept = []
     for d in blocking:
         txt = f"{d.get('what', '')} {d.get('evidence', '')}"
-        numeric = (_CONTRADICTION_RE.search(txt) or _COUNT_CLASH_RE.search(txt)) and re.search(r"\d", txt)
+        # any finding that names two or more figures is a numeric claim — the
+        # verb test missed "3/24 checks out, but then says 30.7%" (W29), a
+        # correct 4-of-13 the auditor read as 4-of-24, and no reader checked it
+        numeric = ((_CONTRADICTION_RE.search(txt) or _COUNT_CLASH_RE.search(txt)) and re.search(r"\d", txt)) \
+            or len(re.findall(r"(?<![A-Za-z-])\d+(?:[.,]\d+)?\s?%?", str(d.get("what", "")))) >= 2
         if not numeric or str(d.get("what", "")).startswith("arithmetic:"):
             kept.append(d)
             continue
