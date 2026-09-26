@@ -4,114 +4,311 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Patient guides · Mount Zara</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap">
-    <meta name="description" content="Peer-reviewed patient guides on endometriosis, fibroids, adenomyosis, abnormal uterine bleeding, chronic pelvic pain, PCOS, menopause, ovarian cysts, contraception, pregnancy loss and recovery after gynecologic surgery — written by Dr. Christopher Mabini, DO, MSAEd, with inline citations.">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="description" content="Plain-language patient guides on endometriosis, fibroids, adenomyosis, abnormal uterine bleeding, chronic pelvic pain, painful periods, PCOS, menopause, ovarian cysts, contraception, pregnancy loss and recovery after gynecologic surgery. Every clinical claim is cited inline to peer-reviewed evidence, with the abstracts included.">
+    <meta name="robots" content="index, follow">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#FBFAF8">
     <link rel="canonical" href="https://mountzara.com/education/">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
-    <!-- =================================================================
-         /education/ — 2026-08-20
-         =================================================================
-         Twelve complete guides existed at /education/<topic>/ and this
-         index did not, so the ONE broken internal link on the whole site
-         was the "Education" button on the 404 page — a dead end offered
-         to someone who had already hit one. Found by
-         scripts/check_internal_links.mjs, which now runs on every deploy.
-         ================================================================= -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Mount Zara">
+    <meta property="og:title" content="Patient guides — Mount Zara">
+    <meta property="og:description" content="Twelve plain-language guides to the conditions we treat, with every clinical claim cited inline to peer-reviewed evidence.">
+    <meta property="og:url" content="https://mountzara.com/education/">
+    <meta property="og:image" content="https://mountzara.com/assets/images/og-default.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Mount Zara patient guides">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Patient guides — Mount Zara">
+    <meta name="twitter:description" content="Twelve plain-language guides to the conditions we treat, with every clinical claim cited inline to peer-reviewed evidence.">
+    <meta name="twitter:image" content="https://mountzara.com/assets/images/og-default.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,530;9..144,600&display=swap">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/css/mz-shell.css">
+    <script>document.documentElement.classList.add('mz-js');</script>
+    <script src="/assets/js/mz-education.js" defer></script>
     <style>
-        :root { --accent-soft:#7c3aed; --border:#E9E5EE; }
-        * { box-sizing:border-box; }
-        html { background:
-            radial-gradient(110vmax 80vmax at 82% -10%, rgba(139,92,246,.09), transparent 62%),
-            linear-gradient(178deg,#FDFCFB 0%,#FBFAF8 55%,#F6F3EF 100%); }
-        body { margin:0; padding:0; background-color:transparent; color:#1A1726; min-height:100vh;
-            font-family:'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-            -webkit-font-smoothing:antialiased; }
-        a { color:var(--accent-soft); text-decoration:none; }
-        .wrap { max-width:1000px; margin:0 auto; padding:36px 22px 90px; }
-        .top { font-size:13px; margin-bottom:26px; }
-        .eyebrow { font-size:11px; letter-spacing:.2em; text-transform:uppercase; opacity:.62; margin:0 0 10px; }
-        h1 { font-weight:200; font-size:clamp(28px,5vw,42px); letter-spacing:-.022em; margin:0 0 12px; line-height:1.12; }
-        .lede { font-size:15.5px; line-height:1.65; opacity:.86; max-width:70ch; margin:0 0 34px; }
-        .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
-        .card { display:block; border:1px solid var(--border); border-radius:14px; padding:18px 20px;
-            background:rgba(255,255,255,.035); transition:border-color .2s, background .2s, transform .2s; }
-        .card:hover { border-color:rgba(167,139,250,.45); background:rgba(167,139,250,.07); transform:translateY(-2px); }
-        .card h2 { font-size:17px; font-weight:600; margin:0 0 7px; color: #1A1726; letter-spacing:-.01em; line-height:1.3; }
-        .card p { font-size:13.5px; line-height:1.55; margin:0; color:#4A4658; }
-        .note { margin:34px auto 0; padding-top:20px; border-top:1px solid var(--border);
-            font-size:13px; line-height:1.65; color:#6E6A7C; max-width:72ch; text-align:center; }
+    /* Page-specific rules only; the shared shell stylesheet carries the chrome and the index kit. */
+    .index-hero .section-eyebrow { color: #6d28d9; }
     </style>
-<style>h1,h2{font-family:'Fraunces',Georgia,serif}</style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Patient guides",
+      "url": "https://mountzara.com/education/",
+      "description": "Plain-language patient guides on endometriosis, fibroids, adenomyosis, abnormal uterine bleeding, chronic pelvic pain, painful periods, PCOS, menopause, ovarian cysts, contraception, pregnancy loss and recovery after gynecologic surgery. Every clinical claim is cited inline to peer-reviewed evidence, with the abstracts included.",
+      "inLanguage": "en",
+      "audience": {"@type": "MedicalAudience", "audienceType": "Patient"},
+      "publisher": {"@type": "Organization", "name": "Mount Zara", "url": "https://mountzara.com/"},
+      "hasPart": [
+        {"@type": "MedicalWebPage", "name": "Endometriosis", "url": "https://mountzara.com/education/endometriosis/"},
+        {"@type": "MedicalWebPage", "name": "Chronic pelvic pain", "url": "https://mountzara.com/education/chronic-pelvic-pain/"},
+        {"@type": "MedicalWebPage", "name": "Painful periods", "url": "https://mountzara.com/education/dysmenorrhea/"},
+        {"@type": "MedicalWebPage", "name": "Uterine fibroids", "url": "https://mountzara.com/education/fibroids/"},
+        {"@type": "MedicalWebPage", "name": "Adenomyosis", "url": "https://mountzara.com/education/adenomyosis/"},
+        {"@type": "MedicalWebPage", "name": "Abnormal uterine bleeding", "url": "https://mountzara.com/education/abnormal-uterine-bleeding/"},
+        {"@type": "MedicalWebPage", "name": "PCOS", "url": "https://mountzara.com/education/pcos/"},
+        {"@type": "MedicalWebPage", "name": "Menopause", "url": "https://mountzara.com/education/menopause/"},
+        {"@type": "MedicalWebPage", "name": "Contraception", "url": "https://mountzara.com/education/contraception/"},
+        {"@type": "MedicalWebPage", "name": "Ovarian cysts  adnexal masses", "url": "https://mountzara.com/education/ovarian-masses/"},
+        {"@type": "MedicalWebPage", "name": "Pregnancy loss", "url": "https://mountzara.com/education/pregnancy-loss/"},
+        {"@type": "MedicalWebPage", "name": "Recovery after surgery", "url": "https://mountzara.com/education/postoperative-recovery/"}
+      ]
+    }
+    </script>
 </head>
 <body>
-    <div class="wrap">
-        <div class="top"><a href="/">&larr; Mount Zara</a></div>
-        <p class="eyebrow">Patient guides</p>
-        <h1>What we treat, explained properly</h1>
-        <p class="lede">
-            These are the guides Dr. Mabini writes for his own patients — the same explanation you would get in the
-            room, with the evidence behind it cited inline so you can check it yourself. They are long on purpose.
-            Nothing here replaces a visit, and nothing here is written to sell you a procedure.
-        </p>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt="" decoding="async"></div>
 
-        <div class="grid">
-            <a class="card" href="/education/endometriosis/">
-                <h2>Endometriosis</h2>
-                <p>What it is, why diagnosis takes so long, and every option from NSAIDs to laparoscopic excision.</p>
+    <nav class="main-nav" aria-label="Site navigation">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara">
+                <span class="nav-brand-text">MOUNT ZARA</span>
             </a>
-            <a class="card" href="/education/fibroids/">
-                <h2>Uterine fibroids</h2>
-                <p>FIGO classification, what symptoms come from where, and the full treatment menu — medical, hysteroscopic, and surgical.</p>
-            </a>
-            <a class="card" href="/education/adenomyosis/">
-                <h2>Adenomyosis</h2>
-                <p>Diffuse versus focal disease, how imaging makes the diagnosis, and what actually helps.</p>
-            </a>
-            <a class="card" href="/education/abnormal-uterine-bleeding/">
-                <h2>Abnormal uterine bleeding</h2>
-                <p>The PALM-COEIN framework, the workup that finds the cause, and the medical options before surgery.</p>
-            </a>
-            <a class="card" href="/education/dysmenorrhea/">
-                <h2>Painful periods</h2>
-                <p>Primary versus secondary, how it is evaluated, and the medical, physical-therapy and surgical options.</p>
-            </a>
-            <a class="card" href="/education/chronic-pelvic-pain/">
-                <h2>Chronic pelvic pain</h2>
-                <p>Why it is rarely one thing — the four overlapping layers, and why single-cause treatment so often fails.</p>
-            </a>
-            <a class="card" href="/education/ovarian-masses/">
-                <h2>Ovarian cysts &amp; adnexal masses</h2>
-                <p>Types, the modern workup, and when a mass genuinely needs surgery rather than watching.</p>
-            </a>
-            <a class="card" href="/education/pcos/">
-                <h2>PCOS</h2>
-                <p>The Rotterdam criteria, the phenotypes, and the full management menu beyond "lose weight".</p>
-            </a>
-            <a class="card" href="/education/menopause/">
-                <h2>Menopause</h2>
-                <p>The stages, the symptoms, and what the evidence on hormone therapy actually says now.</p>
-            </a>
-            <a class="card" href="/education/contraception/">
-                <h2>Contraception</h2>
-                <p>The full menu by effectiveness tier, and how to choose against what matters to you.</p>
-            </a>
-            <a class="card" href="/education/pregnancy-loss/">
-                <h2>Pregnancy loss</h2>
-                <p>Diagnosis and the three management options, written to be read by someone in the middle of it.</p>
-            </a>
-            <a class="card" href="/education/postoperative-recovery/">
-                <h2>Recovery after surgery</h2>
-                <p>ERAS principles and week-by-week expectations after CBG/MIGS gynecologic surgery.</p>
-            </a>
+            <button type="button" class="mobile-toggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#surgical">Surgery</a></li>
+                <li><a href="/#osteopathic">Osteopathic</a></li>
+                <li><a href="/education/">Patient guides</a></li>
+                <li><a href="/evidence/">Evidence</a></li>
+                <li class="nav-more">
+                    <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More<span class="nav-more-caret" aria-hidden="true">&#9662;</span></button>
+                    <ul class="nav-more-menu">
+                        <li><a href="/#ai">AI</a></li>
+                        <li><a href="/#apps">Apps</a></li>
+                        <li><a href="/#research">Research</a></li>
+                        <li><a href="/#awards">Awards</a></li>
+                        <li><a href="/curriculum/">Curriculum</a></li>
+                        <li><a href="/trending/">Trending</a></li>
+                        <li><a href="/about/">Bio</a></li>
+                    </ul>
+                </li>
+                <li class="nav-cta-li"><a class="nav-cta" href="/portal/">Member portal</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
         </div>
+    </nav>
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
 
-        <p class="note">
-            Every guide cites its sources inline, with the abstracts included so you can read the original rather than
-            take a summary on trust. If something here does not match what you were told, that is worth a conversation —
-            <a href="/portal/">message the practice</a> and ask.
-        </p>
+<main id="main" class="wrap">
+
+        <header class="hero index-hero">
+            <div class="section-eyebrow">Patient guides &middot; Twelve conditions &middot; Evidence cited inline</div>
+            <h1>What we treat, explained properly.</h1>
+            <p class="lede">
+                These guides explain each condition the way it is explained in the exam room &mdash; what it is, why it
+                behaves the way it does, how an evaluation is built, and every treatment option in the order it is
+                usually tried &mdash; with the evidence cited inline so you can check it yourself. They are long on
+                purpose. Nothing here replaces a visit, and nothing here is written to sell you a procedure.
+            </p>
+        </header>
+
+        <section class="lane" data-reveal aria-labelledby="lane-1">
+            <div class="lane-head">
+                <h2 id="lane-1">Pain &amp; endometriosis</h2>
+                <p>When the pain is the problem, and why it is rarely one thing.</p>
+            </div>
+            <div class="topic-grid">
+                <a class="topic-card" href="/education/endometriosis/" data-topic="endometriosis">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13"/><circle cx="14" cy="16" r="1.6"/><circle cx="24" cy="14" r="1.3"/><circle cx="22" cy="24" r="1.7"/><circle cx="15" cy="25" r="1.2"/><circle cx="27" cy="22" r="1.1"/></svg></span>
+                    <h3>Endometriosis</h3>
+                    <p>What it is, why diagnosis takes so long, and every option from NSAIDs to laparoscopic excision.</p>
+                    <span class="topic-meta" data-topic-meta="endometriosis">14 sources cited &middot; ~14 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/chronic-pelvic-pain/" data-topic="chronic-pelvic-pain">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 24c4-9 9-9 13 0s9 9 13 0"/><path d="M6 16c4-9 9-9 13 0s9 9 13 0" opacity=".45"/></svg></span>
+                    <h3>Chronic pelvic pain</h3>
+                    <p>Why it is rarely one thing &mdash; the four overlapping layers, and why single-cause treatment so often fails.</p>
+                    <span class="topic-meta" data-topic-meta="chronic-pelvic-pain">7 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/dysmenorrhea/" data-topic="dysmenorrhea">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="9" width="26" height="24" rx="4"/><path d="M7 16h26M14 6v6M26 6v6"/><path d="M17 26l3-4 3 4"/></svg></span>
+                    <h3>Painful periods</h3>
+                    <p>Primary versus secondary, how it is evaluated, and the medical, physical-therapy and surgical options.</p>
+                    <span class="topic-meta" data-topic-meta="dysmenorrhea">7 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+            </div>
+        </section>
+        <section class="lane" data-reveal aria-labelledby="lane-2">
+            <div class="lane-head">
+                <h2 id="lane-2">Bleeding, fibroids &amp; adenomyosis</h2>
+                <p>The uterus itself: what is growing, what is bleeding, and what to do about it.</p>
+            </div>
+            <div class="topic-grid">
+                <a class="topic-card" href="/education/fibroids/" data-topic="fibroids">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 33c-6 0-11-5-11-11 0-7 5-12 11-12s11 5 11 12c0 6-5 11-11 11z"/><circle cx="16" cy="19" r="3"/><circle cx="24" cy="25" r="2.2"/></svg></span>
+                    <h3>Uterine fibroids</h3>
+                    <p>FIGO classification, what symptoms come from where, and the full treatment menu &mdash; medical, hysteroscopic, and surgical.</p>
+                    <span class="topic-meta" data-topic-meta="fibroids">11 sources cited &middot; ~5 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/adenomyosis/" data-topic="adenomyosis">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 33c-6 0-11-5-11-11 0-7 5-12 11-12s11 5 11 12c0 6-5 11-11 11z"/><path d="M14 18c2 2 4 2 6 0s4-2 6 0M14 24c2 2 4 2 6 0s4-2 6 0"/></svg></span>
+                    <h3>Adenomyosis</h3>
+                    <p>Diffuse versus focal disease, how imaging makes the diagnosis, and what actually helps.</p>
+                    <span class="topic-meta" data-topic-meta="adenomyosis">8 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/abnormal-uterine-bleeding/" data-topic="abnormal-uterine-bleeding">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 7c5 7 9 12 9 17a9 9 0 0 1-18 0c0-5 4-10 9-17z"/><path d="M15 25a5 5 0 0 0 5 5"/></svg></span>
+                    <h3>Abnormal uterine bleeding</h3>
+                    <p>The PALM-COEIN framework, the workup that finds the cause, and the medical options before surgery.</p>
+                    <span class="topic-meta" data-topic-meta="abnormal-uterine-bleeding">12 sources cited &middot; ~7 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+            </div>
+        </section>
+        <section class="lane" data-reveal aria-labelledby="lane-3">
+            <div class="lane-head">
+                <h2 id="lane-3">Hormones &amp; cycles</h2>
+                <p>Ovaries, cycles and the transitions between them.</p>
+            </div>
+            <div class="topic-grid">
+                <a class="topic-card" href="/education/pcos/" data-topic="pcos">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="20" rx="13" ry="10"/><circle cx="13" cy="18" r="2"/><circle cx="19" cy="14" r="2"/><circle cx="26" cy="17" r="2"/><circle cx="16" cy="24" r="2"/><circle cx="24" cy="24" r="2"/></svg></span>
+                    <h3>PCOS</h3>
+                    <p>The Rotterdam criteria, the phenotypes, and the full management menu beyond &ldquo;lose weight&rdquo;.</p>
+                    <span class="topic-meta" data-topic-meta="pcos">8 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/menopause/" data-topic="menopause">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="6"/><path d="M20 6v4M20 30v4M6 20h4M30 20h4M10 10l3 3M27 27l3 3M10 30l3-3M27 13l3-3"/></svg></span>
+                    <h3>Menopause</h3>
+                    <p>The stages, the symptoms, and what the evidence on hormone therapy actually says now.</p>
+                    <span class="topic-meta" data-topic-meta="menopause">7 sources cited &middot; ~7 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/contraception/" data-topic="contraception">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 8v22M11 12l9-4 9 4"/><path d="M15 30h10"/><path d="M12 20c2 4 6 6 8 6s6-2 8-6"/></svg></span>
+                    <h3>Contraception</h3>
+                    <p>The full menu by effectiveness tier, and how to choose against what matters to you.</p>
+                    <span class="topic-meta" data-topic-meta="contraception">5 sources cited &middot; ~4 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+            </div>
+        </section>
+        <section class="lane" data-reveal aria-labelledby="lane-4">
+            <div class="lane-head">
+                <h2 id="lane-4">Surgery, loss &amp; recovery</h2>
+                <p>When something needs an operation, when it does not, and what the weeks after look like.</p>
+            </div>
+            <div class="topic-grid">
+                <a class="topic-card" href="/education/ovarian-masses/" data-topic="ovarian-masses">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="18" cy="21" r="11"/><circle cx="27" cy="14" r="5"/><path d="M13 22a5 5 0 0 0 5 5"/></svg></span>
+                    <h3>Ovarian cysts &amp; adnexal masses</h3>
+                    <p>Types, the modern workup, and when a mass genuinely needs surgery rather than watching.</p>
+                    <span class="topic-meta" data-topic-meta="ovarian-masses">7 sources cited &middot; ~7 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/pregnancy-loss/" data-topic="pregnancy-loss">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 32s-11-7-11-15a6 6 0 0 1 11-3 6 6 0 0 1 11 3c0 8-11 15-11 15z"/></svg></span>
+                    <h3>Pregnancy loss</h3>
+                    <p>Diagnosis and the three management options, written to be read by someone in the middle of it.</p>
+                    <span class="topic-meta" data-topic-meta="pregnancy-loss">7 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a class="topic-card" href="/education/postoperative-recovery/" data-topic="postoperative-recovery">
+                    <span class="topic-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 26h24M12 26v-8h16v8M16 18v-4h8v4"/><path d="M6 32h28"/></svg></span>
+                    <h3>Recovery after surgery</h3>
+                    <p>ERAS principles and week-by-week expectations after CBG/MIGS gynecologic surgery.</p>
+                    <span class="topic-meta" data-topic-meta="postoperative-recovery">7 sources cited &middot; ~6 min read</span>
+                    <span class="topic-cta">Read the guide <span aria-hidden="true">&rarr;</span></span>
+                </a>
+            </div>
+        </section>
+
+        <section class="band" data-reveal aria-labelledby="how-written">
+            <div class="section-eyebrow section-eyebrow--deep">How these guides are written</div>
+            <h2 id="how-written">Every claim carries its evidence, and you can read the original.</h2>
+            <p>
+                Each guide is built the same way. A clinical claim gets a numbered citation the moment it is made; hover
+                or tap the number to see the paper&rsquo;s title, journal, year and a plain-language summary of what it
+                found; the full reference list at the bottom of the page holds every paper&rsquo;s verbatim PubMed
+                abstract, so you are never asked to take a summary on trust.
+            </p>
+            <div class="band-grid">
+                <div class="band-item">
+                    <h3>Cited inline, not in a footnote pile</h3>
+                    <p>Every figure &mdash; a percentage, a number of years, a response rate &mdash; points at the paper it came from, and that paper&rsquo;s abstract states the figure.</p>
+                </div>
+                <div class="band-item">
+                    <h3>Plain language, honest about uncertainty</h3>
+                    <p>Clinical terms are explained where they first appear. Where the evidence is thin or mixed, the guide says so rather than rounding it up.</p>
+                </div>
+                <div class="band-item">
+                    <h3>No amounts to take</h3>
+                    <p>These pages describe options and how they are weighed. They never tell you how much of anything to take &mdash; that is a conversation for your visit, with your own history in front of you.</p>
+                </div>
+            </div>
+            <p class="muted" style="margin-top:16px;">
+                The surgical care described in these guides is complex benign gynecology and minimally invasive gynecologic surgery (CBG/MIGS), layered with osteopathic care where it helps.
+                If something here does not match what you were told, that is worth a conversation &mdash; <a href="/portal/">message the practice</a> and ask.
+            </p>
+        </section>
+
+</main>
+
+    <div class="mz-disclosures">
+<aside class="mz-page-note" aria-label="Disclosure">
+<p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
+</aside>
+
+<div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
     </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara" class="footer-mark">
+                <p class="footer-tag">Minimally invasive gynecologic surgery with whole-person osteopathic care.</p>
+            </div>
+            <nav class="footer-col" aria-label="For patients">
+                <h4>Patients</h4>
+                <a href="/education/">What we treat</a>
+                <a href="/portal/">Member portal</a>
+                <a href="/#contact">Request an appointment (Coming Soon)</a>
+            </nav>
+            <nav class="footer-col" aria-label="About the practice">
+                <h4>The practice</h4>
+                <a href="/about/">About Dr. Mabini</a>
+                <a href="/evidence/">Published evidence</a>
+                <a href="/curriculum/">Teaching &amp; curricula</a>
+                <a href="/cv/">CV (on request)</a>
+            </nav>
+            <div class="footer-col">
+                <h4>Reach me</h4>
+                <a href="mailto:info@mountzara.com">info@mountzara.com</a>
+                <span class="footer-note">Telehealth &middot; Illinois &amp; California (Coming Soon)</span>
+            </div>
+        </div>
+        <div class="footer-content">
+            <div class="copyright">&copy; 2026 Mount Zara, LLC
+                <span style="opacity:.75"> &middot; <a href="/privacy/">Privacy</a>
+                &middot; <a href="/privacy-practices/">Privacy Practices</a>
+                &middot; <a href="/terms/">Terms</a>
+                &middot; <a href="/accessibility/">Accessibility</a></span></div>
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" aria-label="Connect on LinkedIn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.99 0 1.78-.77 1.78-1.72V1.72C24 .77 23.21 0 22.22 0z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
 <style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

@@ -4,761 +4,96 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Endometriosis — what it is, why it hurts, what we can do about it · Mount Zara</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap">
     <meta name="description" content="A peer-reviewed patient guide to endometriosis — what it is, why diagnosis takes so long, what evaluation looks like, every treatment option from NSAIDs to laparoscopic excision, how osteopathic care fits in, with inline PubMed citations and verbatim abstracts.">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="robots" content="index, follow">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#FBFAF8">
     <link rel="canonical" href="https://mountzara.com/education/endometriosis/">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Mount Zara">
+    <meta property="og:title" content="Endometriosis — what it is, why it hurts, and what we can actually do">
+    <meta property="og:description" content="A peer-reviewed patient guide to endometriosis — what it is, why diagnosis takes so long, what evaluation looks like, every treatment option from NSAIDs to laparoscopic excision, how osteopathic care fits in, with inline PubMed citations and verbatim abstracts.">
+    <meta property="og:url" content="https://mountzara.com/education/endometriosis/">
+    <meta property="og:image" content="https://mountzara.com/assets/images/og-default.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Endometriosis patient guide — Mount Zara">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Endometriosis — what it is, why it hurts, and what we can actually do">
+    <meta name="twitter:description" content="A peer-reviewed patient guide to endometriosis — what it is, why diagnosis takes so long, what evaluation looks like, every treatment option from NSAIDs to laparoscopic excision, how osteopathic care fits in, with inline PubMed citations and verbatim abstracts.">
+    <meta name="twitter:image" content="https://mountzara.com/assets/images/og-default.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,530;9..144,600&display=swap">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/css/mz-shell.css">
+    <script>document.documentElement.classList.add('mz-js');</script>
+    <script src="/assets/js/mz-education.js" defer></script>
     <style>
-:root {
-    --bg-base: #FBFAF8;
-    --bg-card: rgba(255,255,255,0.72);
-    --border: #E9E5EE;
-    --fg-strong: #1A1726;
-    --fg-mid: #4A4658;
-    --fg-soft: #6E6A7C;
-    --fg-dim: #8B8698;
-    --accent: #6d28d9;
-    --accent-soft: #7c3aed;
-    --glow-purple: 167, 139, 250;
-    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-html, body {
-    margin: 0; padding: 0;
-    background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.08), transparent 62%),
-        var(--bg-base);
-    color: var(--fg-mid);
-    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.55;
-    min-height: 100vh;
-}
-a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
-a:hover { color: var(--fg-strong); }
-
-/* Site nav */
-.site-nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(251, 250, 248, 0.86);
-    backdrop-filter: blur(22px) saturate(165%);
-    -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid #E9E5EE;
-    padding: 10px clamp(16px, 4vw, 32px);
-}
-.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
-.site-nav .brand {
-    font-size: 13px; font-weight: 700;
-    letter-spacing: 0.20em; text-transform: uppercase;
-    color: #6d28d9;
-    text-decoration: none;
-}
-.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
-.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
-.site-nav .right-actions a:hover { color: var(--fg-strong); }
-.site-nav .cta {
-    background: rgba(var(--glow-purple), 0.16);
-    border: 1px solid rgba(var(--glow-purple), 0.55);
-    color: var(--accent-soft) !important;
-    padding: 5px 14px; border-radius: 999px;
-    font-weight: 500; transition: all 0.2s;
-}
-.site-nav .cta:hover { background: rgba(109, 40, 217, 0.9); color: #fff !important; transform: translateY(-1px); }
-
-.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
-
-@keyframes mzRise {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-/* HERO */
-.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.hero .eyebrow {
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.24em; text-transform: uppercase;
-    color: #6d28d9;
-    margin-bottom: 14px;
-}
-.hero h1 {
-    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
-    letter-spacing: -0.022em; line-height: 1.05;
-    color: var(--fg-strong); margin: 0 0 16px 0;
-    max-width: 22ch;
-}
-.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
-.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
-.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
-
-/* KEY FACTS */
-.facts {
-    display: grid; gap: 12px;
-    margin: clamp(28px, 4vw, 40px) 0;
-    grid-template-columns: 1fr;
-}
-@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
-.fact {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 18px 20px;
-    backdrop-filter: blur(28px) saturate(165%);
-    -webkit-backdrop-filter: blur(28px) saturate(165%);
-    transition: transform 0.22s, border-color 0.22s, background 0.22s;
-    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.fact:hover { transform: translateY(-3px); border-color: #6d28d9; }
-.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
-.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
-.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
-
-/* SECTIONS */
-section.panel {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: clamp(22px, 4vw, 36px);
-    backdrop-filter: blur(28px) saturate(165%);
-    -webkit-backdrop-filter: blur(28px) saturate(165%);
-    margin-bottom: clamp(16px, 3vw, 24px);
-    transition: border-color 0.25s;
-    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-section.panel:hover { border-color: #6d28d9; }
-section.panel .section-eyebrow {
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.24em; text-transform: uppercase;
-    color: #6d28d9;
-    margin-bottom: 10px;
-}
-section.panel h2 {
-    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
-    letter-spacing: -0.012em; color: var(--fg-strong);
-    margin: 0 0 18px 0; line-height: 1.15;
-}
-section.panel p {
-    font-size: 16.5px; line-height: 1.7;
-    color: var(--fg-mid); margin: 0 0 14px 0;
-}
-section.panel p:last-child { margin-bottom: 0; }
-section.panel p strong { color: var(--fg-strong); font-weight: 500; }
-section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
-section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
-
-/* INLINE CITATION SUP + POPOUT */
-sup.mz-ref {
-    display: inline-block;
-    font-size: 0.7em;
-    line-height: 1;
-    vertical-align: super;
-    position: relative;
-    margin-left: 1px;
-    cursor: pointer;
-}
-sup.mz-ref a {
-    color: var(--accent-soft);
-    font-weight: 600;
-    text-decoration: none;
-    padding: 0 2px;
-    border-radius: 3px;
-    transition: background 0.15s, color 0.15s;
-}
-sup.mz-ref:hover a,
-sup.mz-ref.mz-open a,
-sup.mz-ref:focus a {
-    background: #6d28d9;
-    color: #fff;
-    outline: none;
-}
-sup.mz-ref .mz-ref-pop {
-    visibility: hidden; opacity: 0;
-    position: absolute;
-    bottom: 100%; left: 50%;
-    transform: translate(-50%, -6px);
-    width: 320px; max-width: 92vw;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.96);
-    border: 1px solid rgba(var(--glow-purple), 0.55);
-    border-radius: 10px;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    color: var(--fg-mid);
-    font-size: 12.5px;
-    line-height: 1.45;
-    font-weight: 400;
-    z-index: 200;
-    text-align: left;
-    pointer-events: none;
-    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
-    white-space: normal;
-}
-sup.mz-ref .mz-ref-pop::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 16px; }
-sup.mz-ref:hover .mz-ref-pop,
-sup.mz-ref:focus-within .mz-ref-pop,
-sup.mz-ref.mz-open .mz-ref-pop {
-    pointer-events: auto;
-    visibility: visible;
-    opacity: 1;
-    transform: translate(-50%, -10px);
-}
-
-/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
-   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
-   problem. Each modifier locks the row size so cards stay even at every
-   breakpoint. */
-.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
-@media (min-width: 560px) {
-    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
-    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 900px) {
-    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
-    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* Symptoms grid — 8 items, want 1/2/4 columns */
-.symptoms {
-    display: grid; gap: 10px; margin-top: 18px;
-    grid-template-columns: 1fr;
-}
-@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
-
-/* Featured banner card — used for the lone FitzGerald PFPT RCT below
-   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
-   internal layout. */
-.featured-card {
-    display: grid; gap: 18px;
-    grid-template-columns: 1fr;
-    background: rgba(var(--glow-purple), 0.07);
-    border: 1px solid rgba(var(--glow-purple), 0.40);
-    border-radius: 14px;
-    padding: 18px 22px;
-    margin-top: 14px;
-    cursor: pointer;
-    transition: border-color 0.22s, background 0.22s, transform 0.22s;
-    align-items: center;
-    position: relative;
-}
-.featured-card:hover, .featured-card:focus {
-    border-color: #6d28d9;
-    background: rgba(var(--glow-purple), 0.12);
-    transform: translateY(-1px);
-    outline: none;
-}
-.featured-card h3 {
-    font-size: 16px; font-weight: 500;
-    color: var(--fg-strong); margin: 0 0 4px 0;
-    padding-right: 80px;
-}
-.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
-.featured-card .open-hint {
-    position: absolute; top: 18px; right: 22px;
-    font-size: 11px; color: #6d28d9;
-    letter-spacing: 0.08em;
-}
-.featured-card .stat-badge {
-    display: inline-flex; align-items: baseline; gap: 6px;
-    background: rgba(var(--glow-purple), 0.18);
-    border: 1px solid rgba(var(--glow-purple), 0.55);
-    border-radius: 999px;
-    padding: 4px 12px;
-    font-size: 12px; color: var(--accent-soft);
-    font-weight: 500;
-    margin-top: 6px;
-    margin-right: 8px;
-}
-.featured-card .stat-badge strong { color: #1A1726; font-weight: 600; font-size: 13.5px; }
-@media (min-width: 720px) {
-    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-}
-.card {
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
-    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.card:hover, .card:focus {
-    transform: translateY(-2px);
-    border-color: #6d28d9;
-    background: rgba(var(--glow-purple), 0.06);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    outline: none;
-}
-.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
-.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
-.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
-.card .card-corner {
-    position: absolute; top: 12px; right: 14px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-    color: #6d28d9;
-}
-.card .open-hint {
-    position: absolute; bottom: 12px; right: 14px;
-    font-size: 11px; color: #6d28d9;
-    opacity: 0.7;
-    letter-spacing: 0.08em;
-}
-.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
-
-/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
-.symptom {
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    padding: 12px 14px 12px 44px;
-    position: relative;
-    font-size: 14px; color: var(--fg-mid);
-    transition: border-color 0.2s, background 0.2s, transform 0.2s;
-}
-.symptom:hover { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
-.symptom::before {
-    content: ""; position: absolute; left: 14px; top: 50%;
-    transform: translateY(-50%);
-    width: 18px; height: 18px; border-radius: 50%;
-    border: 1.5px solid rgba(var(--glow-purple), 0.50);
-    background: rgba(var(--glow-purple), 0.08);
-}
-.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
-.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
-
-/* TIMELINE */
-.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
-.timeline::before {
-    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
-    width: 2px;
-    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
-}
-.timeline-item {
-    position: relative; margin-bottom: 16px;
-    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-    cursor: pointer;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid #E9E5EE;
-    border-radius: 11px;
-    padding: 12px 14px;
-    transition: border-color 0.22s, background 0.22s;
-}
-.timeline-item:hover, .timeline-item:focus {
-    border-color: #6d28d9;
-    background: rgba(var(--glow-purple), 0.06);
-    outline: none;
-}
-.timeline-item:last-child { margin-bottom: 0; }
-.timeline-item::before {
-    content: ''; position: absolute; left: -24px; top: 18px;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: rgba(var(--glow-purple), 0.95);
-    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
-}
-.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
-.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
-.timeline-item .open-hint {
-    position: absolute; top: 14px; right: 16px;
-    font-size: 11px; color: #6d28d9;
-    letter-spacing: 0.08em;
-}
-
-/* TREATMENT LADDER */
-.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
-.rung {
-    display: grid;
-    grid-template-columns: 56px 1fr auto;
-    gap: 16px; align-items: start;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    cursor: pointer;
-    transition: border-color 0.22s, background 0.22s, transform 0.22s;
-}
-.rung:hover, .rung:focus {
-    border-color: #6d28d9;
-    background: rgba(var(--glow-purple), 0.06);
-    transform: translateY(-1px);
-    outline: none;
-}
-.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: #6d28d9; line-height: 1; font-variant-numeric: tabular-nums; }
-.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
-.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
-.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
-.rung-tag {
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
-    background: rgba(var(--glow-purple), 0.12);
-    border: 1px solid rgba(var(--glow-purple), 0.40);
-    color: var(--accent-soft);
-    align-self: center;
-}
-
-/* OMT block */
-.omt-block {
-    background: rgba(var(--glow-purple), 0.06);
-    border: 1px solid rgba(var(--glow-purple), 0.35);
-    border-radius: 14px;
-    padding: clamp(22px, 4vw, 36px);
-    margin-top: 18px;
-}
-.omt-block .quote-frame {
-    border-left: 3px solid rgba(var(--glow-purple), 0.60);
-    padding: 6px 0 6px 18px;
-    margin: 14px 0;
-    color: var(--fg-mid);
-    font-size: 16px; line-height: 1.7;
-    position: relative;
-}
-.omt-block .quote-frame::before {
-    content: '\201C';
-    position: absolute;
-    left: 6px; top: -4px;
-    font-family: Georgia, serif;
-    color: #6d28d9;
-    font-size: 26px; line-height: 1;
-}
-
-/* Q&A accordion */
-.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-details.qa {
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    transition: border-color 0.22s, background 0.22s;
-    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-details.qa:hover { border-color: #6d28d9; }
-details.qa[open] { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.05); }
-details.qa summary {
-    list-style: none; cursor: pointer;
-    padding: 14px 50px 14px 18px;
-    font-size: 15.5px; font-weight: 500;
-    color: var(--fg-strong); position: relative; line-height: 1.4;
-}
-details.qa summary::-webkit-details-marker { display: none; }
-details.qa summary::after {
-    content: '+';
-    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
-    font-size: 22px; color: var(--accent-soft);
-    font-weight: 200; line-height: 1;
-    transition: transform 0.2s;
-}
-details.qa[open] summary::after { content: '\2212'; }
-details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
-details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
-details.qa .qa-answer p:last-child { margin: 0; }
-
-/* Red flags */
-.red-flags {
-    background: rgba(239, 68, 68, 0.04);
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    border-radius: 12px;
-    padding: 18px 22px;
-    margin-top: 18px;
-}
-.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
-.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
-.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
-.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
-
-/* CTA */
-.cta-strip {
-    background: rgba(var(--glow-purple), 0.10);
-    border: 1px solid rgba(var(--glow-purple), 0.45);
-    border-radius: 14px;
-    padding: clamp(22px, 4vw, 36px);
-    text-align: center;
-    margin-top: clamp(20px, 4vw, 32px);
-}
-.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
-.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
-.cta-strip a.btn {
-    display: inline-block;
-    background: #6d28d9;
-    border: 1px solid rgba(var(--glow-purple), 0.65);
-    color: #fff;
-    padding: 10px 24px; border-radius: 999px;
-    font-size: 14px; font-weight: 500;
-    transition: all 0.2s; margin: 4px;
-}
-.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
-.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
-.cta-strip a.btn.ghost:hover { color: #fff; border-color: #6d28d9; }
-
-/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
-.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
-.refs-list li {
-    padding: 14px 0;
-    border-bottom: 1px solid #E9E5EE;
-    counter-increment: ref;
-}
-.refs-list li:last-child { border-bottom: none; }
-.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
-.refs-list .ref-num {
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    background: rgba(var(--glow-purple), 0.12);
-    border: 1px solid rgba(var(--glow-purple), 0.40);
-    color: var(--accent-soft);
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
-.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
-.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
-.refs-list .pmid {
-    display: inline-block;
-    font-family: "SF Mono", "Menlo", monospace;
-    font-size: 11.5px; color: var(--accent-soft);
-    background: rgba(var(--glow-purple), 0.10);
-    padding: 1px 6px; border-radius: 4px;
-    white-space: nowrap;
-}
-.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.7); }
-.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
-details.mz-abstract {
-    margin-top: 10px;
-    margin-left: 40px;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid #E9E5EE;
-    border-radius: 8px;
-}
-details.mz-abstract summary {
-    list-style: none; cursor: pointer;
-    padding: 8px 14px;
-    font-size: 12px; color: var(--accent-soft);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    position: relative;
-}
-details.mz-abstract summary::-webkit-details-marker { display: none; }
-details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
-details.mz-abstract[open] summary::before { content: '\2212 '; }
-details.mz-abstract[open] { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.04); }
-details.mz-abstract .abstract-body {
-    padding: 4px 16px 14px 28px;
-    font-size: 12.5px;
-    color: var(--fg-soft);
-    line-height: 1.6;
-    font-family: Georgia, 'Times New Roman', serif;
-}
-details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
-details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
-.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
-
-/* MODAL system */
-.mz-modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(244,241,236,0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 999;
-    display: none;
-    align-items: center; justify-content: center;
-    padding: 24px;
-    animation: mzFadeIn 0.18s ease both;
-}
-.mz-modal-bg.open { display: flex; }
-.mz-modal {
-    width: 100%; max-width: 700px;
-    max-height: 88vh; overflow-y: auto;
-    background: rgba(255,255,255,0.96);
-    border: 1px solid rgba(var(--glow-purple), 0.50);
-    border-radius: 18px;
-    padding: clamp(24px, 4vw, 40px);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-    position: relative;
-    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.mz-modal-close {
-    position: absolute; top: 16px; right: 16px;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    color: var(--fg-soft);
-    font-size: 20px; line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-}
-.mz-modal-close:hover { color: #fff; border-color: #6d28d9; background: rgba(var(--glow-purple), 0.14); }
-.mz-modal h2 {
-    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
-    letter-spacing: -0.015em; color: var(--fg-strong);
-    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
-}
-.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
-.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
-.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
-
-/* Footer note */
-.footer-note {
-    margin-top: 40px; padding: 20px 24px;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    font-size: 12.5px; color: var(--fg-dim);
-    line-height: 1.6;
-}
-.footer-note strong { color: var(--fg-soft); font-weight: 500; }
-
-@media (prefers-reduced-motion: reduce) {
-    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
-    * { transition: none !important; }
-    html { scroll-behavior: auto; }
-}
-@media (max-width: 640px) {
-    .hero h1 { font-size: 32px; }
-    section.panel { padding: 22px 18px; }
-    .site-nav .crumb { display: none; }
-    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
-    details.mz-abstract { margin-left: 0; }
-}
-
-        /* Fixed finalized hero line-art backdrop (static final frame — does NOT
-           play) so glass components frost against real texture, uniform with the
-           homepage. z-index:-1 keeps it behind all content; cards' backdrop-filter
-           samples it. Added 2026-06-29. */
-        /* Move the opaque page base to html so the fixed line-art (z-index:-1)
-           shows; body keeps only its translucent glow/gradient on top. */
-        html { background:
-            radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
-            radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #FBFAF8 0%, #F6F3EF 55%, #FBFAF8 100%);
-            /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #FBFAF8 black on pages whose tokens
-               didn't resolve, leaving flat near-black canvases (user-caught
-               on /curriculum/; survey found 16 such pages). */ }
-        body { background-color: transparent !important; }
-        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
-    
-        /* magazine-justify-2026-06-29 */
-        section.panel p, details.qa .qa-answer p, .rung p, .mz-modal p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
-    
-/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
-   Audit found: contrast failures concentrated on translucent "light" panels,
-   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
-   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
-   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
-nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
-.nav-back, .nav-brand, .brand, .crumb a {
-    min-height: 24px;
-    display: inline-flex;
-    align-items: center;
-}
-/* Pips keep their small dot but get a real 24px hit area via padding. */
-.mz-grid-pip, .carousel-pip, [class*="-pip"] {
-    min-width: 24px;
-    min-height: 24px;
-    padding: 8px;
-    background-clip: content-box;
-    box-sizing: border-box;
-}
-.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
-    min-width: 44px;
-    min-height: 44px;
-}
-/* Focus must be visible on every interactive element, on any background. */
-a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
-summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
-    outline-offset: 2px;
-    border-radius: 6px;
-}
-/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
-.skip-link {
-    background: #2e1065 !important;
-    color: #ffffff !important;
-    border: 1px solid #c4b5fd;
-}
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-        scroll-behavior: auto !important;
+    /* Page-specific rules only; the shared shell stylesheet carries the chrome and the content kit. */
+    .hero h1 { max-width: 24ch; }
+    .symptom .or, .fact .stat .unit { color: #6d28d9; }
+    </style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalWebPage",
+      "name": "Endometriosis — what it is, why it hurts, and what we can actually do",
+      "url": "https://mountzara.com/education/endometriosis/",
+      "description": "A peer-reviewed patient guide to endometriosis — what it is, why diagnosis takes so long, what evaluation looks like, every treatment option from NSAIDs to laparoscopic excision, how osteopathic care fits in, with inline PubMed citations and verbatim abstracts.",
+      "inLanguage": "en",
+      "audience": {"@type": "MedicalAudience", "audienceType": "Patient"},
+      "about": {"@type": "MedicalCondition", "name": "Endometriosis"},
+      "isPartOf": {"@type": "CollectionPage", "name": "Patient guides", "url": "https://mountzara.com/education/"},
+      "publisher": {"@type": "Organization", "name": "Mount Zara", "url": "https://mountzara.com/"}
     }
-}
-
-/* Structured citation popovers (2026-09-01) — title / meta / finding, the
-   same anatomy the journal-club posts use. The finding is the page's own
-   curated "what it shows" line, surfaced at the citation instead of only
-   at the bottom of the page. */
-.mz-ref-pop { text-align: left; }
-.mz-ref-pop-title { display: block; font-weight: 600; color: #1A1726; line-height: 1.35; }
-.mz-ref-pop-meta { display: block; font-size: 11px; color: #6E6A7C; margin-top: 3px; letter-spacing: 0.02em; }
-.mz-ref-pop-finding { display: block; margin-top: 7px; padding-top: 7px; border-top: 1px solid #E9E5EE;
-    font-size: 12px; line-height: 1.5; color: #4A4658; }
-.mz-ref-pop-src { display: inline-block; margin-top: 8px; font-size: 11.5px; font-weight: 600;
-    letter-spacing: 0.01em; color: #6d28d9; text-decoration: none; }
-.mz-ref-pop-src:hover, .mz-ref-pop-src:focus-visible { text-decoration: underline; color: #4c1d95; }
-/* --- mz-pop-geometry (2026-09-02) -----------------------------------------
-   The evidence line is now a real synthesis, not a one-liner, so the popover
-   has to hold 250-600 characters without running off the screen. It gets a
-   capped height with internal scroll, and flips BELOW the citation whenever
-   there isn't room above (JS adds .mz-flip). */
-sup.mz-ref .mz-ref-pop {
-    width: min(380px, 92vw);
-    max-height: min(52vh, 440px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
-sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
-/* mz-src-link-guard — the citation-number pill styling must not swallow the
-   source link that lives inside the popover. */
-sup.mz-ref:hover a.mz-ref-pop-src,
-sup.mz-ref.mz-open a.mz-ref-pop-src,
-sup.mz-ref:focus a.mz-ref-pop-src,
-sup.mz-ref:focus-within a.mz-ref-pop-src {
-    background: transparent;
-    color: #6d28d9;
-    padding: 0;
-    border-radius: 0;
-}
-sup.mz-ref:hover a.mz-ref-pop-src:hover,
-sup.mz-ref.mz-open a.mz-ref-pop-src:hover,
-sup.mz-ref:focus-within a.mz-ref-pop-src:hover {
-    color: #4c1d95;
-    text-decoration: underline;
-}
-
-sup.mz-ref:hover .mz-ref-pop.mz-flip,
-sup.mz-ref:focus-within .mz-ref-pop.mz-flip,
-sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
-
-</style>
-<style>h1,h2{font-family:'Fraunces',Georgia,serif}</style>
+    </script>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt="" decoding="async"></div>
 
-<nav class="site-nav" aria-label="Site navigation">
-    <div class="inner">
-        <a class="brand" href="/">Mount Zara</a>
-        <span class="crumb">·  Patient Education  ·  Endometriosis</span>
-        <div class="right-actions">
-            <a href="/about/">About</a>
-            <a class="cta" href="/portal/">Member portal</a>
+    <nav class="main-nav" aria-label="Site navigation">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara">
+                <span class="nav-brand-text">MOUNT ZARA</span>
+            </a>
+            <button type="button" class="mobile-toggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#surgical">Surgery</a></li>
+                <li><a href="/#osteopathic">Osteopathic</a></li>
+                <li><a href="/education/">Patient guides</a></li>
+                <li><a href="/evidence/">Evidence</a></li>
+                <li class="nav-more">
+                    <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More<span class="nav-more-caret" aria-hidden="true">&#9662;</span></button>
+                    <ul class="nav-more-menu">
+                        <li><a href="/#ai">AI</a></li>
+                        <li><a href="/#apps">Apps</a></li>
+                        <li><a href="/#research">Research</a></li>
+                        <li><a href="/#awards">Awards</a></li>
+                        <li><a href="/curriculum/">Curriculum</a></li>
+                        <li><a href="/trending/">Trending</a></li>
+                        <li><a href="/about/">Bio</a></li>
+                    </ul>
+                </li>
+                <li class="nav-cta-li"><a class="nav-cta" href="/portal/">Member portal</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
         </div>
-    </div>
-</nav>
+    </nav>
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
 
-<div class="wrap">
+<main id="main" class="wrap">
 
     <header class="hero">
-        <div class="eyebrow">Patient Education · Endometriosis · Published May 19, 2026</div>
+        <div class="section-eyebrow">Patient Education · Endometriosis · Published May 19, 2026</div>
         <h1>Endometriosis — what it is, why it hurts, and what we can actually do.</h1>
         <p class="lede">
             Endometriosis is a chronic condition where tissue similar to the lining of the uterus grows outside the
@@ -768,30 +103,29 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             osteopathic and pelvic-floor layers most online articles never mention. Every clinical claim on this page
             is cited inline to peer-reviewed published evidence; the full bibliography with abstracts is at the bottom.
         </p>
-        <div class="byline">Reviewed by <strong>Christopher Z. Mabini, DO, MSAEd</strong> · AAGL Fellow, Minimally Invasive Gynecologic Surgery</div>
     </header>
 
     <div class="facts">
-        <div class="fact" style="animation-delay: 0ms;">
+        <div class="fact" data-reveal data-stagger="1">
             <div class="stat">6&ndash;10<span class="unit">%</span></div>
             <div class="label">of reproductive-age women — roughly <strong>190&nbsp;million worldwide</strong><sup class="mz-ref" data-r="ref-13" tabindex="0"><a href="#ref-13">[13]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">ESHRE guideline: endometriosis.</span><span class="mz-ref-pop-meta">Hum Reprod Open 2022 · PMID 35350465</span><span class="mz-ref-pop-finding">Endometriosis no longer has to be confirmed by laparoscopy and biopsy before treatment begins - this European guideline explicitly challenges surgery and histology as the diagnostic gold standard, and names five topics where recommendations changed enough that clinical practice should shift. Its 109 recommendations span pain and infertility treatment, recurrence, asymptomatic and extrapelvic disease, adolescents, postmenopausal women, prevention, and the cancer association, drawing on literature through December 2020. On several questions the evidence stayed too thin for firm advice.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35350465/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</div>
         </div>
-        <div class="fact" style="animation-delay: 70ms;">
+        <div class="fact" data-reveal data-stagger="2">
             <div class="stat">7&ndash;10<span class="unit"> yr</span></div>
             <div class="label">average delay between first symptoms and a confirmed diagnosis<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Association of endometriosis and adenomyosis with pregnancy and infertility.</span><span class="mz-ref-pop-meta">Fertil Steril 2023 · PMID 36948440</span><span class="mz-ref-pop-finding">Endometriosis and adenomyosis both lower the chance of pregnancy and live birth and raise miscarriage risk, with the larger effect from adenomyosis - and women with deep infiltrating endometriosis or severe adenomyosis warrant high-risk obstetric care at a tertiary center. Severe endometriosis carries a several-fold higher risk of placenta previa, plus spontaneous bleeding into the abdomen during pregnancy and surgical difficulty at cesarean; adenomyosis is linked to preeclampsia, preterm birth, postpartum hemorrhage, and small babies. The underlying studies were markedly heterogeneous.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36948440/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</div>
         </div>
-        <div class="fact" style="animation-delay: 140ms;">
+        <div class="fact" data-reveal data-stagger="3">
             <div class="stat">60&ndash;80<span class="unit">%</span></div>
             <div class="label">respond to first-line medical therapy — surgery is rarely the first step<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 · PMID 33095458</span><span class="mz-ref-pop-finding">Treating endometriosis at laparoscopy nearly doubles the odds of a viable intrauterine pregnancy compared with a look-only diagnostic laparoscopy (odds ratio 1.89, moderate-quality evidence). Whether it reliably reduces overall pain remains genuinely uncertain: those data came from a single 16-patient trial rated very low quality, and no trial reported live birth. Across 14 randomized trials in 1,563 women, the evidence was also too thin to say whether burning lesions away differs from cutting them out, or to compare safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Interventions for endometriosis-related infertility: a systematic review and network meta-analysis.</span><span class="mz-ref-pop-meta">Fertil Steril 2020 · PMID 32106991</span><span class="mz-ref-pop-finding">Surgery for endometriosis improves the chance of pregnancy compared with watchful waiting: laparoscopic surgery alone raised the odds of clinical pregnancy about 1.6-fold and a GnRH agonist alone about 1.7-fold versus placebo, drawn from 26 randomized trials covering 2,245 women with endometriosis-related infertility. Beyond that, the evidence thinned out - data on live births, miscarriage, adverse events, and every other treatment were insufficient, and the authors stress that trials pitting IVF and intrauterine insemination against other options are still missing.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/32106991/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</div>
         </div>
-        <div class="fact" style="animation-delay: 210ms;">
+        <div class="fact" data-reveal data-stagger="4">
             <div class="stat">50&ndash;80<span class="unit">%</span></div>
             <div class="label">also have a <strong>pelvic-floor muscle component</strong> driving the pain<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2020 · PMID 32080045</span><span class="mz-ref-pop-finding">Pelvic pain lasting months without a clear cause on gynecologic, urologic, or gastrointestinal evaluation is still a gynecologist's to diagnose and manage - it should not be bounced between specialists. The practical answer is longer appointments (billed with appropriate coding modifiers) plus a multidisciplinary team assembled inside the practice or through active referral. Because trial evidence is thin, much of the guidance is borrowed from other chronic pain disorders; endometriosis, fibroids, and vulvar conditions have their own ACOG documents (Practice Bulletin 218, summary).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/32080045/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" data-r="ref-12" tabindex="0"><a href="#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">Targeted pelvic-floor myofascial physical therapy, not general massage, is what helps interstitial cystitis or painful bladder syndrome when the pelvic floor is tender on exam: 59% of women improved with it versus 26% with whole-body therapeutic massage. The 11-center randomized trial enrolled 81 women within three years of symptom onset and gave ten scheduled sessions. Pain was the most common side effect and occurred at similar rates in both groups, with no serious adverse events.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</div>
         </div>
     </div>
 
     <!-- WHAT IT IS — with clickable phenotype cards -->
-    <section class="panel" style="animation-delay: 60ms;">
+    <section class="panel" data-reveal>
 
 
 
@@ -834,8 +168,8 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             Three different patterns show up on imaging and at surgery. Most women have more than one. <em>Click any card to read more.</em>
         </p>
 
-        <div class="card-grid card-grid--3" role="list">
-            <article class="card" role="listitem" tabindex="0" data-modal="ph-superficial" aria-label="Open more about superficial peritoneal implants">
+        <div class="card-grid card-grid--3">
+            <article class="card" role="button" tabindex="0" data-modal="ph-superficial" aria-label="Open more about superficial peritoneal implants">
                 <svg class="card-svg" viewBox="0 0 56 56" aria-hidden="true">
                     <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(167,139,250,0.30)" stroke-width="1.5"/>
                     <circle cx="20" cy="22" r="2.5" fill="rgba(167,139,250,0.85)"/>
@@ -849,7 +183,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
                 <span class="open-hint">read more &rarr;</span>
             </article>
 
-            <article class="card" role="listitem" tabindex="0" data-modal="ph-endometrioma" aria-label="Open more about ovarian endometriomas">
+            <article class="card" role="button" tabindex="0" data-modal="ph-endometrioma" aria-label="Open more about ovarian endometriomas">
                 <svg class="card-svg" viewBox="0 0 56 56" aria-hidden="true">
                     <circle cx="28" cy="28" r="22" fill="rgba(167,139,250,0.18)" stroke="rgba(167,139,250,0.65)" stroke-width="1.5"/>
                     <circle cx="28" cy="28" r="14" fill="rgba(167,139,250,0.30)"/>
@@ -860,7 +194,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
                 <span class="open-hint">read more &rarr;</span>
             </article>
 
-            <article class="card" role="listitem" tabindex="0" data-modal="ph-deep" aria-label="Open more about deep infiltrating endometriosis">
+            <article class="card" role="button" tabindex="0" data-modal="ph-deep" aria-label="Open more about deep infiltrating endometriosis">
                 <svg class="card-svg" viewBox="0 0 56 56" aria-hidden="true">
                     <path d="M 6 30 Q 14 18, 28 22 Q 42 26, 50 18" stroke="rgba(167,139,250,0.85)" stroke-width="2.2" fill="none"/>
                     <path d="M 6 40 Q 18 32, 30 36 Q 44 40, 50 32" stroke="rgba(167,139,250,0.55)" stroke-width="2.2" fill="none"/>
@@ -879,7 +213,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- WHY IT HURTS -->
-    <section class="panel" style="animation-delay: 120ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">Why it hurts</div>
         <h2>Four overlapping pain sources, all happening at the same time.</h2>
         <p class="section-intro">
@@ -889,26 +223,26 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             well.&rdquo; <em>Click any card to read the deeper dive on that layer.</em>
         </p>
 
-        <div class="card-grid card-grid--4" role="list">
-            <article class="card" role="listitem" tabindex="0" data-modal="pain-lesions" aria-label="Open more about the lesion layer">
+        <div class="card-grid card-grid--4">
+            <article class="card" role="button" tabindex="0" data-modal="pain-lesions" aria-label="Open more about the lesion layer">
                 <span class="card-corner">01</span>
                 <h3>The lesions themselves</h3>
                 <p>Each implant releases <strong>prostaglandins</strong> and inflammatory cytokines &mdash; what NSAIDs and continuous hormones directly target<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 · PMID 33095458</span><span class="mz-ref-pop-finding">Treating endometriosis at laparoscopy nearly doubles the odds of a viable intrauterine pregnancy compared with a look-only diagnostic laparoscopy (odds ratio 1.89, moderate-quality evidence). Whether it reliably reduces overall pain remains genuinely uncertain: those data came from a single 16-patient trial rated very low quality, and no trial reported live birth. Across 14 randomized trials in 1,563 women, the evidence was also too thin to say whether burning lesions away differs from cutting them out, or to compare safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                 <span class="open-hint">read more &rarr;</span>
             </article>
-            <article class="card" role="listitem" tabindex="0" data-modal="pain-nerves" aria-label="Open more about the nerve layer">
+            <article class="card" role="button" tabindex="0" data-modal="pain-nerves" aria-label="Open more about the nerve layer">
                 <span class="card-corner">02</span>
                 <h3>Sensitized nerves</h3>
                 <p>Long-standing lesions <strong>amplify</strong> nerve signals — first locally, then in the spinal cord and brain. Pain can persist even after lesions are removed<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2020 · PMID 32080045</span><span class="mz-ref-pop-finding">Pelvic pain lasting months without a clear cause on gynecologic, urologic, or gastrointestinal evaluation is still a gynecologist's to diagnose and manage - it should not be bounced between specialists. The practical answer is longer appointments (billed with appropriate coding modifiers) plus a multidisciplinary team assembled inside the practice or through active referral. Because trial evidence is thin, much of the guidance is borrowed from other chronic pain disorders; endometriosis, fibroids, and vulvar conditions have their own ACOG documents (Practice Bulletin 218, summary).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/32080045/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                 <span class="open-hint">read more &rarr;</span>
             </article>
-            <article class="card" role="listitem" tabindex="0" data-modal="pain-muscles" aria-label="Open more about the pelvic floor layer">
+            <article class="card" role="button" tabindex="0" data-modal="pain-muscles" aria-label="Open more about the pelvic floor layer">
                 <span class="card-corner">03</span>
                 <h3>Pelvic-floor muscles</h3>
                 <p>Months of pain teach the levator muscles to <strong>guard</strong> &mdash; trigger points, tight bands, inability to relax. Present in up to <strong>80%</strong><sup class="mz-ref" data-r="ref-12" tabindex="0"><a href="#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">Targeted pelvic-floor myofascial physical therapy, not general massage, is what helps interstitial cystitis or painful bladder syndrome when the pelvic floor is tender on exam: 59% of women improved with it versus 26% with whole-body therapeutic massage. The 11-center randomized trial enrolled 81 women within three years of symptom onset and gave ten scheduled sessions. Pain was the most common side effect and occurred at similar rates in both groups, with no serious adverse events.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                 <span class="open-hint">read more &rarr;</span>
             </article>
-            <article class="card" role="listitem" tabindex="0" data-modal="pain-fascia" aria-label="Open more about the fascial layer">
+            <article class="card" role="button" tabindex="0" data-modal="pain-fascia" aria-label="Open more about the fascial layer">
                 <span class="card-corner">04</span>
                 <h3>Fascia &amp; ligaments</h3>
                 <p>Broad ligament and uterosacral ligaments restricted by adhesions, pulling on the pelvis and creating mechanical pain even at rest<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 · PMID 33095458</span><span class="mz-ref-pop-finding">Treating endometriosis at laparoscopy nearly doubles the odds of a viable intrauterine pregnancy compared with a look-only diagnostic laparoscopy (odds ratio 1.89, moderate-quality evidence). Whether it reliably reduces overall pain remains genuinely uncertain: those data came from a single 16-patient trial rated very low quality, and no trial reported live birth. Across 14 randomized trials in 1,563 women, the evidence was also too thin to say whether burning lesions away differs from cutting them out, or to compare safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" data-r="ref-8" tabindex="0"><a href="#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">An eight-week manual therapy protocol is a worthwhile addition for endometriosis-related pelvic pain: versus placebo treatment it reduced pain intensity, feelings of powerlessness, and low-back stiffness and improved physical quality of life, with the pain relief still present at one and six months. It did not improve depression, anxiety, self-image, or social support. Only 41 women were randomized, so it complements rather than replaces gynecologic treatment.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
@@ -918,7 +252,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- SIGNS -->
-    <section class="panel" style="animation-delay: 180ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">Signs you might have endometriosis</div>
         <h2>The symptom pattern that should put it on the table.</h2>
         <p class="section-intro">
@@ -939,7 +273,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- EVALUATION TIMELINE -->
-    <section class="panel" style="animation-delay: 240ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">How an evaluation is built</div>
         <h2>You do not need surgery to be diagnosed.</h2>
         <p class="section-intro">
@@ -950,27 +284,27 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         </p>
 
         <div class="timeline">
-            <div class="timeline-item" tabindex="0" data-modal="eval-history" style="animation-delay: 0ms;">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="eval-history" aria-label="Open step 1, the pain history, in detail">
                 <span class="open-hint">read more &rarr;</span>
                 <h3>Detailed pain history + functional impact</h3>
                 <p>VAS pain score, character, timing, location, triggers, days missed. Baseline pain diary so future treatment response is measured in numbers, not impressions.</p>
             </div>
-            <div class="timeline-item" tabindex="0" data-modal="eval-tvus" style="animation-delay: 60ms;">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="eval-tvus" aria-label="Open step 2, the ultrasound, in detail">
                 <span class="open-hint">read more &rarr;</span>
                 <h3>Compartment-based transvaginal ultrasound</h3>
                 <p>Performed in office by the same clinician who knows the history. Systematic anterior / middle / posterior compartment sweep with uterine sliding-sign assessment<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Transvaginal ultrasound vs magnetic resonance imaging for diagnosing deep infiltrating endometriosis: systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Ultrasound Obstet Gynecol 2018 · PMID 29154402</span><span class="mz-ref-pop-finding">A skilled transvaginal ultrasound can map deep infiltrating endometriosis as well as an MRI, so a scan in the office may be enough to plan surgery. For rectosigmoid bowel disease both tests were about 85% sensitive and 95-96% specific, with similar and more modest accuracy at the uterosacral ligaments and the rectovaginal septum. Pooled from six studies in 424 women who each had both tests, with surgical findings as the reference; confidence intervals were wide and the studies varied, so the precision of these figures is limited.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
             </div>
-            <div class="timeline-item" tabindex="0" data-modal="eval-mri" style="animation-delay: 120ms;">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="eval-mri" aria-label="Open step 3, pelvic MRI, in detail">
                 <span class="open-hint">read more &rarr;</span>
                 <h3>Pelvic MRI &mdash; only if deep disease is suspected</h3>
                 <p>Added selectively for bowel / bladder / ureter involvement or surgical planning. Not a screening test<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Transvaginal ultrasound vs magnetic resonance imaging for diagnosing deep infiltrating endometriosis: systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Ultrasound Obstet Gynecol 2018 · PMID 29154402</span><span class="mz-ref-pop-finding">A skilled transvaginal ultrasound can map deep infiltrating endometriosis as well as an MRI, so a scan in the office may be enough to plan surgery. For rectosigmoid bowel disease both tests were about 85% sensitive and 95-96% specific, with similar and more modest accuracy at the uterosacral ligaments and the rectovaginal septum. Pooled from six studies in 424 women who each had both tests, with surgical findings as the reference; confidence intervals were wide and the studies varied, so the precision of these figures is limited.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
             </div>
-            <div class="timeline-item" tabindex="0" data-modal="eval-labs" style="animation-delay: 180ms;">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="eval-labs" aria-label="Open step 4, targeted bloodwork, in detail">
                 <span class="open-hint">read more &rarr;</span>
                 <h3>Targeted bloodwork &mdash; not a screening fishing trip</h3>
                 <p>CBC + ferritin, hCG, AMH if reproductive concerns, CA-125 only as endometrioma baseline (not as a diagnostic test<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Diagnosis of Endometriosis.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2026 · PMID 41712950</span><span class="mz-ref-pop-finding">Endometriosis can be diagnosed clinically and treatment started on that basis; laparoscopy is no longer required first. This ACOG clinical practice guideline grades its recommendations on clinical, imaging, and surgical evaluation by strength and evidence quality, adding ungraded good-practice points where the evidence is inadequate or missing. The recommendations cover adolescents as well as adults unless stated otherwise, though the adolescent guidance rests partly on data extrapolated from adults and on expert consensus.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/41712950/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>), TSH, GC/CT/UA to rule out other contributors.</p>
             </div>
-            <div class="timeline-item" tabindex="0" data-modal="eval-pf" style="animation-delay: 240ms;">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="eval-pf" aria-label="Open step 5, the pelvic-floor examination, in detail">
                 <span class="open-hint">read more &rarr;</span>
                 <h3>Pelvic-floor examination</h3>
                 <p>The assessment most clinics skip. Because <strong>50&ndash;80%</strong> of women with endometriosis have a coexisting pelvic-floor muscle component<sup class="mz-ref" data-r="ref-12" tabindex="0"><a href="#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">Targeted pelvic-floor myofascial physical therapy, not general massage, is what helps interstitial cystitis or painful bladder syndrome when the pelvic floor is tender on exam: 59% of women improved with it versus 26% with whole-body therapeutic massage. The 11-center randomized trial enrolled 81 women within three years of symptom onset and gave ten scheduled sessions. Pain was the most common side effect and occurred at similar rates in both groups, with no serious adverse events.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, missing this is the single biggest reason surgery &ldquo;doesn&rsquo;t work.&rdquo;</p>
@@ -979,7 +313,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- TREATMENT LADDER -->
-    <section class="panel" style="animation-delay: 300ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">The treatment ladder</div>
         <h2>Most women never need surgery. Here is how we get there.</h2>
         <p class="section-intro">
@@ -990,7 +324,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         </p>
 
         <div class="ladder">
-            <article class="rung" tabindex="0" data-modal="rung-1" aria-label="Open step 1 in detail">
+            <article class="rung" role="button" tabindex="0" data-modal="rung-1" aria-label="Open step 1 in detail">
                 <div class="step-num">01</div>
                 <div>
                     <h3>NSAIDs + continuous hormonal contraception</h3>
@@ -1000,7 +334,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
                 <span class="rung-tag">First line</span>
             </article>
 
-            <article class="rung" tabindex="0" data-modal="rung-2" aria-label="Open step 2 in detail">
+            <article class="rung" role="button" tabindex="0" data-modal="rung-2" aria-label="Open step 2 in detail">
                 <div class="step-num">02</div>
                 <div>
                     <h3>Progestin-only therapy or LNG-IUD</h3>
@@ -1010,7 +344,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
                 <span class="rung-tag">Second line</span>
             </article>
 
-            <article class="rung" tabindex="0" data-modal="rung-3" aria-label="Open step 3 in detail">
+            <article class="rung" role="button" tabindex="0" data-modal="rung-3" aria-label="Open step 3 in detail">
                 <div class="step-num">03</div>
                 <div>
                     <h3>GnRH antagonist with add-back hormones</h3>
@@ -1020,7 +354,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
                 <span class="rung-tag">Third line</span>
             </article>
 
-            <article class="rung" tabindex="0" data-modal="rung-4" aria-label="Open step 4 in detail">
+            <article class="rung" role="button" tabindex="0" data-modal="rung-4" aria-label="Open step 4 in detail">
                 <div class="step-num">04</div>
                 <div>
                     <h3>Laparoscopic excision surgery</h3>
@@ -1040,7 +374,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- OMT section -->
-    <section class="panel" style="animation-delay: 360ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">The osteopathic layer</div>
         <h2>OMT does not replace anything you are already doing. It addresses what they can&rsquo;t.</h2>
         <p class="section-intro">
@@ -1073,29 +407,29 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
 
             <p style="font-size: 13px; color: var(--fg-soft); margin-top: 16px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;">The published RCT evidence — click any card to read the trial in detail</p>
 
-            <div class="card-grid card-grid--4" role="list" style="margin-top: 12px;">
-                <article class="card" role="listitem" tabindex="0" data-modal="rct-munoz" aria-label="Open Munoz-Gomez 2023 trial details">
+            <div class="card-grid card-grid--4" style="margin-top: 12px;">
+                <article class="card" role="button" tabindex="0" data-modal="rct-munoz" aria-label="Open Munoz-Gomez 2023 trial details">
                     <h3>Muñoz-Gómez 2023</h3>
                     <p><strong>RCT, n=41</strong> &middot; 8-week OMT protocol vs usual care in endometriosis-related pelvic pain. Significant improvements in pain and EHP-30 quality of life sustained at one-month follow-up<sup class="mz-ref" data-r="ref-8" tabindex="0"><a href="#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">An eight-week manual therapy protocol is a worthwhile addition for endometriosis-related pelvic pain: versus placebo treatment it reduced pain intensity, feelings of powerlessness, and low-back stiffness and improved physical quality of life, with the pain relief still present at one and six months. It did not improve depression, anxiety, self-image, or social support. Only 41 women were randomized, so it complements rather than replaces gynecologic treatment.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                     <span class="open-hint">trial details &rarr;</span>
                 </article>
-                <article class="card" role="listitem" tabindex="0" data-modal="rct-molins" aria-label="Open Molins-Cubero 2014 trial details">
+                <article class="card" role="button" tabindex="0" data-modal="rct-molins" aria-label="Open Molins-Cubero 2014 trial details">
                     <h3>Molins-Cubero 2014</h3>
                     <p><strong>Double-blind RCT, n=40</strong> &middot; A single sacroiliac manipulation produced immediate pain reduction with measurable increase in circulating serotonin and catecholamines<sup class="mz-ref" data-r="ref-9" tabindex="0"><a href="#ref-9">[9]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial.</span><span class="mz-ref-pop-meta">Pain Med 2014 · PMID 24666560</span><span class="mz-ref-pop-finding">A single session of hands-on bilateral pelvic manipulation gave immediate relief of low back and pelvic pain in women with painful periods, and raised pressure-pain thresholds at both sacroiliac joints, compared with a sham procedure in 40 women randomized and assessed double-blind. Blood serotonin differed between groups afterward while adrenaline, noradrenaline, and dopamine did not. Only immediate effects were measured, so how long the benefit lasts, and whether menstrual pain itself improves, is unknown.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                     <span class="open-hint">trial details &rarr;</span>
                 </article>
-                <article class="card" role="listitem" tabindex="0" data-modal="rct-ruffini" aria-label="Open Ruffini 2018 trial details">
+                <article class="card" role="button" tabindex="0" data-modal="rct-ruffini" aria-label="Open Ruffini 2018 trial details">
                     <h3>Ruffini 2018</h3>
                     <p><strong>RCT, n=31</strong> &middot; Five OMT sessions reduced average menstrual pain by <strong>63%</strong> (5.4 &rarr; 2.0/10); SF-12 physical +58%, mental +36%. Control group: no change<sup class="mz-ref" data-r="ref-10" tabindex="0"><a href="#ref-10">[10]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 · PMID 27261985</span><span class="mz-ref-pop-finding">Osteopathic manipulative treatment is worth offering for back pain in pregnancy, where the evidence supports a real effect, but it stays unproven for period pain, infertility, menopausal symptoms, chronic pelvic pain and labor. The 24 studies reviewed covered 1,840 patients and generally reported positive results, yet differing designs, few trials per condition and high risk of bias block any firm conclusion. Only three of the studies mentioned side effects at all, so safety is poorly documented.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                     <span class="open-hint">trial details &rarr;</span>
                 </article>
-                <article class="card" role="listitem" tabindex="0" data-modal="rct-alboni" aria-label="Open Alboni 2024 trial details">
+                <article class="card" role="button" tabindex="0" data-modal="rct-alboni" aria-label="Open Alboni 2024 trial details">
                     <h3>Alboni 2024</h3>
                     <p>Osteopathic visceral-fascial protocol after endometriosis surgery: significant improvements in recurrent pelvic pain and painful intercourse vs usual post-op care<sup class="mz-ref" data-r="ref-11" tabindex="0"><a href="#ref-11">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2024 · PMID 37997320</span><span class="mz-ref-pop-finding">Pain that lingers after endometriosis surgery often responds to hands-on osteopathic treatment of the pelvic muscles and connective tissue. Of 345 women operated on for endometriosis, 28% still had chronic pelvic pain and painful sex; among the 69 treated with myofascial release and balanced ligamentous techniques, pain fell from about 4 to 0.2 on a 10-point scale, improving from the very first session. A chart review with no comparison group, so expectation and natural recovery cannot be excluded.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
                     <span class="open-hint">trial details &rarr;</span>
                 </article>
             </div>
-            <article class="featured-card" tabindex="0" data-modal="rct-fitzgerald" aria-label="Open FitzGerald 2012 trial details">
+            <article class="featured-card" role="button" tabindex="0" data-modal="rct-fitzgerald" aria-label="Open FitzGerald 2012 trial details">
                 <span class="open-hint">trial details &rarr;</span>
                 <div>
                     <h3>FitzGerald 2012 &mdash; the NIH multicenter pelvic-floor PT RCT</h3>
@@ -1110,7 +444,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
     </section>
 
     <!-- Q&A -->
-    <section class="panel" style="animation-delay: 420ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">Common questions, answered honestly</div>
         <h2>Patient questions, in the order they come up.</h2>
         <p class="section-intro">
@@ -1239,7 +573,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         </div>
     </section>
 
-    <section class="panel" style="animation-delay: 480ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">When to call urgently</div>
         <h2>Symptoms that should not wait for your next visit.</h2>
         <div class="red-flags">
@@ -1257,14 +591,14 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         </div>
     </section>
 
-    <section class="cta-strip" style="animation-delay: 540ms;">
+    <section class="cta-strip" data-reveal>
         <h2>Take the next step.</h2>
         <p>Whether you have been newly diagnosed, are years into pain that hasn&rsquo;t been controlled, or simply want a second opinion before committing to a treatment plan, endometriosis care is a core part of this practice.</p>
-        <a class="btn" href="/portal/">Open the member portal</a>
-        <a class="btn ghost" href="/about/">More about the practice</a>
+        <a class="btn btn-primary" href="/portal/">Open the member portal<span class="arrow" aria-hidden="true"></span></a>
+        <a class="btn btn-secondary" href="/about/">More about the practice</a>
     </section>
 
-    <section class="panel" style="animation-delay: 600ms;">
+    <section class="panel" data-reveal>
         <div class="section-eyebrow">References</div>
         <h2>The evidence underneath every claim on this page.</h2>
         <p class="section-intro">
@@ -1447,15 +781,62 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         personal preferences &mdash; which is exactly the conversation a clinic visit is for.
     </div>
 
-</div>
+</main>
+
+    <div class="mz-disclosures">
+<aside class="mz-page-note" aria-label="Disclosure">
+<p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
+</aside>
+
+<div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara" class="footer-mark">
+                <p class="footer-tag">Minimally invasive gynecologic surgery with whole-person osteopathic care.</p>
+            </div>
+            <nav class="footer-col" aria-label="For patients">
+                <h4>Patients</h4>
+                <a href="/education/">What we treat</a>
+                <a href="/portal/">Member portal</a>
+                <a href="/#contact">Request an appointment (Coming Soon)</a>
+            </nav>
+            <nav class="footer-col" aria-label="About the practice">
+                <h4>The practice</h4>
+                <a href="/about/">About Dr. Mabini</a>
+                <a href="/evidence/">Published evidence</a>
+                <a href="/curriculum/">Teaching &amp; curricula</a>
+                <a href="/cv/">CV (on request)</a>
+            </nav>
+            <div class="footer-col">
+                <h4>Reach me</h4>
+                <a href="mailto:info@mountzara.com">info@mountzara.com</a>
+                <span class="footer-note">Telehealth &middot; Illinois &amp; California (Coming Soon)</span>
+            </div>
+        </div>
+        <div class="footer-content">
+            <div class="copyright">&copy; 2026 Mount Zara, LLC
+                <span style="opacity:.75"> &middot; <a href="/privacy/">Privacy</a>
+                &middot; <a href="/privacy-practices/">Privacy Practices</a>
+                &middot; <a href="/terms/">Terms</a>
+                &middot; <a href="/accessibility/">Accessibility</a></span></div>
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" aria-label="Connect on LinkedIn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.99 0 1.78-.77 1.78-1.72V1.72C24 .77 23.21 0 22.22 0z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
 
 <!-- Modal frame (single, content swapped at click time) -->
-<div class="mz-modal-bg" id="mz-modal-bg" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="mz-modal" id="mz-modal" role="document">
-        <button class="mz-modal-close" id="mz-modal-close" aria-label="Close">&times;</button>
-        <div id="mz-modal-host"></div>
+    <div class="mz-modal-bg" id="mz-modal-bg" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="mz-modal" id="mz-modal" role="document">
+            <button type="button" class="mz-modal-close" id="mz-modal-close" aria-label="Close">&times;</button>
+            <div id="mz-modal-host"></div>
+        </div>
     </div>
-</div>
 
 <!-- Hidden modal templates — content lives here and is cloned into the modal on click -->
 <template id="modal-ph-superficial"><div class="modal-content-inner"><h2>Superficial peritoneal implants</h2>
@@ -1888,140 +1269,6 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             problem — PFPT for the pelvic-floor muscles directly, OMT for the upstream
             spinal, visceral, and fascial contributors.<sup class="mz-ref" data-r="ref-12" tabindex="0"><a href="#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">Targeted pelvic-floor myofascial physical therapy, not general massage, is what helps interstitial cystitis or painful bladder syndrome when the pelvic floor is tender on exam: 59% of women improved with it versus 26% with whole-body therapeutic massage. The 11-center randomized trial enrolled 81 women within three years of symptom onset and gave ten scheduled sessions. Pain was the most common side effect and occurred at similar rates in both groups, with no serious adverse events.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></p>
         </div></template>
-
-<script>
-(function () {
-    'use strict';
-
-    // Touch-friendly citation popouts — tap toggles mz-open, outside-tap clears.
-    const refs = document.querySelectorAll('sup.mz-ref');
-    refs.forEach(s => {
-        s.addEventListener('click', (ev) => {
-            const a = ev.target.closest('a');
-            // If they clicked the anchor itself, let it scroll naturally.
-            if (a && a.tagName === 'A') { return; }
-            ev.preventDefault();
-            refs.forEach(other => { if (other !== s) other.classList.remove('mz-open'); });
-            s.classList.toggle('mz-open');
-        });
-    });
-    document.addEventListener('click', (ev) => {
-        if (!ev.target.closest('sup.mz-ref')) {
-            refs.forEach(s => s.classList.remove('mz-open'));
-        }
-    });
-
-    // Q&A auto-close-other so reading flows naturally.
-    const qas = document.querySelectorAll('details.qa');
-    qas.forEach(d => {
-        d.addEventListener('toggle', () => {
-            if (!d.open) return;
-            qas.forEach(other => { if (other !== d) other.open = false; });
-        });
-        d.querySelector('summary').addEventListener('click', () => {
-            setTimeout(() => {
-                if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 80);
-        });
-    });
-
-    // Modal system — open on card click, close on Escape / outside-click / X button.
-    const bg = document.getElementById('mz-modal-bg');
-    const host = document.getElementById('mz-modal-host');
-    const closeBtn = document.getElementById('mz-modal-close');
-    let lastFocus = null;
-
-    function openModal(key) {
-        const tpl = document.getElementById('modal-' + key);
-        if (!tpl) return;
-        host.innerHTML = '';
-        host.appendChild(tpl.content.cloneNode(true));
-        // Re-wire any cite popouts inside the modal
-        host.querySelectorAll('sup.mz-ref').forEach(s => {
-            s.addEventListener('click', (ev) => {
-                const a = ev.target.closest('a');
-                if (a && a.tagName === 'A') { return; }
-                ev.preventDefault();
-                s.classList.toggle('mz-open');
-            });
-        });
-        lastFocus = document.activeElement;
-        bg.classList.add('open');
-        bg.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-        closeBtn.focus();
-    }
-    function closeModal() {
-        bg.classList.remove('open');
-        bg.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-        if (lastFocus && lastFocus.focus) lastFocus.focus();
-        host.innerHTML = '';
-    }
-
-    document.querySelectorAll('[data-modal]').forEach(card => {
-        card.addEventListener('click', (ev) => {
-            // Don't open modal if the click was on a cite popout or link inside
-            if (ev.target.closest('sup.mz-ref a') || ev.target.closest('.open-hint a')) return;
-            openModal(card.dataset.modal);
-        });
-        card.addEventListener('keydown', (ev) => {
-            if (ev.key === 'Enter' || ev.key === ' ') {
-                ev.preventDefault();
-                openModal(card.dataset.modal);
-            }
-        });
-    });
-    closeBtn.addEventListener('click', closeModal);
-    bg.addEventListener('click', (ev) => { if (ev.target === bg) closeModal(); });
-    document.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape' && bg.classList.contains('open')) closeModal();
-    });
-})();
-</script>
-<style>
-.mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid #E9E5EE; font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #6E6A7C; text-align: center; }
-.mz-page-note p { margin: 0; }
-.mz-page-note a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.mz-page-note a:hover, .mz-page-note a:focus-visible { color: rgba(201,119,89,0.95); }
-
-        /* 2026-07-22 polish: no grey text in glass modals */
-        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #1A1726 !important; }
-</style>
-<aside class="mz-page-note" aria-label="Disclosure">
-<p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
-</aside>
-
-<div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
 <style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
-
-<script>
-/* mz-pop-geometry — open the citation popover downward when the citation
-   sits too high on screen for the popover to fit above it. Delegated, so it
-   also covers post bodies injected into the reader shells after load. */
-(function () {
-    if (window.__mzPopFlip) { return; }
-    window.__mzPopFlip = true;
-    function place(sup) {
-        var pop = sup.querySelector('.mz-ref-pop');
-        if (!pop) { return; }
-        pop.classList.remove('mz-flip');
-        var top = sup.getBoundingClientRect().top;
-        if (top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
-    }
-    function onEvent(ev) {
-        var t = ev.target;
-        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
-        if (sup) { place(sup); }
-    }
-    document.addEventListener('pointerover', onEvent, true);
-    document.addEventListener('focusin', onEvent, true);
-    document.addEventListener('click', function (ev) {
-        var t = ev.target;
-        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
-        if (sup) { setTimeout(function () { place(sup); }, 0); }
-    }, true);
-})();
-</script>
 </body>
 </html>
