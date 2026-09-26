@@ -10425,7 +10425,10 @@ def _author_bridge(W: str, h: str, claim: str, real: dict) -> tuple:
         if s:
             own.append(_plain(h[s[1]:s[2]]))
     own_text = "\n\n".join(dict.fromkeys(own))[:6000]
-    papers = _papers_for_prompt(real)
+    # the bridge may cite only a paper the brief CARDS: a paper with a deep
+    # dive but no card is in `real`, and a bridge that cited one failed the
+    # invariant "every cited paper carded" (mast-cell brief, 41079937)
+    papers = _papers_for_prompt(real, sorted(_carded_pmids(h)))
     spec = TREND_EDITORIAL_PARTS["bridge"]
     notes, why = [], ""
     for attempt in range(5):
