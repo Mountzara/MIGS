@@ -2472,6 +2472,37 @@ def drop_process_commentary(h: str) -> tuple:
     return h, cut
 
 
+def fix_invented_experience(W: str, h: str) -> tuple:
+    """A sentence that speaks from the clinician's own patients is rewritten
+    from the paper it cites. (h, rewritten).
+
+    W34's Endocrine synthesis read "In my practice I found it notable that
+    twelve weeks of Nigella sativa oil lowered serum IL-6…" — a trial's
+    result in the voice of someone who saw it happen. writer_reject stops a
+    writer producing that today; this is for the sentences already on the
+    page, which the reader gate refused and nothing repaired. Each one goes
+    through repair_from_defects with the cited abstracts in hand, so the
+    finding stays and the invented witness goes. A sentence the repair
+    cannot make right is left for the gate to refuse, by name."""
+    sents = []
+    for ps in _prose_passages(h):
+        masked = _mask_noprose(ps.group(1))
+        for t, _e in _sentences_of(masked):
+            plain = H.unescape(re.sub(r"<[^>]+>", " ", t)).strip()
+            if EXPERIENCE_RE.search(plain) and plain not in sents:
+                sents.append(plain)
+    done = 0
+    for plain in sents:
+        h, n = repair_from_defects(W, h, [{
+            "what": ("the sentence claims the clinician's own experience of a finding that comes from the cited "
+                     "paper — rewrite it to state the paper's finding plainly, in the brief's editorial voice, "
+                     "with no 'in my practice', 'my patients' or any claim of having seen it; keep every "
+                     "number and every citation marker exactly"),
+            "evidence": plain}])
+        done += n
+    return h, done
+
+
 def drop_bracket_residue(h: str) -> tuple:
     """"[Bafort 2020, ]" — a legacy bracket whose marker a later pass withdrew.
     The bracket named the paper before the marker did; with the marker gone
@@ -3444,7 +3475,10 @@ def reader_prose_faults(h: str) -> list:
     faults = list(body_invariant_faults(h))
     prose = " ".join(prose_fragments(h))
     text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
-    vis = _vis_text(h)
+    # the SITE's own visible text — cards and dialogs included, the paper's
+    # own words excluded: W34 was refused for "AI-generated" inside a PCOS
+    # paper's abstract, which is the paper's subject, not our provenance
+    vis = own_text(h)
     m = ADVICE_RE.search(text)
     if m:
         faults.append(f"patient-directed advice in the site's own prose: {m.group(0)!r}")
@@ -3944,6 +3978,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h, migs0 = canonical_practice_name(h)
     if migs0:
         print(f"  {migs0} bare MIGS / wrong-order name(s) in the site's own text written as CBG/MIGS")
+    h, exp0 = fix_invented_experience(W, h)
+    if exp0:
+        print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -3999,8 +4036,8 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     # cards and deep-dive dialogs are reader-visible too; site_prose strips
     # them as attributed text, so provenance language written into a card was
     # invisible to this gate (standards-check, 2026-09-20)
-    if PROVENANCE_RE.search(_vis_text(h)):
-        faults.append(f"AI-provenance language a reader can see: {PROVENANCE_RE.search(_vis_text(h)).group(0)!r}")
+    if PROVENANCE_RE.search(own_text(h)):      # the site's words, not a paper's
+        faults.append(f"AI-provenance language a reader can see: {PROVENANCE_RE.search(own_text(h)).group(0)!r}")
     if INTERNAL_RE.search(H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)))):
         faults.append("internal path or spec reference")
     if "mz-eddisclaimer" not in h:
@@ -9237,6 +9274,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, migs0 = canonical_practice_name(h)
         if migs0:
             print(f"  {migs0} bare MIGS / wrong-order name(s) in the site's own text written as CBG/MIGS")
+        h, exp0 = fix_invented_experience(W, h)
+        if exp0:
+            print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
         before_html = h
         before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
                   for x in SUP_RE.findall(h)]
@@ -9461,6 +9501,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, migs1 = canonical_practice_name(h)
         if migs1:
             print(f"  {migs1} bare MIGS / wrong-order name(s) written as CBG/MIGS at resume")
+        h, exp1 = fix_invented_experience(W, h)
+        if exp1:
+            print(f"  {exp1} sentence(s) claiming the clinician's own experience rewritten from the paper at resume")
         # a repair without the byline flipped two corrected names back (W21:
         # Yang for Guzelbag, Liu for Shen); the attribution pass reads the
         # banked page here so a resume corrects them without a full run
@@ -9532,6 +9575,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     h, migs2 = canonical_practice_name(h)       # a repair may write the bare name
     if migs2:
         print(f"  {migs2} bare MIGS / wrong-order name(s) written as CBG/MIGS after the audit repair")
+    h, exp2 = fix_invented_experience(W, h)
+    if exp2:
+        print(f"  {exp2} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
     faults = reader_prose_faults(h)
     if faults:
         die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
