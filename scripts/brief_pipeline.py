@@ -4240,6 +4240,8 @@ def trend_prose_audit(W: str, h: str, man: dict) -> list:
     """
     secs = []
     for m in re.finditer(r'<section class="mz-post-section[^"]*"[^>]*id="([^"]+)"[^>]*>\s*<h2[^>]*>([\s\S]*?)</h2>([\s\S]*?)</section>', h):
+        if m.group(1) in ("references", "refs") or "mz-references" in m.group(0)[:200]:
+            continue                       # a fixed label, not a signpost to judge
         secs.append({"id": m.group(1), "heading": H.unescape(re.sub(r"<[^>]+>", "", m.group(2))).strip(),
                      "text": H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", m.group(3))))[:6000]})
     subs = [{"id": a, "subheading": H.unescape(re.sub(r"<[^>]+>", "", b)).strip()}
@@ -4314,8 +4316,10 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     # a deep dive's section labels ("2 · Study scaffolding — PICO") are the
     # journal-club template's, visible by design, and the auditor called them
     # "internal"; the dialogs' editorial text is audited on its own
+    # nor a card abstract's "ABSTRACT" label inside <details>: the auditor
+    # called it an unfilled placeholder (pelvic-congestion brief)
     head_txt = " ".join(H.unescape(re.sub(r"<[^>]+>", " ", x)).strip().rstrip(".") + "."
-                        for x in re.findall(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", re.sub(r"<dialog\b[\s\S]*?</dialog>", " ", h)))
+                        for x in re.findall(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", _blank_paper_text(re.sub(r"<dialog\b[\s\S]*?</dialog>", " ", h))))
     if head_txt.strip():
         frags.append((f"<p>{H.escape(head_txt, quote=False)}</p>", None, "headings"))
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
