@@ -203,7 +203,22 @@ def check_reveal(page, sup, route, i, mode, marker):
 def audit(page, route, mode="hover"):
     fails = []
     url = BASE.rstrip("/") + route + ("&" if "?" in route else "?") + "cb=pw"
-    page.goto(url, wait_until="networkidle", timeout=90000)
+    # A navigation that fails on the network — a proxy's certificate the
+    # browser rejects for one request, a reset — is not a citation defect;
+    # three of seventeen routes "crashed" a deploy on ERR_CERT_AUTHORITY_INVALID
+    # minutes after the same gate had passed all seventeen. Three tries,
+    # then it is reported as before.
+    last = None
+    for attempt in range(3):
+        try:
+            page.goto(url, wait_until="networkidle", timeout=90000)
+            last = None
+            break
+        except Exception as e:
+            last = e
+            page.wait_for_timeout(3000 * (attempt + 1))
+    if last is not None:
+        raise last
     page.wait_for_timeout(2500)
     sups = page.locator("sup.mz-ref")
     n = sups.count()
