@@ -2702,6 +2702,12 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
         if not os.path.exists(dd_path):
             json.dump({}, open(dd_path, "w"))
         _pm, n_probs, err = _author_one_paper((W, pm))
+        if err and err.startswith(("refused", "section(s) not passed")):
+            # the reviewer's objection goes in front of the author for one more
+            # attempt (five of W24's thirty-eight stubs were refused once for
+            # a computed duration, a site name, a participant range)
+            record_piece_objection(W, pm, err)
+            _pm, n_probs, err = _author_one_paper((W, pm))
         if err:
             print(f"  deep dive {pm}: {len(stubs)} stub section(s) could not be authored — {err[:120]}")
             continue
@@ -4079,6 +4085,10 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         # correct abstracts failed at character 0 for it
         if a_src.startswith("abstract") and not a_body.startswith("abstract"):
             a_src = a_src[len("abstract"):]
+        # and the other way: the page's section keeps its own "Abstract" label
+        # (<h5 class="mz-jc-abstract-label">) while PubMed's text has none
+        if a_body.startswith("abstract") and not a_src.startswith("abstract"):
+            a_body = a_body[len("abstract"):]
         if not sec:
             faults.append(f"{q}: the deep dive has no abstract section")
         elif len(a_src) > 200 and a_src not in a_body:
@@ -4108,9 +4118,14 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                 faults.append(f"[dialog:{q}] the {key} section is empty or a stub")
     # S12 (weekly)
     if man.get("format") != "trend":
+        # the topic's span comes from _topic_sections, which knows every
+        # generation's class (topic-section, mz-topic-group, mz-topic-section);
+        # a class regex here refused all seven of W24's topics, each of which
+        # holds a synthesis of two to thirteen thousand characters
+        spans = {t.tid: t for t in _topic_sections(h)}
         for tid in man["topics"]:
-            st = re.search(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>([\s\S]*?)(?=<section class="[^"]*\btopic-section\b|<section class="[^"]*mz-references|<dialog|$)' % re.escape(tid), h)
-            syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', st.group(1)) if st else None
+            st = spans.get(tid)
+            syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h[st.a:st.b]) if st else None
             if not syn or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", syn.group(1)))) < 1000:
                 faults.append(f"topic {tid} has no synthesis paragraph of substance above its cards")
         chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
