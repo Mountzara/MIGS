@@ -70,3 +70,6 @@ docs/**/*.mp4
 # Inside the repo so the stage reviewers can actually read what they review;
 # never committed — the source of truth is the stored post plus PubMed.
 .brief-work/
+
+# isolated worktrees the agent harness creates for parallel subagents
+.claude/worktrees/
