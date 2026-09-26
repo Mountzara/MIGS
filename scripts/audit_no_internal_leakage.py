@@ -80,6 +80,63 @@ def spec_hits(src, pat):
 SERVER_EXEMPT = {"internal spec reference"}
 
 
+# What a VISITOR SEES. The checks above read the source; a leak can pass all
+# of them and still render: on 2026-09-26 the owner found the tail of a
+# KB-anchor manifest — '…surfaced rather than silently kept." } -->' — on
+# the live endometriosis page. The 2026-09-02 strip had cut the manifest at
+# a "-->" written INSIDE its JSON note, leaving the rest of the JSON and the
+# real closer as page text, with no banned token in it. So every deployable
+# page is also parsed the way a browser parses it and its rendered text is
+# read for anything a build left behind.
+from html.parser import HTMLParser
+
+
+class _Visible(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.skip, self.out = 0, []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style", "template", "noscript"):
+            self.skip += 1
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style", "template", "noscript") and self.skip:
+            self.skip -= 1
+
+    def handle_data(self, data):
+        if not self.skip:
+            self.out.append(data)
+
+
+def visible_text(src):
+    v = _Visible()
+    v.feed(src)
+    return re.sub(r"\s+", " ", "".join(v.out))
+
+
+RENDERED_BANNED = [
+    ("a comment delimiter rendered as text", re.compile(r"-->|<!--")),
+    ("KB-anchor vocabulary rendered",         re.compile(r"NOT-IN-KB|kb[_-]anchor|KB-anchor", re.I)),
+    ("a build manifest field rendered",       re.compile(r"kb_chunks_path|kb_documents_loaded|user_docx_sources|topic_synthesis_id|generated_at_utc")),
+    ("a local path or private source file",  re.compile(r"/Users/[A-Za-z0-9._-]+/|\b[\w-]+\.docx\b")),
+    ("JSON rendered as text",                 re.compile(r"\{\s*\"[a-z_]+\"\s*:")),
+    ("an internal spec mark rendered",        re.compile(r"CLAUDE\.md|SYSTEM_MAP|§\s?0\.\d")),
+]
+
+
+def rendered_hits(src):
+    text = visible_text(src)
+    out = []
+    for label, pat in RENDERED_BANNED:
+        for m in pat.finditer(text):
+            if m.group(0).startswith("\u00a7") and CITATION_CONTEXT.search(text[max(0, m.start() - 40):m.start()]):
+                continue
+            out.append(f"{label}: …{text[max(0, m.start() - 60):m.end() + 40].strip()}…")
+            break
+    return out
+
+
 def main():
     problems = []
     scanned = 0
@@ -91,6 +148,9 @@ def main():
             continue
         scanned += 1
         server_side = rel.startswith("functions" + os.sep)
+        if rel.endswith(".html") and not server_side:
+            for hit in rendered_hits(src):
+                problems.append(f"{rel}: RENDERED — {hit}")
         for label, pat in BANNED:
             if server_side and label in SERVER_EXEMPT:
                 continue
@@ -109,7 +169,7 @@ def main():
             print(f"  … and {len(problems) - 40} more")
         return 1
     print(f"no-internal-leakage gate: CLEAN — {scanned} deployable file(s); "
-          "no AI-provenance notice, no local paths, no build manifests")
+          "no AI-provenance notice, no local paths, no build manifests, nothing internal rendered")
     return 0
 
 
