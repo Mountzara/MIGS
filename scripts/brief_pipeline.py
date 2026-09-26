@@ -3496,6 +3496,11 @@ HUMAN_RE = re.compile(r"\b(?:patients?|women|participants?|subjects|cohort|trial
 def _sentences(html_frag: str) -> list:
     """Sentences of a prose fragment with each citation collapsed to ⟦PMID⟧ tokens."""
     t = SUP_RE.sub(lambda m: " ⟦%s⟧ " % (_pmid_of(m.group(0)) or "?"), html_frag)
+    # a popover remnant whose marker did not tokenize (a malformed sup on an
+    # intermediate body) is never the site's prose: the auditor was handed
+    # "Relevance: identifies MRGPRX2…</span><a class=\"mz-ref-pop-src\"" as a
+    # sentence and faulted it as an uncited claim (mast-cell brief)
+    t = re.sub(r'<span class="mz-ref-pop(?:-[a-z]+)?"[^>]*>[\s\S]*?</span>|<a class="mz-ref-pop-src"[^>]*>[\s\S]*?</a>', " ", t)
     t = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", t)
     t = H.unescape(re.sub(r"<[^>]+>", " ", t))
     t = re.sub(r"\s+", " ", t).strip()
