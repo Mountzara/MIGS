@@ -9991,6 +9991,12 @@ Return ONLY {{"rewrite": "<text>", "grounded": true|false, "makes_factual_claim"
         if not v:
             return None, "leave", "the model returned nothing"
         new = re.sub(r"\s+", " ", str(v.get("rewrite") or "")).strip().strip('"“”')
+        # a PMID typed into the prose is removed, not refused: the model was
+        # told twice and wrote "(PMID 27028912)" anyway, and the refusal left
+        # the scoring sentence standing
+        new = re.sub(r"\s*[\(\[](?:PMID\s*)?\d{5,9}(?:\s*[,;]\s*(?:PMID\s*)?\d{5,9})*[\)\]]", "", new)
+        new = re.sub(r"\s*\bPMIDs?\s*:?\s*\d{5,9}\b", "", new)
+        new = re.sub(r"\s+([.,;:])", r"\1", new).strip()
         why = str(v.get("why") or "")[:160]
         if not v.get("grounded", True):
             return None, ("delete" if v.get("makes_factual_claim") is False else "leave"), why or "the model could not ground a rewrite"
@@ -10103,12 +10109,16 @@ def _bridge_faults(html_v: str, real: dict) -> list:
     for t, end in _sentences_of(masked):
         start = _sentence_start(masked, prev)
         prev = end
-        bad = writer_reject(t)
+        # the masked markers leave runs of spaces inside the sentence and
+        # _looks_broken reads a doubled space as damage — three drafts were
+        # refused as "damaged prose" for it; the sentence is judged as a
+        # reader sees it. "never"/"always" is writer_reject's absolute_claim,
+        # a clinical absolute, not the two words ("were never the whole story")
+        plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
+        bad = writer_reject(plain)
         if bad:
-            faults.append(f"{bad}: {t[:70]!r}")
+            faults.append(f"{bad}: {plain[:70]!r}")
             continue
-        if re.search(r"\b(?:never|always)\b", t, re.I):
-            faults.append(f"never/always: {t[:70]!r}")
         if re.search(r"\d", re.sub(r"\b(?:19|20)\d\d\b", "", t)) and not SUP_RE.search(html_v[start:_after_run(html_v, end)]):
             faults.append(f"a sentence with a number and no citation: {t[:70]!r}")
     return faults
@@ -10127,7 +10137,7 @@ def _author_bridge(W: str, h: str, claim: str, real: dict) -> tuple:
     papers = _papers_for_prompt(real)
     spec = TREND_EDITORIAL_PARTS["bridge"]
     notes, why = [], ""
-    for attempt in range(3):
+    for attempt in range(5):
         draft = _ask_cached(W, "conform", f"""Author ONE section of a published brief that checks a viral claim against the literature: the section
 headed "{BRIDGE_HEADING}" — {spec}.
 THE CLAIM: {claim}
