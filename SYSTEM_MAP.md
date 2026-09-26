@@ -2694,13 +2694,98 @@ in `_middleware.js` in the same commit.
 - abnormal-uterine-bleeding, adenomyosis, chronic-pelvic-pain,
   contraception, dysmenorrhea, endometriosis, fibroids, menopause,
   ovarian-masses, pcos, postoperative-recovery, pregnancy-loss
-- `_template/` is scaffolding (underscore-prefixed; deploy gate skips
-  it per §2.3 step 1)
-- Each page carries: §0.8.1 manifest, §3.12 AI disclaimer, §3.10
-  design tokens, `<sup>` PMID footnotes
+- `_template/` is scaffolding (underscore-prefixed; the citation,
+  popover and PubMed gates skip it; the dosing and light-text gates scan
+  it). Since 2026-09-26 it is a full skeleton on the shell (§8.2.1) with
+  `{{SLOT}}` placeholders — copy it, never a live guide.
+- Each page carries: the `mz-page-note` aside + `mz-eddisclaimer`
+  block (wording owner-locked, `scripts/fix_disclaimers.py`), the
+  `<sup class="mz-ref">` popover contract (§8.0.0.1), an `ol.refs-list`
+  with every `<li id="ref-N">` in the rendered list (never inside a
+  `<template>`), the canvas guard last. It carries NO KB manifest, NO
+  AI-provenance notice, NO byline (§7.11 — the owner ruled out
+  "Reviewed by"; the endometriosis and `_template` bylines were removed
+  2026-09-26), NO dose outside `.abstract-body`, and spells "CBG/MIGS".
 - **Mirror drift risk:** `education/<slug>/index.html` and
-  `portal/education/<slug>/index.html` are byte-similar copies. When
-  editing one, update the other in the SAME commit.
+  `portal/education/<slug>/index.html` are byte-IDENTICAL whole files
+  (`check_citation_integrity.mjs` compares the entire file, no
+  override). Edit the public copy, then `cp` it over the portal copy in
+  the SAME commit. Per-surface differences live only in
+  `mz-education.js` runtime (pathname check), never in the HTML.
+
+### 8.2.1 The education shell — `assets/css/mz-shell.css` + `assets/js/mz-education.js` (2026-09-26)
+
+**What.** One stylesheet and one deferred script carry the homepage
+chrome and the whole education content kit for `/education/`,
+`/education/<slug>/` and the portal mirrors. Until this, the twelve guides
+carried 730 inline lines copied from the endometriosis page (×2 mirrors
+= 24 drifting copies), the index had no nav/footer, and ten guides had
+modals whose CSS never matched their markup. Pages now link the shell and
+keep only a small inline `<style>` of page-specific rules (which must
+retain one literal `#6d28d9` — `audit_mirror_drift.py` looks for the
+token in each HTML file).
+
+| file | carries | loaded by |
+|---|---|---|
+| `assets/css/mz-shell.css` | homepage tokens (`--paper/--ink/--hairline/--violet-*`, `--s*`, `--radius-*`, `--shadow-*`, `--ease-*`, `--glow-purple: 139,92,246`) + the education aliases (`--bg-base`, `--fg-*`, `--border`, `--accent`, **`--accent-soft: #6d28d9`, never `#a78bfa`** — 3.2–4.4:1 on glass); self-hosted Nunito Sans `@font-face`; Fraunces 600 on h1/h2; `.skip-link`; `.main-nav` family (fixed, glass, `--nav-h: 64px`, mobile panel ≤1180px); `.scroll-progress`; `.wrap` (1040px, padded under the nav); `.section-eyebrow` pill (+`--deep`); `.btn/.btn-primary/.btn-secondary/.arrow`; `[data-reveal]` + `data-stagger` (hidden only under `html.mz-js`); the content kit (`.hero`, `.facts/.fact/.stat/.unit/.label`, `section.panel`, `.section-intro`, `.card-grid--2/3/4 .card .card-svg .card-corner .open-hint`, `.symptoms/.symptom/.or`, `.timeline/.timeline-item`, `.ladder/.rung/.step-num/.meds/.rung-tag`, `.omt-block/.quote-frame`, `.featured-card/.stat-badge`, `.qa-list/details.qa/.qa-answer`, `.red-flags/.red-eyebrow`, `.cta-strip`, `ol.refs-list/.ref-label/.ref-what/.ref-meta/details.abstract-toggle/.abstract-body`, `.footer-note`, `.mz-page-note`, `.mz-disclosures`); the modal frame (`.mz-modal-bg/.mz-modal/.mz-modal-close`, `body.mz-modal-open`); the one copy of the citation-popover CSS (`sup.mz-ref`, `.mz-ref-pop*`, `.mz-flip`, `.mz-edge-*`, `.mz-open`); the index kit (`.index-hero`, `.lane/.lane-head`, `.topic-grid/.topic-card/.topic-icon/.topic-meta/.topic-cta`, `.band/.band-grid/.band-item`); `footer` family; reduced-motion; ≤640px; `@media print` | every education page + the index + `_template` |
+| `assets/js/mz-education.js` | nav (hamburger, Escape/click dismiss, "More" aria, `aria-current` on Patient guides, **portal crumb**: on `/portal/*` the CTA becomes "← Back to the portal" and the brand link points at `/portal/`); reading-progress rAF; reveal IO (`-8%` rootMargin) + fling-proof sweep (scroll/wheel/touch/scrollend/resize/load+1.5s/250ms poll/hashchange/beforeprint; everything revealed at once under reduced motion); citation popovers (delegated: tap toggles `.mz-open`, outside tap clears, geometry pass adds `.mz-flip/.mz-edge-left/.mz-edge-right`; works inside the modal); `details.qa` one-open-at-a-time; **the modal kit**: every `[data-modal="KEY"]` gets `role=button tabindex=0`, opens on click/Enter/Space by cloning `<template id="modal-KEY">` into `#mz-modal-host`, sets `aria-labelledby` from the cloned h2, focuses `#mz-modal-close`, adds `body.mz-modal-open`; closes on Escape (a first Escape only clears an open popover), scrim click, ✕, or a `#ref-N` click inside; traps focus; restores focus to the opener and body scroll on close. Exposes `window.toggleMenu`, `window.mzOpenModal`, `window.mzCloseModal`. No dependencies, no network (education CSP is `script-src 'self'`). | same |
+
+**Page skeleton** (document order; `education/_template/index.html` is
+the runnable copy): `<head>` title = thesis sentence · Mount Zara,
+description, robots, `color-scheme: light`, `theme-color #FBFAF8`,
+canonical, og:/twitter:, icons, Fraunces link, Nunito preload,
+`<link rel=stylesheet href=/assets/css/mz-shell.css>`, the ONE inline
+bootstrap `<script>document.documentElement.classList.add('mz-js')</script>`
+(it must precede first paint — it is what hides `[data-reveal]`; without
+JS nothing is hidden), `<script src=/assets/js/mz-education.js defer>`,
+small `<style>`, MedicalWebPage JSON-LD · `<body>`: `a.skip-link` →
+`.page-bg-stage > img.page-bg-art` → `nav.main-nav` → `.scroll-progress`
+→ `main#main.wrap` [ `header.hero` (`.section-eyebrow`, `h1`, `p.lede`) ·
+`.facts` ×4 `.fact[data-reveal][data-stagger=1..4]` · `section.panel[data-reveal]`
+×9 (`.section-eyebrow` · `h2` full sentence · `p.section-intro` with an
+`<em>Click …</em>` affordance when the panel has openers · the widget) ·
+`section.cta-strip[data-reveal]` (`.btn.btn-primary` → `/portal/`,
+`.btn.btn-secondary` → `/about/`) · references panel (`ol.refs-list`) ·
+`.footer-note` ] → `.mz-disclosures` (`aside.mz-page-note` +
+`div.mz-eddisclaimer`, verbatim) → `footer` → `#mz-modal-bg[role=dialog][aria-modal]
+> .mz-modal > button#mz-modal-close + #mz-modal-host` → `<template
+id="modal-KEY">` × openers → `<style id="mz-canvas-guard">` LAST.
+
+**Lock-step.**
+* `bump_asset_versions.py` rewrites every `/assets/css|js/…` reference
+  with a content-hash `?v=` at deploy; never hand-write `?v=`; both
+  mirrors receive the same hash so identity holds.
+* Do NOT link `home.css`/`home.js` from an education page (collisions:
+  `* {margin:0}`, `section` padding, `.wrap 1280px !important`, `.hero`
+  flex/100vh, `.eyebrow` recolour) and do not edit them for education
+  (§8.0 fingerprint lock). Homepage class names are kept in the shell so
+  the homepage can adopt it later.
+* Modal contract is 1:1: every `[data-modal="KEY"]` has exactly one
+  `<template id="modal-KEY">` and vice versa; templates are dose-free
+  (both dosing gates read them); treatment modals carry "Risks reviewed:"
+  and "What this step does NOT do:".
+* Reveal and the gates: `audit_light_text.py` skips text at opacity
+  < 0.2, so an un-revealed panel is unchecked, not failed; the sweep
+  reveals everything at page bottom, on load+1.5 s and under reduced
+  motion. `audit_patient_journey.py` counts `/education/` links on the
+  index by `querySelectorAll`, not visibility.
+* The eleven guides not yet on the shell still carry the old inline
+  stylesheet and the old `nav.site-nav`; they are migrated one topic per
+  commit (edit public → `cp` to portal). The deprecated
+  `scripts/_gen_<topic>_page.py` generators emit the OLD chrome and
+  `sys.exit(2)`; do not revive them.
+* `scripts/build_education_index.py` recomputes each index card's
+  "N sources cited · ~M min read" from the live guide (`--check` fails
+  when stale); run it after any topic rewrite. The topic list itself is
+  hand-maintained in six places (index cards, `portal/education/index.html`
+  FEATURED, `sitemap.xml`, `audit_mirror_drift.py TOPICS`,
+  `route_render_manifest.json`, `verify_citations.mjs TOPIC_TERMS`).
+* Rendered proof before a deploy (local `python3 -m http.server 8099`):
+  a Playwright walk that counts templates vs openers, opens every modal,
+  checks the nav is fixed, panels are glass and nothing scrolls
+  horizontally at 390 px; plus `audit_light_text.py`,
+  `audit_text_width.py` and `audit_contrast_pixels.py --pages
+  /education/,/education/<slug>/ --open-modals` against the local base.
 
 ### 8.3 Portal SPAs (preview-gated)
 
