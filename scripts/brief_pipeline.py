@@ -584,6 +584,28 @@ Reply with ONLY a JSON object:
     print("  standards-check: every standard has an instruction, a deterministic check and a review")
 
 
+# A finding is LABELLED with a standard when the reviewer leads with it —
+# "S11: off-topic paper", "[S11] off-topic", "S3, S11 — two things". Only a
+# leading label of that form names the standard a finding is filed under. The
+# first deferral rule collected every S<n> token anywhere in the finding's
+# text, so an in-scope finding that mentioned another stage's number in
+# passing ("S6: number 45 absent; see Table S2 in the paper", "the abstract,
+# per S11, is off topic" at the curate stage) was demoted to advisory and the
+# stage passed on a defect it owned. A number mid-sentence is a reference,
+# not a label, and never defers.
+_STD = r"S(?:1[0-6]|[1-9])"
+DEFERRAL_LABEL_RE = re.compile(
+    r"^\s*[\[(]?\s*(?P<labels>" + _STD + r"(?:\s*(?:,|/|&|and)\s*" + _STD + r")*)"
+    r"(?=\s*[\])]?\s*(?:[:—–-]|\s|$))")
+
+
+def deferral_labels(item) -> set:
+    """The standards a finding is labelled with: the S<n> tokens in its leading
+    label, or the empty set when the text does not start with one."""
+    m = DEFERRAL_LABEL_RE.match(str(item))
+    return set(re.findall(r"\b" + _STD + r"\b", m.group("labels"))) if m else set()
+
+
 def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     """Run the stage's reviewer. Raises if it refuses or cannot be read."""
     prompt = REVIEW_PROMPTS[stage].format(W=W) + stage_addendum(stage)
@@ -617,12 +639,13 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     # cannot remove them, because `curate` runs next. An instruction in a
     # prompt is not a control. A blocking item whose every named standard
     # belongs to a later stage is recorded as advisory: the observation is
-    # kept, the stage is not stopped for another stage's job. An item naming
-    # no standard is this stage's own finding and still blocks.
+    # kept, the stage is not stopped for another stage's job. An item not
+    # LABELLED with a standard (see deferral_labels) is this stage's own
+    # finding and still blocks.
     own = set(STAGE_STANDARDS.get(stage, []))
     kept, deferred = [], []
     for item in blocking:
-        named = set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(item)))
+        named = deferral_labels(item)
         if named and not (named & own):
             deferred.append(f"[deferred to a later stage: {', '.join(sorted(named))}] {item}")
         else:
@@ -1822,7 +1845,9 @@ paper in the topic file is cited inline at least once and every cited PMID is in
 uncited paper is BLOCKING — add the citation or a sentence discussing it); every popover carries
 title, meta, a 250-600 character conclusion-first finding with a "Relevance:" sentence, and the PubMed
 link, id ref-pop-PMID; at least 700 characters of prose; Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
-without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice. no dose in the clinician's own prose; no AI/placeholder language; tone
+without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice. A study's
+own dose is legitimate clinical detail in these clinician-facing briefs — refuse only a dose phrased as an
+instruction to a reader ("take…", "start at…"); no AI/placeholder language; tone
 is respectful to the person who made the claim — no "verdict", "debunk", "myth", "misinformation", no
 "influencer" used as a label.
 If fixable by tightening, deleting an unsupported sentence, correcting a popover or the label, return
@@ -1849,9 +1874,10 @@ Return ONLY {{"html": "<inner html>", "cited": ["PMID", …]}}.""")
 READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; EVERY
 paper in the topic file is cited inline at least once, and every cited PMID is in the topic file; every
 popover carries title, meta, a 250-600 character takeaway-first finding ending in a "Monday:" sentence,
-and the PubMed source link, with id ref-pop-PMID; no overstatement or understatement; no dose in the
-clinician's own prose; no AI/placeholder language, paths or section marks; at least 1,000 characters
-of prose. A paper left uncited is a BLOCKING problem — add the citation where the study is discussed,
+and the PubMed source link, with id ref-pop-PMID; no overstatement or understatement; a study's own
+dose is legitimate clinical detail in these clinician-facing briefs — refuse only a dose phrased as an
+instruction to a reader ("take…", "start at…"); no AI/placeholder language, paths or section marks;
+at least 1,000 characters of prose. A paper left uncited is a BLOCKING problem — add the citation where the study is discussed,
 or add a sentence discussing it. Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
 without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice.
 If fixable by tightening, deleting an unsupported sentence, or correcting a popover, return fixed_html
@@ -3927,7 +3953,7 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             bad = []
             # a heading is a signpost and a card is its paper's own container:
             # neither carries an inline marker, so neither is judged for one.
-            # What they ARE judged for: support, advice, dosing, provenance.
+            # What they ARE judged for: support, advice, provenance.
             if r.get("claim") and not r.get("cited") and not card_pm and pc != "headings":
                 bad.append("claim without a citation")
             # Card and deep-dive prose carries no inline marker because the
@@ -3936,21 +3962,26 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             # the one number that matters.
             if r.get("claim") and r.get("supported") is False and (r.get("cited") or card_pm):
                 bad.append("not supported by the paper this text is attributed to")
-            if pc == "headings" and r.get("dose"):
-                r["dose"] = False
-            if card_pm and r.get("dose"):
-                # a study's own dose inside an attributed container is permitted
-                r["dose"] = False
             if r.get("placement") is False and not card_pm and pc != "headings":
                 bad.append("a citation does not follow each claim in the sentence")
-            for k in ("preclinical_as_human", "advice", "dose", "provenance", "internal"):
+            # A dose is NEVER a grounding fault on a brief. S7: "These briefs are
+            # CLINICIAN-facing journal club material, so a study's doses are
+            # legitimate clinical detail anywhere in them — synthesis, narrative,
+            # card, deep dive." The earlier form cleared the dose flag only for
+            # headings and attributed containers, so on the narrative, the lede,
+            # the editorial and every topic synthesis a study's dose failed the
+            # audit — exactly the surfaces S7 names as legitimate. A dose given
+            # as an instruction to a reader is caught as "advice", not here.
+            # The flag stays in the recorded results as information.
+            for k in ("preclinical_as_human", "advice", "provenance", "internal"):
                 if r.get(k):
                     bad.append(k.replace("_", " "))
             if bad:
                 shown = re.sub(r"\u27e6\d+\u27e7", "", sn)[:120]
                 note = str(r.get("note", ""))[:100]
                 faults.append(f"[{pc}] {'; '.join(bad)}: \"{shown}\" ({note})")
-            results.append({"container": i + 1, "n": n, "flags": bad, "note": r.get("note")})
+            results.append({"container": i + 1, "n": n, "flags": bad, "dose": bool(r.get("dose")),
+                            "note": r.get("note")})
     import hashlib as _hl
     json.dump({"digest": _hl.sha256(h.encode("utf-8")).hexdigest()[:16],
                "faults": faults, "sentences": results},
