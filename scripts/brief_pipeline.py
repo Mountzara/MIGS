@@ -2671,6 +2671,56 @@ def fix_absolute_words(W: str, h: str, real: dict) -> tuple:
     return h, done
 
 
+def author_stub_sections(W: str, h: str, real: dict) -> tuple:
+    """A deep dive's empty section is written, on the republish path, by the
+    same author and adversarial reviewer the authoring path uses
+    (_author_one_paper), from the paper's abstract, and set into the dialog
+    the way apply_sections sets it. (h, sections_written).
+
+    W24 carried twenty stub sections — strengths, equity, rob, findings —
+    in its deep dives, and until the republish path ran prose_faults nothing
+    read them; the gate now refuses them, and this fills them first."""
+    written = 0
+    for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
+        stubs = []
+        for key in JC_KEYS:
+            if key in NOT_AUTHORABLE or key == "abstract":
+                continue
+            sm = re.search(r'id="dd-%s-%s"[^>]*>([\s\S]*?)</section>' % (re.escape(pm), re.escape(key)), inner_d)
+            inner_t = H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", sm.group(1)))) if sm else ""
+            if len(inner_t.strip()) < 120:
+                stubs.append(key)
+        if not stubs or not (real.get(pm) or {}).get("abstract"):
+            continue
+        pf = W + f"papers/{pm}.json"
+        pj = json.load(open(pf)) if os.path.exists(pf) else _paper_record(pm, real[pm])
+        pj["abstract"] = pj.get("abstract") or pj.get("pubmed_abstract") or real[pm]["abstract"]
+        pj["pending"] = stubs
+        os.makedirs(W + "papers", exist_ok=True); os.makedirs(W + "drafts_dd", exist_ok=True)
+        json.dump(pj, open(pf, "w"), ensure_ascii=False)
+        dd_path = W + f"drafts_dd/{pm}.json"
+        if not os.path.exists(dd_path):
+            json.dump({}, open(dd_path, "w"))
+        _pm, n_probs, err = _author_one_paper((W, pm))
+        if err:
+            print(f"  deep dive {pm}: {len(stubs)} stub section(s) could not be authored — {err[:120]}")
+            continue
+        secs = json.load(open(dd_path))
+        for key in stubs:
+            inner = secs.get(key)
+            if not isinstance(inner, str) or not inner.strip():
+                continue
+            pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)' % (re.escape(pm), re.escape(key)), re.S)
+            m = pat.search(h)
+            if not m:
+                continue
+            head = re.search(r"<h3[^>]*>(.*?)</h3>", m.group(2), re.S)
+            title = re.sub(r'\s*<span class="mz-jc-pending-tag">.*?</span>', "", head.group(1), flags=re.S).strip() if head else HEAD.get(key, key)
+            h = h[:m.start()] + m.group(1) + f"<h3>{title}</h3>" + inner.strip() + m.group(3) + h[m.end():]
+            written += 1
+    return h, written
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -3857,38 +3907,13 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             pj = json.load(open(pf))
             abstracts[q] = _pool_tokens((pj.get("pubmed_abstract") or pj.get("abstract") or "")
                                         + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
+    # (a sentence's citation and its figures are judged by grounding_audit,
+    # sentence by sentence with the abstracts in hand, on both publish paths.
+    # The token tests that stood here decided meaning — "31 papers across 7
+    # topics", a statement about the brief itself, was "a number with no
+    # citation", and a 15-paper synthesis's derived figure "absent from the
+    # abstracts" — and the model's per-sentence verdict is the check.)
     uncited_claims, bad_numbers, preclinical = [], [], []
-    for frag in prose_fragments(h):
-        pc = piece_of(h, frag)
-        for sent in _sentences(frag):
-            cites = re.findall(r"⟦(\d+)⟧", sent)
-            bare = re.sub(r"⟦\d+⟧", " ", sent)
-            has_number = (re.search(r"(?<![A-Za-z0-9-])\d[\d,]*(?:\.\d+)?(?![\w-])", bare)
-                          or re.search(r"\bet al\b|\bcolleagues\b", bare))
-            if has_number and not cites:
-                uncited_claims.append(f"[{pc}] {bare[:110]}")
-                continue
-            if cites:
-                # pooling every cited abstract lets a number from paper A pass
-                # in a sentence that attributes it to paper B; the pool is the
-                # union only because one sentence may legitimately draw on
-                # several, but a sentence citing ONE paper is checked against
-                # that paper alone
-                pool = (abstracts.get(cites[0], set()) if len(cites) == 1
-                        else set().union(*[abstracts.get(c, set()) for c in cites])) if cites else set()
-                for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", bare):
-                    t = tok.replace(",", "")
-                    if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in pool:
-                        bad_numbers.append(f"[{pc}] {t} (cites {', '.join(cites)})")
-                for c in cites:
-                    a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
-                    # NOTE: no regex check here. Whether a sentence presents a
-                    # preclinical result as a human finding is judged per
-                    # sentence by grounding_audit, which reads the claim. The
-                    # regex fired whenever an abstract mentioned "in vitro"
-                    # and the sentence mentioned women — which is most
-                    # mechanistic commentary, correctly written.
-                    pass
     # a card's prose is attributed by its container, so the container must
     # actually carry that attribution: a link to the study and its deep dive
     for mcard in CARD_RE.finditer(h):
@@ -3949,6 +3974,11 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         # ending and length together catch both real failures and survive the
         # markup.
         a_src, a_body = alnum(src), alnum(sec_body)
+        # PubMed's text sometimes carries the word "Abstract" as its first
+        # label; the page's section heads the text with its own label. Three
+        # correct abstracts failed at character 0 for it
+        if a_src.startswith("abstract") and not a_body.startswith("abstract"):
+            a_src = a_src[len("abstract"):]
         if not sec:
             faults.append(f"{q}: the deep dive has no abstract section")
         elif len(a_src) > 200 and a_src not in a_body:
@@ -11085,6 +11115,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     # path's own list, reader_prose_faults included; the manifest it reads
     # is built from the page.
     man = _manifest_of_page(W, h, fmt, real)
+    h, n_secs = author_stub_sections(W, h, real)
+    if n_secs:
+        print(f"  {n_secs} empty deep-dive section(s) written from their papers' abstracts")
     faults += prose_faults(W, h, man)
     if fmt == "trend":
         faults += trend_format_faults(h)
