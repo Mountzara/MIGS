@@ -8892,7 +8892,11 @@ def _looks_broken(t: str) -> bool:
         return True
     if not re.search(r"[.!?][\"')\]\u201d\u2019]?$", t.strip()):
         return True
-    if re.search(r"\b(?:in|of|at|by|the|a|an|and|or|with|for|from|to|than|that|as)\.(?:\s|$)", t, re.I):
+    # a stop after a determiner or a conjunction is damage ("developed in
+    # the. Department of…"); a stop after a preposition is often English
+    # ("…in ways a viral post has no room for."), and refusing it threw a
+    # bridge draft away as damaged prose
+    if re.search(r"\b(?:the|a|an|and|or|but|nor|than)\.(?:\s|$)", t, re.I):
         return True
     if re.search(r"\s{2,}|\(\s*\)|,\s*[,.]|\b(?:and|but|with)\s*[.,]", t):
         return True
@@ -9998,6 +10002,11 @@ Return ONLY {{"rewrite": "<text>", "grounded": true|false, "makes_factual_claim"
         new = re.sub(r"\s*\bPMIDs?\s*:?\s*\d{5,9}\b", "", new)
         new = re.sub(r"\s+([.,;:])", r"\1", new).strip()
         why = str(v.get("why") or "")[:160]
+        if not v.get("grounded", True) and new and re.search(r"\bPMID|\bcit|\btoken|\bmarker|\breference", why, re.I):
+            # "grounded: false — instructed to write no PMID": a refusal about
+            # citation MECHANICS, not about the claim. The rewrite it returned
+            # is judged like any other; the tokens carry the citations
+            v["grounded"] = True
         if not v.get("grounded", True):
             return None, ("delete" if v.get("makes_factual_claim") is False else "leave"), why or "the model could not ground a rewrite"
         bad = _heading_reject(new) if is_heading else _sentence_reject(new)
