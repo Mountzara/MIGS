@@ -9443,8 +9443,11 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
                     sites.append(site)
         if not sites:
             continue
+        # a sentence's markers stand AFTER its full stop, outside the quoted
+        # span; read to the end of that run or the sentence cites nothing and
+        # every figure the abstract states is "no source states" (W29)
         cited = [q for q in dict.fromkeys(
-            _pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:b])) if q]
+            _pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:_after_run(h, b)])) if q]
         papers = real_from_work(W, cited)
         src = "\n".join(
             f"PAPER {q} — {papers[q].get('title', '')}\nAUTHORS: {papers[q].get('authors', '')}"
@@ -9678,7 +9681,7 @@ def _confirm_numeric_claims(W: str, blocking: list, h: str) -> list:
         # reader confirmed "four women (30.7%)" as 4-of-24 when the abstract
         # states 30.7% of the 13 managed by myomectomy (W29), and a correct
         # sentence was then rewritten wrong
-        _cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:b])) if q]
+        _cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:_after_run(h, b)])) if q]
         _abs = real_from_work(W, _cited)
         _src = "\n".join(f"PMID {q}: {(_abs[q].get('abstract') or '')[:2500]}" for q in _cited if q in _abs)
         v = _ask_cached(W, "confirm", f"""A first reader of a clinician-facing evidence brief reported this defect:
