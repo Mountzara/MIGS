@@ -4282,7 +4282,12 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     if head_txt.strip():
         frags.append((f"<p>{H.escape(head_txt, quote=False)}</p>", None, "headings"))
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
-        secs_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        # the auditor reads the dialog's EDITORIAL SECTIONS only: the modal's
+        # chrome — the close button, the "Journal Club · Deep Dive · Paper #6"
+        # eyebrow, the section jump-list ("TL;DR Clinical question PICO…"),
+        # "Open in PubMed", "Close deep dive" — is page UI, and given the whole
+        # dialog the auditor called it "internal" and refused the MHT brief
+        secs_d = "".join(m.group(0) for m in re.finditer(r'<section class="mz-jc-section[^"]*" id="dd-%s-(?!abstract)[a-z_]+"[^>]*>[\s\S]*?</section>' % re.escape(pm), inner_d))
         secs_d = _blank_paper_text(secs_d)      # the legacy abstract body, the modal's title and meta
         # "Where this sits in the established literature" discusses guidelines
         # and prior work beyond this paper's abstract on purpose; it is judged
