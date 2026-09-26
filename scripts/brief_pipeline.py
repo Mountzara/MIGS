@@ -2788,6 +2788,30 @@ def repair_prose_findings(W: str, h: str, faults: list, real: dict) -> tuple:
     return h, n_place + n_fix
 
 
+_POPOVER_FAULT_RE = re.compile(r"^\[popover:(\d{5,9})\] (.+)$", re.S)
+
+
+def fix_popover_findings(W: str, h: str, faults: list, real: dict) -> tuple:
+    """A hover card the popover audit faulted is written again from the
+    abstract with the audit's complaint in front of the writer, and every
+    marker's card for that paper is refreshed. (h, cards_rewritten)."""
+    done = 0
+    for f in faults:
+        m = _POPOVER_FAULT_RE.match(f)
+        if not m:
+            continue
+        pm, why = m.group(1), m.group(2)
+        paper = real.get(pm) or {}
+        if not paper.get("abstract"):
+            continue
+        new = _plain_finding(W, pm, paper.get("title", ""), paper["abstract"], complaint=why)
+        if new:
+            done += 1
+    if done:
+        h, _n = refresh_popovers_from_abstracts(W, h, real)
+    return h, done
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -4578,16 +4602,19 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         for _round in range(2):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
             pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
-            if not att and not pro:
+            pop = [f_ for f_ in g if _POPOVER_FAULT_RE.match(f_)]
+            if not att and not pro and not pop:
                 break
-            n_att = n_pro = 0
+            n_att = n_pro = n_pop = 0
             if att:
                 h, n_att = fix_attributed_text(W, h, att, real)
             if pro:
                 h, n_pro = repair_prose_findings(W, h, pro, real)
-            if not (n_att or n_pro):
+            if pop:
+                h, n_pop = fix_popover_findings(W, h, pop, real)
+            if not (n_att or n_pro or n_pop):
                 break
-            print(f"  {n_att} card / deep-dive text(s) and {n_pro} prose sentence(s) repaired from the audit's findings — auditing again")
+            print(f"  {n_att} card / deep-dive text(s), {n_pro} prose sentence(s) and {n_pop} hover card(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if man.get("format") == "trend" else [])
             g += reader_prose_faults(h)
         for f_ in g:
@@ -5235,7 +5262,7 @@ def _synopsis_words_in_abstract(finding: str, abstract: str) -> bool:
     return not words or any(w in ab for w in words[:8])
 
 
-def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
+def _plain_finding(W: str, pmid: str, title: str, abstract: str, complaint: str = "") -> str:
     """A plain-language finding written FROM the abstract, cached on disk.
 
     Two rules meet here. The owner: "the hover summary better be derived from
@@ -5248,6 +5275,10 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
     """
     cache = W + "findings.json"
     store = json.load(open(cache)) if os.path.exists(cache) else {}
+    if complaint:
+        # the popover audit named what is wrong with the cached card; it is
+        # written again with the complaint in front of the writer
+        store.pop(pmid, None)
     if store.get(pmid) and _synopsis_words_in_abstract(store[pmid], abstract):
         return store[pmid]
     if store.get(pmid):
@@ -5256,7 +5287,8 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
         return ""
     src = _pool_tokens(abstract)
     a_norm = re.sub(r"[^a-z0-9]", "", abstract.lower())
-    note = ""
+    note = ("\nA PREVIOUS CARD FOR THIS PAPER WAS REFUSED BY THE AUDIT: " + complaint[:300]
+            + ". Every figure must be one this abstract states; 280-600 characters.") if complaint else ""
     t = ""
     best = ""
     for attempt in range(3):
@@ -11359,16 +11391,19 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         for _round in range(2):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
             pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
-            if not att and not pro:
+            pop = [f_ for f_ in g if _POPOVER_FAULT_RE.match(f_)]
+            if not att and not pro and not pop:
                 break
-            n_att = n_pro = 0
+            n_att = n_pro = n_pop = 0
             if att:
                 h, n_att = fix_attributed_text(W, h, att, real)
             if pro:
                 h, n_pro = repair_prose_findings(W, h, pro, real)
-            if not (n_att or n_pro):
+            if pop:
+                h, n_pop = fix_popover_findings(W, h, pop, real)
+            if not (n_att or n_pro or n_pop):
                 break
-            print(f"  {n_att} card / deep-dive text(s) and {n_pro} prose sentence(s) repaired from the audit's findings — auditing again")
+            print(f"  {n_att} card / deep-dive text(s), {n_pro} prose sentence(s) and {n_pop} hover card(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if fmt == "trend" else [])
             g += reader_prose_faults(h)
         for f_ in g:
