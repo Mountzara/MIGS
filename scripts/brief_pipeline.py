@@ -7837,6 +7837,204 @@ def _mask_noprose(frag: str) -> str:
     return out
 
 
+# ---------------------------------------------------------------------------
+# S13 ON THE FINISHED TREND BODY — the gauge, the scoring words, the bridge
+# section, the framing label.
+# ---------------------------------------------------------------------------
+# Every published trend brief (read live, 2026-09-26) still carries the
+# verdict gauge in its hero, and the S13 language sits where the existing
+# check never looked: "verdict" in one section HEADLINE ("The verdict is
+# supported. The asterisks matter"), "influencer" in two LEDES
+# ("menopause-influencer accounts"), and "verdict" inside DIALOG editorial
+# paragraphs. None has a "Where the two sides can meet" section and none has
+# a framing label. finish_and_audit's S13 block could not have caught any of
+# it: its gauge test greps `mz-verdict` anywhere in the body, which fires on
+# the `.mz-verdict-gauge {…}` rules in the <style> block every trend body
+# carries — so it cannot tell a retired gauge from a stylesheet that still
+# names one — and its word scan covers the prose sections and the card lens
+# paragraphs only. The gauge removal in assemble_trend is `count=1` with a
+# lazy `[\s\S]*?<p class="mz-verdict-label">`, which runs past a gauge that
+# has no label into the next one. Everything here reads the body a reader
+# sees — no dependence on the section spine the assembler happened to build.
+
+# The S13 word list, as finish_and_audit already applies it to the prose.
+SCORING_LANGUAGE_RE = re.compile(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b", re.I)
+
+_GAUGE_OPEN_RE = re.compile(r'<div\b[^>]*\bclass="[^"]*\bmz-verdict-gauge\b[^"]*"[^>]*>')
+# a label that outlived its gauge (assemble_trend removed gauge and label as
+# one lazy match; a label left standing alone is still a verdict on the page)
+_GAUGE_LABEL_RE = re.compile(r'<(p|div|span)\b[^>]*\bclass="[^"]*\bmz-verdict-label\b[^"]*"[^>]*>')
+# case-sensitive on purpose: the label is set in capitals; a clinician's
+# sentence saying "further review required" is not a label
+_REVIEW_LABEL_RE = re.compile(r"REVIEW(?:\s|&nbsp;|&#160;)+REQUIRED")
+_HIDDEN_RE = re.compile(r"<script\b[\s\S]*?</script>|<style\b[\s\S]*?</style>|<!--[\s\S]*?-->", re.I)
+# the paper's own words on the page, never the site's: card abstracts, the
+# deep dive's verbatim abstract section and body, titles and meta lines
+# wherever they recur (card, dialog header, popover), the reference list
+_PAPER_TEXT_RE = re.compile(
+    r'<(details)\b[^>]*>'
+    r'|<(section)\b[^>]*\bid="dd-\d+-abstract"[^>]*>'
+    r'|<(h2|h3|p|span|div|ol)\b[^>]*\bclass="[^"]*\b(?:mz-jc-abstract-body|mz-cite-title|mz-cite-meta'
+    r'|mz-jc-modal-title|mz-jc-modal-meta|mz-ref-pop-title|mz-ref-pop-meta|mz-references-list)\b[^"]*"[^>]*>')
+_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _blank(s: str, a: int, b: int) -> str:
+    return s[:a] + " " * (b - a) + s[b:]
+
+
+def _own_text_mask(h: str, paper_text: bool = True) -> str:
+    """The body with everything a reader does not read blanked to spaces —
+    same length, so an index into the mask is an index into the body.
+    Script, style and comments go first (a class name in a stylesheet is
+    not a word on the page); then, when paper_text is set, the paper-text
+    elements listed above; then every tag, so an attribute value such as
+    class="mz-verdict-gauge" or a PubMed href is never read as text."""
+    out = _HIDDEN_RE.sub(lambda m: " " * len(m.group(0)), h)
+    if paper_text:
+        for m in list(_PAPER_TEXT_RE.finditer(out)):
+            if out[m.start()] != "<":
+                continue                    # inside an element already blanked
+            tag = m.group(1) or m.group(2) or m.group(3)
+            out = _blank(out, m.start(), _element_end(out, tag, m.end()))
+    return _TAG_RE.sub(lambda m: " " * len(m.group(0)), out)
+
+
+def _cut_block(h: str, a: int, b: int) -> str:
+    """Remove h[a:b]; when the element stood between tags, take the
+    whitespace run after it too, so no blank line marks where it was."""
+    e = b
+    while e < len(h) and h[e] in " \t\r\n":
+        e += 1
+    return h[:a] + h[e:] if e < len(h) and h[e] == "<" else h[:a] + h[b:]
+
+
+def _empty_wrapper(h: str, i: int):
+    """(start, end) of a <div>/<figure> around index i that now holds only
+    whitespace, else None. On the two live bodies inspected the gauge is a
+    direct child of <section class="mz-post-hero"> beside the eyebrow, title
+    and lede, so nothing empties there — this covers a hero variant that
+    boxed the gauge in its own wrapper, which would otherwise render as an
+    empty styled box."""
+    lo = max(0, i - 600)
+    m = re.search(r"<(div|figure)\b[^>]*>\s*$", h[lo:i])
+    if not m:
+        return None
+    m2 = re.match(r"\s*</%s>" % m.group(1), h[i:])
+    if not m2:
+        return None
+    return lo + m.start(), i + m2.end()
+
+
+def retire_verdict_gauge(h: str) -> tuple:
+    """Remove every verdict gauge, every stray gauge label, and any short
+    reader-visible "REVIEW REQUIRED" label element. Returns (html, removed).
+    Touches nothing else: the <style> rules that name .mz-verdict-gauge stay
+    (a rule with no element is inert), and so do markers, cards, dialogs and
+    ids — trend_format_faults reads the result and reports what is left."""
+    n = 0
+    while True:
+        m = _GAUGE_OPEN_RE.search(h)
+        if not m:
+            break
+        a = m.start()
+        h = _cut_block(h, a, _element_end(h, "div", m.end()))   # nested divs/svg counted
+        n += 1
+        w = _empty_wrapper(h, a)
+        if w:
+            h = _cut_block(h, *w)
+    while True:
+        m = _GAUGE_LABEL_RE.search(h)
+        if not m:
+            break
+        h = _cut_block(h, m.start(), _element_end(h, m.group(1), m.end()))
+        n += 1
+    # A "REVIEW REQUIRED" label: the innermost short element holding it goes.
+    # A label buried in a long paragraph is not cut — that is a sentence
+    # someone wrote, and trend_format_faults reports it for a person to read.
+    vis = _own_text_mask(h, paper_text=False)
+    for m in reversed(list(_REVIEW_LABEL_RE.finditer(vis))):   # back to front: indices stay valid
+        lo = max(0, m.start() - 400)
+        for o in reversed(list(re.finditer(r"<(p|span|div|small|strong|em|b|mark)\b[^>]*>", h[lo:m.start()]))):
+            a, tag = lo + o.start(), o.group(1)
+            b = _element_end(h, tag, lo + o.end())
+            if b <= m.end():
+                continue                    # closed before the label: not its container
+            if len(re.sub(r"\s+", " ", _TAG_RE.sub("", h[a:b])).strip()) <= 80:
+                h = _cut_block(h, a, b)
+                n += 1
+            break                           # innermost container found, long or short
+    return h, n
+
+
+def _surface(h: str, i: int, spans: dict) -> str:
+    """Where index i sits for a reader: dialog, card, heading, lede or prose.
+    A dialog wins over a heading inside it — the fixer needs the surface."""
+    for name in ("dialog", "card", "heading", "lede"):
+        if any(a <= i < b for a, b in spans[name]):
+            return name
+    return "prose"
+
+
+def _surface_spans(h: str) -> dict:
+    spans = {"dialog": [], "card": [], "heading": [], "lede": []}
+    for m in re.finditer(r"<dialog\b[^>]*>", h):
+        spans["dialog"].append((m.start(), _element_end(h, "dialog", m.end())))
+    for m in re.finditer(r'<article\b[^>]*\bclass="mz-cite-card[^"]*"[^>]*>', h):
+        spans["card"].append((m.start(), _element_end(h, "article", m.end())))
+    for m in re.finditer(r"<(h[1-6])\b[^>]*>[\s\S]*?</\1>", h):
+        spans["heading"].append((m.start(), m.end()))
+    for m in re.finditer(r'<p\b[^>]*\bclass="[^"]*\bmz-post-lede\b[^"]*"[^>]*>[\s\S]*?</p>', h):
+        spans["lede"].append((m.start(), m.end()))
+    return spans
+
+
+def trend_format_faults(h: str) -> list:
+    """Deterministic S13 checks on a finished trend body, one line each,
+    prefixed "[S13]": a gauge or REVIEW REQUIRED label remains; scoring
+    language in the site's own text (paper text blanked), each distinct
+    word once per surface with a snippet; no "Where the two sides can
+    meet" heading; no framing label from the fixed list. Only meaningful
+    for a trend brief — a weekly has no bridge section and no framing by
+    design, and this reports both — so the caller applies it to kind
+    'blog' only. Deterministic: it tests what its author thought to test
+    (S16); the model read-back still owns the judgement."""
+    faults = []
+    gauges = [(m.start(), _element_end(h, "div", m.end())) for m in _GAUGE_OPEN_RE.finditer(h)]
+    if gauges:
+        faults.append("[S13] a verdict gauge element remains (<div class=\"mz-verdict-gauge\">)")
+    if any(not any(a <= m.start() < b for a, b in gauges) for m in _GAUGE_LABEL_RE.finditer(h)):
+        faults.append("[S13] a verdict gauge label stands outside any gauge (mz-verdict-label)")
+    own = _own_text_mask(h)
+    spans = _surface_spans(h)
+
+    def snippet(a, b):
+        return re.sub(r"\s+", " ", H.unescape(own[max(0, a - 40):b + 50])).strip()[:90]
+
+    for m in _REVIEW_LABEL_RE.finditer(own):
+        faults.append(f'[S13] a "REVIEW REQUIRED" label remains in the {_surface(h, m.start(), spans)}: "{snippet(m.start(), m.end())}"')
+    hits: dict = {}
+    for m in SCORING_LANGUAGE_RE.finditer(own):
+        key = (m.group(1).lower(), _surface(h, m.start(), spans))
+        hits.setdefault(key, []).append(snippet(m.start(), m.end()))
+    for (word, where), snips in sorted(hits.items()):
+        times = f" x{len(snips)}" if len(snips) > 1 else ""
+        faults.append(f'[S13] scoring language "{word}" in the {where}{times}: "{snips[0]}"')
+    bridge = [m for m in re.finditer(r"<(h[23])\b[^>]*>([\s\S]*?)</\1>", h)
+              if re.search(r"where the two sides can meet", H.unescape(_TAG_RE.sub(" ", m.group(2))), re.I)
+              and _surface(h, m.start(), spans) != "dialog"]
+    if not bridge:
+        faults.append('[S13] no "Where the two sides can meet" section (no h2/h3 heading with that title)')
+    framings = [re.sub(r"\s+", " ", H.unescape(_TAG_RE.sub("", m.group(1)))).strip()
+                for m in re.finditer(r'<p\b[^>]*\bclass="[^"]*\bmz-framing\b[^"]*"[^>]*>([\s\S]*?)</p>', h)]
+    if not any(f in FRAMINGS for f in framings):
+        faults.append('[S13] no framing label: no <p class="mz-framing"> whose text is one of the fixed framings')
+    for f in framings:
+        if f not in FRAMINGS:
+            faults.append(f"[S13] framing label outside the fixed list: {f!r}")
+    return faults
+
+
 def _prose_passages(h: str) -> list:
     """Every passage that carries inline citations, in document order: the
     opening narrative (mz-post-narrative or W20's mz-narrative), every other
@@ -9428,6 +9626,665 @@ def _snap_update_body(W: str, name: str, h: str) -> None:
         return
     d["h"] = h
     json.dump(d, open(path, "w"), ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# S13 ON A PUBLISHED TREND BRIEF — the repair the weekly path never ran
+# ---------------------------------------------------------------------------
+# The eight trend briefs published on 2026-05-19 predate S13. Every one of
+# them carries a verdict gauge, a "The verdict is …" headline, "influencer" in
+# its lede and "verdict" inside its deep dives; none has a "Where the two
+# sides can meet" section or a framing label. cmd_apply strips the gauge and
+# rebuilds the spine from authored parts, but a PUBLISHED brief has no parts
+# to rebuild from — renumber is its only path, and renumber had no S13 step at
+# all, so the format gate refuses all eight and nothing repairs them. This is
+# that step. It runs in _renumber BEFORE cite_and_review, so everything it
+# writes is cited, reviewed and numbered by the one chain; every verdict is
+# cached under cache.conform.json so a rerun replays rather than re-asks; and
+# it never touches paper text — abstracts, titles, meta lines and reference
+# entries are read to steer the model and asserted unchanged afterwards.
+
+SCORING_LANGUAGE_RE = re.compile(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b", re.I)
+BRIDGE_HEADING = "Where the two sides can meet"
+BRIDGE_HEADING_RE = re.compile(r"where the two sides can meet", re.I)
+# the token a citation marker becomes while the model reads a sentence; the
+# marker itself is restored verbatim, in place, from the token's PMID
+_CITE_TOKEN_RE = re.compile(r"⟦(\d{5,9})⟧")
+
+# The prose rules every trend author is given, copied word for word from the
+# prompt in _author_trend_editorial so a sentence this step writes is held to
+# the same words. They live inline there; the copy is here so the rule text
+# the model sees is identical rather than paraphrased.
+TREND_VOICE = """VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
+surgery surgeon writing for a reader who may be the person who made the claim."""
+TREND_PROSE_RULES = """CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
+carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
+each time the sentence's claim rests on a paper.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
+background and any inline colour can break its contrast."""
+# The bare marker the chain understands: _pmid_of reads the PMID from
+# aria-describedby, refresh_popovers_from_abstracts gives a marker with no
+# popover one written from the abstract, and number_citations replaces the
+# visible PMID with its number. _sup_markup emits the same sup/a shape with
+# the popover already filled; the chain fills this one the same way.
+_BARE_MARKER = '<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{pm}</a></sup>'
+
+# The paper's own words and metadata, which no pass rewrites. Each entry is
+# (opener pattern, tag to walk to its matching closer).
+_PAPER_TEXT_OPENERS = (
+    (r"<details\b[^>]*>", "details"),
+    (r'<div class="mz-jc-abstract-body"[^>]*>', "div"),
+    (r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[^>]*>', "section"),
+    (r'<h3 class="mz-cite-title"[^>]*>', "h3"),
+    (r'<p class="mz-cite-title"[^>]*>', "p"),
+    (r'<p class="mz-cite-meta"[^>]*>', "p"),
+    (r'<h2 class="mz-jc-modal-title"[^>]*>', "h2"),
+    (r'<p class="mz-jc-modal-meta"[^>]*>', "p"),
+    (r'<p class="mz-jc-modal-cite"[^>]*>', "p"),
+    (r'<span class="mz-ref-pop-title"[^>]*>', "span"),
+    (r'<span class="mz-ref-pop-meta"[^>]*>', "span"),
+    (r'<ol class="mz-references-list"[^>]*>', "ol"),
+    (r"<script\b[^>]*>", "script"),
+    (r"<style\b[^>]*>", "style"),
+)
+
+
+def _paper_text_spans(h: str) -> list:
+    """Every (a, b) of paper text in h, merged and in document order."""
+    spans = []
+    for pat, tag in _PAPER_TEXT_OPENERS:
+        for m in re.finditer(pat, h):
+            spans.append((m.start(), _element_end(h, tag, m.end())))
+    for m in re.finditer(r"<!--[\s\S]*?-->", h):
+        spans.append((m.start(), m.end()))
+    spans.sort()
+    merged: list = []
+    for a, b in spans:
+        if merged and a <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return merged
+
+
+def _in_spans(i: int, spans: list) -> bool:
+    return any(a <= i < b for a, b in spans)
+
+
+def _paper_text_digest(h: str) -> str:
+    """The paper text of h, concatenated: equal before and after a pass or the
+    pass rewrote a paper's own words."""
+    return "\n".join(h[a:b] for a, b in _paper_text_spans(h))
+
+
+def _plain(frag: str) -> str:
+    """Reader-visible text of a fragment with each marker as a ⟦PMID⟧ token."""
+    t = SUP_RE.sub(lambda m: " ⟦%s⟧ " % (_pmid_of(m.group(0)) or "?"), frag)
+    return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
+
+
+def _untokened(t: str) -> str:
+    return re.sub(r"\s+", " ", _CITE_TOKEN_RE.sub(" ", t)).strip()
+
+
+def _own_headings(h: str) -> list:
+    """(inner_start, inner_end, text) of every h1-h3 that is the site's own
+    text — a paper's title (mz-cite-title, mz-jc-modal-title) is paper text
+    and is skipped by the paper-text spans."""
+    paper = _paper_text_spans(h)
+    out = []
+    for m in re.finditer(r"<h([1-3])\b[^>]*>([\s\S]*?)</h\1>", h):
+        if _in_spans(m.start(), paper):
+            continue
+        text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", m.group(2)))).strip()
+        if text:
+            out.append((m.start(2), m.end(2), text))
+    return out
+
+
+def _set_heading_text(h: str, ia: int, ib: int, new_text: str) -> str:
+    """Replace a heading's inner HTML with escaped text. The tiny helper the
+    prose replacer is not: a heading has no sentence spans and no inline
+    markup worth balancing, so the whole inner goes."""
+    return h[:ia] + H.escape(new_text, quote=False) + h[ib:]
+
+
+def _own_sentence_sites(h: str) -> list:
+    """Every sentence of the site's own text that carries scoring language,
+    with the indices the repair needs — all absolute against h.
+
+    Containers: the prose passages (_prose_passages: sections, syntheses, the
+    lede, section intros) and the deep-dive dialogs' editorial sections'
+    <p>/<li> (every dd-<pmid>-<key> section but the abstract). Headings are
+    masked out of the passages here because they have their own pass; markers,
+    verbatim-abstract blocks and widgets are masked by _mask_noprose, so a
+    sentence's span never begins or ends inside one.
+    """
+    paper = _paper_text_spans(h)
+    containers = []  # (absolute start of inner, inner html, where)
+    for ps in _prose_passages(h):
+        open_tag = h[ps.a:ps.ia]
+        if 'class="mz-post-lede"' in open_tag:
+            where = "the hero lede"
+        elif "mz-section-intro" in open_tag:
+            where = "a section's intro paragraph"
+        elif ps.kind == "synthesis":
+            where = "an item's synthesis paragraph"
+        else:
+            hm = re.search(r"<h[1-3]\b[^>]*>([\s\S]*?)</h[1-3]>", ps.group(1))
+            where = ("the section headed " + json.dumps(re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", hm.group(1)))).strip())
+                     if hm else "a prose section")
+        containers.append((ps.start(1), ps.group(1), where))
+    for m in re.finditer(r'<section class="mz-jc-section[^"]*" id="dd-(\d+)-([a-z_-]+)"[^>]*>', h):
+        if m.group(2) == "abstract":
+            continue
+        b = _element_end(h, "section", m.end())
+        inner = h[m.end():b - len("</section>")]
+        for em in re.finditer(r"<(p|li)\b[^>]*>", inner):
+            eb = _element_end(inner, em.group(1), em.end())
+            e_inner = inner[em.end():eb - len("</%s>" % em.group(1))]
+            if em.group(1) == "li":
+                # a nested paragraph or list is its own container
+                e_inner = re.sub(r"<(p|ul|ol)\b[\s\S]*?</\1>", lambda x: " " * len(x.group(0)), e_inner)
+            containers.append((m.end() + em.end(), e_inner, f"the deep-dive dialog for PMID {m.group(1)}, its '{m.group(2)}' section"))
+    sites = []
+    for base, frag, where in containers:
+        masked = _mask_noprose(frag)
+        masked = re.sub(r"<h[1-6]\b[^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
+        for a, b in paper:                       # paper text inside a container stays invisible
+            if a < base + len(frag) and b > base:
+                lo, hi = max(a - base, 0), min(b - base, len(frag))
+                masked = masked[:lo] + " " * (hi - lo) + masked[hi:]
+        prev_end = 0
+        for text, end in _sentences_of(masked):
+            start = _sentence_start(masked, prev_end)
+            prev_end = end
+            if not (start < end) or not _usable_span(h, base + start, base + end):
+                continue
+            if not SCORING_LANGUAGE_RE.search(text):
+                continue
+            sent_html = frag[start:end]
+            run_end = _after_run(frag, end)
+            sites.append({
+                "a": base + start, "b": base + end, "run_b": base + run_end, "where": where,
+                "text": _plain(sent_html),                       # in-sentence markers as tokens
+                "in_pmids": [_pmid_of(x) for x in SUP_RE.findall(sent_html)],
+                "after_pmids": [_pmid_of(x) for x in SUP_RE.findall(frag[end:run_end])],
+                "context": _plain(frag)[:1500],
+            })
+    return sites
+
+
+def _heading_reject(new: str) -> str:
+    """Why a rewritten heading may not go on the page. writer_reject wants a
+    full sentence with a stop; a heading is a signpost, so the rules that
+    apply are the ones about words, not about sentence shape."""
+    if not new or len(new) < 3 or len(new) > 140:
+        return "empty or the wrong length for a heading"
+    if "<" in new or ">" in new:
+        return "markup in a heading"
+    if SCORING_LANGUAGE_RE.search(new):
+        return "scoring language remains"
+    if re.search(r"(?<!CBG/)\bMIGS\b", new):
+        return "bare 'MIGS' — write CBG/MIGS"
+    if re.search(r"\b(?:never|always)\b", new, re.I):
+        return "never/always in a heading"
+    if ADVICE_RE.search(new):
+        return "patient-directed advice"
+    if PROVENANCE_RE.search(new) or INTERNAL_RE.search(new):
+        return "provenance language or an internal reference"
+    return ""
+
+
+def _sentence_reject(new: str) -> str:
+    """writer_reject on the sentence with its tokens removed, plus the two
+    rules this step exists for: no scoring word survives, no markup."""
+    if "<" in new or ">" in new:
+        return "markup in a sentence"
+    if SCORING_LANGUAGE_RE.search(new):
+        return "scoring language remains"
+    # a sentence with no token to carry had "(PMID 27028912)" typed into it
+    # as words: a reader cannot open that, and the dialog gate counts the
+    # digits as a number the abstract does not contain
+    if re.search(r"\bPMIDs?\b|\b\d{5,9}\b", _untokened(new)):
+        return "a PMID or raw identifier written into the prose"
+    return writer_reject(_untokened(new))
+
+
+def _papers_for_prompt(real: dict, pmids: list | None = None, cap: int = 3500) -> list:
+    """The papers a model call is grounded in, in the shape every call here
+    reads: pmid, title, abstract. A PMID list narrows it; None means all."""
+    keys = [q for q in (pmids if pmids is not None else list(real)) if q in real]
+    return [{"pmid": q, "title": (real[q].get("title") or "")[:200],
+             "abstract": re.sub(r"\s+", " ", real[q].get("abstract") or "")[:cap]} for q in dict.fromkeys(keys)]
+
+
+def _brief_claim(h: str) -> str:
+    m = re.search(r'<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>([\s\S]*?)</h1>', h) or re.search(r"<h1\b[^>]*>([\s\S]*?)</h1>", h)
+    return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", m.group(1)))).strip() if m else ""
+
+
+def _section_by_heading(h: str, pattern) -> tuple | None:
+    """(section_start, open_end, section_end, h2_end) of the first prose
+    section whose <h2> matches pattern; dialog sections (mz-jc-*) are not
+    prose sections."""
+    for m in re.finditer(r"<section\b[^>]*>", h):
+        if "mz-jc-" in _attr(m.group(0), "class"):
+            continue
+        b = _element_end(h, "section", m.end())
+        hm = re.search(r"<h2\b[^>]*>([\s\S]*?)</h2>", h[m.end():b])
+        if not hm:
+            continue
+        text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", hm.group(1)))).strip()
+        if re.search(pattern, text, re.I):
+            return m.start(), m.end(), b, m.end() + hm.end()
+    return None
+
+
+def _conform_rewrite_sentence(W: str, site: dict, claim: str, real: dict) -> tuple:
+    """Ask the model for the sentence without its scoring framing. Returns
+    (rewrite | None, action, why) with action one of "rewrite", "delete",
+    "leave"."""
+    is_heading = site.get("heading", False)
+    words = sorted(set(w.lower() for w in SCORING_LANGUAGE_RE.findall(site["text"])))
+    cited = [q for q in (site.get("in_pmids") or []) + (site.get("after_pmids") or []) if q]
+    papers = _papers_for_prompt(real, cited or None, cap=3000 if cited else 1800)
+    tokens_note = ("" if not site.get("in_pmids") else
+                   "\nCITATIONS INSIDE THE SENTENCE: each ⟦PMID⟧ token is a citation marker that stays exactly where "
+                   "its claim ends. Keep every token, verbatim, in the same order; add none, drop none.")
+    after_tokens = " ".join("⟦%s⟧" % q for q in (site.get("after_pmids") or []) if q)
+    after_note = ("" if not after_tokens else
+                  f"\nThe citations {after_tokens} stand right after this sentence's full stop and are kept "
+                  "automatically — do not write them.")
+    shape = ("THIS IS A HEADING: return 3-12 words, a clear, specific signpost a reader can navigate by — not a "
+             "label, not a scoreboard, no colon-explainer, no full stop needed."
+             if is_heading else
+             "THIS IS ONE SENTENCE of running prose: return one complete sentence, plain text, no markup, no "
+             "quotation marks around it. Write no PMID, no author-year bracket and no reference number into "
+             "the text — a citation is a token and nothing else, and a sentence with no token cites nothing.")
+    note = ""
+    for attempt in range(2):
+        v = _ask_cached(W, "conform", f"""Rewrite ONE piece of a published brief that checks a viral claim against the literature, so it keeps
+its claim and its citations but drops the scoring framing.
+THE CLAIM THE BRIEF CHECKS: {claim}
+WHERE THE TEXT SITS: {site['where']}
+{"" if is_heading else "THE PARAGRAPH IT SITS IN (context only — rewrite ONLY the sentence): " + json.dumps(site['context'], ensure_ascii=False)}
+THE TEXT TO REWRITE: {json.dumps(site['text'], ensure_ascii=False)}
+SCORING WORDS TO REMOVE: {words}{tokens_note}{after_note}
+{shape}
+{TREND_VOICE}
+{BRIDGE_TONE}
+GROUNDING: the only studies, numbers and findings you may state are the ones in the abstracts below, or
+what the text already says about the brief itself (what this brief does, what it separates). Add no new
+fact, number, study or population. Keep the claim the text makes; change only its framing.
+{TREND_PROSE_RULES}
+PAPERS THE TEXT RESTS ON:
+{json.dumps(papers, ensure_ascii=False)[:40000]}
+If the text cannot be rewritten without the scoring framing while staying grounded, say so with
+grounded=false, and say whether it makes a factual claim (a study, a number, a finding, a population)
+or only frames the brief.{note}
+Return ONLY {{"rewrite": "<text>", "grounded": true|false, "makes_factual_claim": true|false, "why": "<at most twelve words>"}}""")
+        if not v:
+            return None, "leave", "the model returned nothing"
+        new = re.sub(r"\s+", " ", str(v.get("rewrite") or "")).strip().strip('"“”')
+        why = str(v.get("why") or "")[:160]
+        if not v.get("grounded", True):
+            return None, ("delete" if v.get("makes_factual_claim") is False else "leave"), why or "the model could not ground a rewrite"
+        bad = _heading_reject(new) if is_heading else _sentence_reject(new)
+        if not bad and not is_heading:
+            want = [q for q in site.get("in_pmids") or [] if q]
+            if _CITE_TOKEN_RE.findall(new) != want:
+                bad = f"citation tokens changed (expected {want})"
+        if not bad and _untokened(new).lower() == _untokened(site["text"]).lower():
+            bad = "unchanged"
+        if not bad:
+            return new, "rewrite", why
+        note = f"\nA PREVIOUS ATTEMPT WAS REFUSED: {bad}. Return a different rewrite that satisfies every rule above."
+    return None, "leave", bad
+
+
+def _apply_sentence_rewrite(h: str, site: dict, new: str) -> str:
+    """Put the rewrite on the page through _replace_span, piece by piece
+    between the sentence's own markers, which stay verbatim and in place.
+    Pieces are replaced from the last to the first so every earlier index
+    stays valid."""
+    sent_html = h[site["a"]:site["b"]]
+    marks = list(SUP_RE.finditer(sent_html))
+    pieces = _CITE_TOKEN_RE.split(new)            # text, pmid, text, pmid, …, text
+    texts = pieces[0::2]
+    bounds = []                                    # absolute (a, b) of each prose piece
+    at = 0
+    for mm in marks:
+        bounds.append((site["a"] + at, site["a"] + mm.start()))
+        at = mm.end()
+    bounds.append((site["a"] + at, site["b"]))
+    if len(texts) != len(bounds):
+        die(f"conform: rewrite pieces ({len(texts)}) do not match the sentence's marker layout ({len(bounds)})")
+    for (pa, pb), t in reversed(list(zip(bounds, texts))):
+        old = h[pa:pb]
+        lead = re.match(r"\s*", old).group(0)
+        trail = re.search(r"\s*$", old).group(0) if old.strip() else ""
+        if not old.strip() and not t.strip():
+            continue
+        h = _replace_span(h, pa + len(lead), pb - len(trail) if old.strip() else pb, t.strip())
+    return h
+
+
+def _delete_sentence(h: str, site: dict) -> str:
+    """Remove a sentence and the marker run standing after its full stop, then
+    the element it emptied, if it emptied one."""
+    a, b = site["a"], site["run_b"]
+    while a > 0 and h[a - 1] in " \t":
+        a -= 1
+    h = h[:a] + h[b:]
+    for tag in ("p", "li"):
+        lo = max(0, a - 20000)
+        opens = list(re.finditer(r"<%s\b[^>]*>" % tag, h[lo:a]))
+        if not opens:
+            continue
+        lt, gt = lo + opens[-1].start(), lo + opens[-1].end()
+        end = _element_end(h, tag, gt)
+        if gt <= a <= end and not re.sub(r"<[^>]+>", "", h[gt:end - len("</%s>" % tag)]).strip():
+            return h[:lt] + h[end:]
+    return h
+
+
+def _bridge_normalize(html_v: str) -> str:
+    """Every marker in the model's markup becomes the bare marker the chain
+    understands; adjacent markers stand with nothing between them, and a
+    marker stands right after its sentence's stop with no space before it."""
+    def bare(m):
+        pm = _pmid_of(m.group(0))
+        return _BARE_MARKER.format(pm=pm) if pm else m.group(0)
+    out = SUP_RE.sub(bare, html_v)
+    out = re.sub(r'</sup>\s+(?=<sup class="mz-ref">)', "</sup>", out)
+    out = re.sub(r'[ \t]+(?=<sup class="mz-ref">)', "", out)
+    return out.strip()
+
+
+def _bridge_faults(html_v: str, real: dict) -> list:
+    """What must be true of the bridge section before a reviewer sees it."""
+    faults = []
+    if "style=" in html_v:
+        faults.append("a style attribute")
+    stripped = SUP_RE.sub(" ", html_v)
+    stray = re.search(r"<(?!/?(?:p|em|strong|i|b)\b)[a-zA-Z/!]", stripped)
+    if stray:
+        faults.append(f"markup beyond <p>/<em>/<strong> and the citation markers: {stripped[stray.start():stray.start() + 30]!r}")
+    if re.search(r"<(?![a-zA-Z/!])", stripped):
+        faults.append("an unescaped '<' in the prose (write &lt;)")
+    paras = re.findall(r"<p\b[^>]*>[\s\S]*?</p>", html_v)
+    if not 2 <= len(paras) <= 4:
+        faults.append(f"{len(paras)} <p> where 2-3 were asked for")
+    text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", stripped))).strip()
+    if len(text) < 500:
+        faults.append(f"too short: {len(text)} characters of prose (the format gate's floor is 500)")
+    if SCORING_LANGUAGE_RE.search(text):
+        faults.append(f"scoring language: {sorted(set(w.lower() for w in SCORING_LANGUAGE_RE.findall(text)))}")
+    if PROVENANCE_RE.search(text) or INTERNAL_RE.search(text):
+        faults.append("provenance language or an internal reference")
+    marks = SUP_RE.findall(html_v)
+    if not marks:
+        faults.append("no citation marker at all")
+    for x in marks:
+        pm = _pmid_of(x)
+        if not pm:
+            faults.append("a marker without a PMID")
+            break
+        if pm not in real:
+            faults.append(f"a citation to {pm}, which the brief does not hold")
+            break
+    masked = _mask_noprose(html_v)
+    prev = 0
+    for t, end in _sentences_of(masked):
+        start = _sentence_start(masked, prev)
+        prev = end
+        bad = writer_reject(t)
+        if bad:
+            faults.append(f"{bad}: {t[:70]!r}")
+            continue
+        if re.search(r"\b(?:never|always)\b", t, re.I):
+            faults.append(f"never/always: {t[:70]!r}")
+        if re.search(r"\d", re.sub(r"\b(?:19|20)\d\d\b", "", t)) and not SUP_RE.search(html_v[start:_after_run(html_v, end)]):
+            faults.append(f"a sentence with a number and no citation: {t[:70]!r}")
+    return faults
+
+
+def _author_bridge(W: str, h: str, claim: str, real: dict) -> tuple:
+    """Write the missing "Where the two sides can meet" section from the
+    brief's own bottom line and lens and the papers it holds, then have an
+    adversarial reader refute it. Returns (inner_html | None, notes)."""
+    own = []
+    for pat in (r"bottom line", r"lens", r"^(?!.*(?:bottom line|lens|reference|literature doesn|closing))"):
+        s = _section_by_heading(h, pat)
+        if s:
+            own.append(_plain(h[s[1]:s[2]]))
+    own_text = "\n\n".join(dict.fromkeys(own))[:6000]
+    papers = _papers_for_prompt(real)
+    spec = TREND_EDITORIAL_PARTS["bridge"]
+    notes, why = [], ""
+    for attempt in range(3):
+        draft = _ask_cached(W, "conform", f"""Author ONE section of a published brief that checks a viral claim against the literature: the section
+headed "{BRIDGE_HEADING}" — {spec}.
+THE CLAIM: {claim}
+THE BRIEF'S OWN TEXT (its bottom line and its DO + CBG/MIGS lens; this section agrees with it and adds to
+it, it does not restate it or contradict it):
+{own_text}
+THE PAPERS THE BRIEF HOLDS (the ONLY studies, numbers and findings you may state; cite each by its PMID):
+{json.dumps(papers, ensure_ascii=False)[:60000]}
+{TREND_VOICE}
+{BRIDGE_TONE}
+GROUNDING: only studies, numbers and findings present in the abstracts above. A dose a study itself used
+may be stated as that study's dose; never as an instruction to a reader ("take…", "start at…"). Cite
+every study you name, inline, right after the claim, with EXACTLY this markup and the paper's PMID (the
+pipeline writes the hover card and renumbers markers sequentially):
+{_BARE_MARKER.replace("{pm}", "PMID")}
+Two citations on one sentence stand back to back with nothing between them. No AI/placeholder language,
+paths, section marks. Escape & < >.
+{TREND_PROSE_RULES}
+Return the section's inner HTML: 2-3 <p> elements and nothing else — no heading (the heading is fixed),
+no list, no link other than the citation markup.{why}
+Return ONLY {{"bridge": "<inner HTML>"}}""")
+        html_v = _bridge_normalize(str((draft or {}).get("bridge") or ""))
+        if not html_v:
+            why = "\nA PREVIOUS ATTEMPT RETURNED NOTHING. Return the JSON object exactly as specified."
+            notes.append(f"bridge attempt {attempt + 1}: author produced nothing")
+            continue
+        faults = _bridge_faults(html_v, real)
+        if faults:
+            why = "\nA PREVIOUS DRAFT WAS REFUSED for: " + "; ".join(faults[:4]) + ". Write a draft free of these."
+            notes.append(f"bridge attempt {attempt + 1}: refused before review — {'; '.join(faults[:3])[:200]}")
+            continue
+        verdict = _ask_cached(W, "conform", f"""You are the adversarial reviewer for a physician-authored editorial section. Default to REFUTE.
+THE CLAIM: {claim}
+THE SECTION: "{BRIDGE_HEADING}" — {spec}.
+THE BRIEF'S OWN TEXT the section must agree with:
+{own_text}
+THE PAPERS (the only ground truth; a study, number or finding not in these abstracts is invented):
+{json.dumps(papers, ensure_ascii=False)[:60000]}
+Check: every study, number and finding traceable to one of the abstracts above; every study named carries
+an inline citation in the standard markup with its PMID from the list, placed right after the claim;
+every sentence stating a finding, number, population or comparison carries the citation of the paper it
+comes from; nothing contradicts the brief's own text; no AI/placeholder language. Also refuse: bare
+"MIGS" without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as
+advice; any style attribute or any markup beyond <p>, <em>, <strong> and the citation markup.
+TONE: respectful to the person who made the claim; refuse any sneer, any "verdict", "debunk", "myth",
+"misinformation", or "influencer" used as a label.
+{BRIDGE_TONE}
+If fixable, return the corrected inner HTML under "fixed" with ok=true and problems listing the changes.
+Otherwise ok=false.
+GENERATED: {json.dumps(html_v, ensure_ascii=False)}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed": "<inner HTML or empty>"}}""")
+        if not verdict:
+            why = "\nA PREVIOUS DRAFT could not be verified. Write it again, plainly."
+            notes.append(f"bridge attempt {attempt + 1}: verification produced nothing")
+            continue
+        problems = [str(p) for p in (verdict.get("problems") or [])]
+        if not verdict.get("ok"):
+            why = "\nA PREVIOUS DRAFT WAS REFUSED by the reviewer for: " + "; ".join(problems[:4])[:600] + ". Write a draft free of these."
+            notes.append(f"bridge attempt {attempt + 1}: reviewer refused — {'; '.join(problems[:3])[:240]}")
+            continue
+        final = _bridge_normalize(str(verdict.get("fixed") or "")) or html_v
+        faults = _bridge_faults(final, real)
+        if faults:
+            why = "\nA PREVIOUS DRAFT WAS REFUSED for: " + "; ".join(faults[:4]) + ". Write a draft free of these."
+            notes.append(f"bridge attempt {attempt + 1}: the reviewed text broke a rule — {'; '.join(faults[:3])[:200]}")
+            continue
+        notes.append(f"bridge attempt {attempt + 1}: reviewer ok"
+                     + (f" with {len(problems)} change(s): {'; '.join(problems[:3])[:240]}" if problems else ", no changes")
+                     + f"; {len(SUP_RE.findall(final))} citation(s) to {len({_pmid_of(x) for x in SUP_RE.findall(final)})} paper(s)")
+        return final, notes
+    return None, notes
+
+
+def _choose_framing(W: str, h: str, claim: str, real: dict) -> tuple:
+    """One entry of FRAMINGS for the brief's claim, chosen from its bottom
+    line and the abstracts; anything outside the list is refused. Returns
+    (framing | None, why)."""
+    s = _section_by_heading(h, r"bottom line")
+    bottom = _plain(h[s[1]:s[2]])[:5000] if s else _plain(h[:20000])[:3000]
+    papers = _papers_for_prompt(real, cap=1500)
+    note = ""
+    for attempt in range(2):
+        v = _ask_cached(W, "conform", f"""Choose the ONE framing label for a published brief that checks a viral claim against the literature.
+THE CLAIM: {claim}
+THE BRIEF'S BOTTOM LINE, in its own words:
+{bottom}
+THE PAPERS IT HOLDS:
+{json.dumps(papers, ensure_ascii=False)[:30000]}
+THE FIXED LIST — reply with exactly one entry, verbatim: {json.dumps(FRAMINGS)}
+Read them as: human trials bear the claim out as stated; the support is preclinical or mechanistic and
+not yet shown in people; the evidence is too thin or too mixed to say; the trials contradict the claim;
+the evidence is in a neighbouring condition or population rather than this one. The label must agree
+with the bottom line above.{note}
+Return ONLY {{"framing": "<one entry verbatim>", "why": "<at most twenty words>"}}""")
+        got = str((v or {}).get("framing") or "").strip()
+        match = next((f for f in FRAMINGS if f.lower() == got.lower()), None)
+        if match:
+            return match, str((v or {}).get("why") or "")[:160]
+        note = f"\nA PREVIOUS REPLY ({got[:60]!r}) WAS NOT AN ENTRY OF THE LIST. Copy one entry exactly."
+    return None, f"the model's choice was outside the fixed list ({got[:60]!r})"
+
+
+def conform_trend_brief(W: str, h: str, real: dict) -> tuple:
+    """S13 on a PUBLISHED legacy trend brief: scoring language rewritten
+    out of the site's own text, the missing bridge section authored, the
+    framing label chosen — all by the model, all cached, nothing of the
+    paper's own text touched. Runs in _renumber before cite_and_review, so
+    the chain cites, reviews and numbers what this writes. The gauge is not
+    this pass's job (the format step strips it deterministically).
+
+    `real` is {pmid: {title, abstract, authors, journal, year}} for the
+    brief's papers — real_from_work's shape. Returns (h, notes).
+    """
+    notes: list = []
+    before = h
+    paper_before = _paper_text_digest(h)
+    marks_before = SUP_RE.findall(h)
+    cards_before = len(CARD_RE.findall(h))
+    dialogs_before = len(re.findall(r"<dialog\b", h))
+    claim = _brief_claim(h)
+    deleted_marks: list = []
+
+    # ---- 1. scoring language in the site's own text ----------------------
+    # Sites are collected once and applied from the END of the document, so
+    # each edit leaves every earlier site's indices valid. Headings and
+    # sentences never overlap: headings are masked out of the passages.
+    sites = _own_sentence_sites(h)
+    for ia, ib, text in _own_headings(h):
+        if not SCORING_LANGUAGE_RE.search(text):
+            continue
+        if SUP_RE.search(h[ia:ib]):
+            notes.append(f"heading left as is (it carries a citation marker): {text[:80]!r}")
+            continue
+        sites.append({"a": ia, "b": ib, "run_b": ib, "heading": True, "text": text, "context": "",
+                      "where": "a section heading", "in_pmids": [], "after_pmids": []})
+    sites.sort(key=lambda s: -s["a"])
+    for site in sites:
+        new, action, why = _conform_rewrite_sentence(W, site, claim, real)
+        old_text = site["text"]
+        if action == "rewrite":
+            if site.get("heading"):
+                h = _set_heading_text(h, site["a"], site["b"], new)
+                notes.append(f"heading rewritten: {old_text!r} -> {new!r}")
+            else:
+                h = _apply_sentence_rewrite(h, site, new)
+                notes.append(f"sentence rewritten in {site['where']}: {old_text!r} -> {new!r}")
+        elif action == "delete" and not site.get("heading"):
+            deleted_marks += SUP_RE.findall(h[site["a"]:site["run_b"]])
+            h = _delete_sentence(h, site)
+            notes.append(f"sentence deleted from {site['where']} (no factual claim, no grounded rewrite): {old_text!r}")
+        else:
+            notes.append(f"LEFT with scoring language in {site['where']} ({why}): {old_text[:120]!r}")
+
+    # ---- 2. the bridge section --------------------------------------------
+    has_bridge = any(BRIDGE_HEADING_RE.search(t) for _, _, t in _own_headings(h))
+    bridge_html = None
+    if has_bridge:
+        notes.append("bridge section already present")
+    else:
+        bridge_html, bnotes = _author_bridge(W, h, claim, real)
+        notes += bnotes
+        if bridge_html:
+            target = (_section_by_heading(h, r"where the literature doesn.t go")
+                      or _section_by_heading(h, r"closing thoughts")
+                      or _section_by_heading(h, r"^references$"))
+            if target:
+                at = target[0]
+                lead = re.match(r"\s*", h[target[1]:]).group(0) or "\n    "
+            else:
+                m_ref = re.search(r'<section class="[^"]*mz-references[^"]*"|<ol class="mz-references-list"|<dialog', h)
+                at = m_ref.start() if m_ref else len(h)
+                lead = "\n    "
+            sid = "" if 'id="bridge"' in h else ' id="bridge"'
+            section = (f'<section class="mz-post-section"{sid}>{lead}<h2 class="mz-section-title">{BRIDGE_HEADING}</h2>'
+                       + "".join(lead + p for p in re.findall(r"<p\b[^>]*>[\s\S]*?</p>", bridge_html)) + "\n</section>\n")
+            h = h[:at] + section + h[at:]
+            notes.append("bridge section inserted before "
+                         + (f"the section headed {_plain(h[at + len(section):at + len(section) + (target[3] - target[0])])[:60]!r}"
+                            if target else "the references"))
+        else:
+            notes.append("LEFT without a bridge section: no draft survived review")
+
+    # ---- 3. the framing label ----------------------------------------------
+    have = [m.group(1).strip() for m in re.finditer(r'<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)', h)]
+    if any(f in FRAMINGS for f in have):
+        notes.append(f"framing already present: {[f for f in have if f in FRAMINGS][0]!r}")
+    else:
+        framing, why = _choose_framing(W, h, claim, real)
+        if framing:
+            label = f'<p class="mz-framing"><strong>{H.escape(framing, quote=False)}</strong></p>'
+            s = _section_by_heading(h, r"bottom line")
+            if s:
+                lead = re.match(r"\s*", h[s[1]:]).group(0) or "\n    "
+                h = h[:s[3]] + lead + label + h[s[3]:]
+                notes.append(f"framing {framing!r} placed after the bottom-line heading ({why})")
+            else:
+                m1 = re.search(r"</h1>", h)
+                at = m1.end() if m1 else 0
+                h = h[:at] + label + h[at:]
+                notes.append(f"framing {framing!r} placed after the h1 — no bottom-line section ({why})")
+        else:
+            notes.append(f"LEFT without a framing label: {why}")
+
+    # ---- post-conditions: nothing of the paper's own text moved -------------
+    if _paper_text_digest(h) != paper_before:
+        die("conform_trend_brief changed paper text (an abstract, title, meta line or reference entry)")
+    if len(CARD_RE.findall(h)) != cards_before or len(re.findall(r"<dialog\b", h)) != dialogs_before:
+        die("conform_trend_brief changed the number of cards or dialogs")
+    from collections import Counter as _C
+    bs = _section_by_heading(h, BRIDGE_HEADING_RE.pattern) if bridge_html else None
+    outside = SUP_RE.findall(h[:bs[0]] + h[bs[2]:]) if bs else SUP_RE.findall(h)
+    if _C(outside) != _C(marks_before) - _C(deleted_marks):
+        die("conform_trend_brief changed a citation marker outside the bridge section")
+    if h == before:
+        notes.append("nothing to conform")
+    return h, notes
 
 
 def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> None:
