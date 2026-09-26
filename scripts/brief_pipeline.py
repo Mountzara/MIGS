@@ -10344,6 +10344,17 @@ def _bridge_normalize(html_v: str) -> str:
     return out.strip()
 
 
+_FIGURE_RE = re.compile(r"(?<![A-Za-z0-9/_.-])\d+(?:[.,]\d+)*\s?%?(?![A-Za-z0-9_-])")
+
+
+def _states_figure(t: str) -> bool:
+    """A number standing on its own — a count, a rate, a ratio, a p-value —
+    not a digit inside a name (GLP-1, H1, NK3, COVID-19) and not a year."""
+    plain = re.sub(r"<[^>]+>", " ", t)
+    return any(not re.fullmatch(r"(?:19|20)\d\d\s?%?", m.group(0).strip())
+               for m in _FIGURE_RE.finditer(plain))
+
+
 def _bridge_faults(html_v: str, real: dict) -> list:
     """What must be true of the bridge section before a reviewer sees it."""
     faults = []
@@ -10391,8 +10402,11 @@ def _bridge_faults(html_v: str, real: dict) -> list:
         if bad:
             faults.append(f"{bad}: {plain[:70]!r}")
             continue
-        if re.search(r"\d", re.sub(r"\b(?:19|20)\d\d\b", "", t)) and not SUP_RE.search(html_v[start:_after_run(html_v, end)]):
-            faults.append(f"a sentence with a number and no citation: {t[:70]!r}")
+        # a FIGURE, not a digit: "GLP-1", "H1/H2", "NK3", "COVID-19" are names,
+        # and reading their digits as figures refused five bridge drafts in
+        # a row on the GLP-1 brief
+        if _states_figure(t) and not SUP_RE.search(html_v[start:_after_run(html_v, end)]):
+            faults.append(f"a sentence with a figure and no citation: {t[:70]!r}")
     return faults
 
 
