@@ -3575,8 +3575,22 @@ def post_field_faults(post: dict) -> list:
     out = []
     for f in POST_TEXT_FIELDS:
         v = post.get(f)
-        if isinstance(v, str) and (_BARE_MIGS_RE.search(v) or _WRONG_ORDER_RE.search(v)):
+        if not isinstance(v, str) or not v:
+            continue
+        if _BARE_MIGS_RE.search(v) or _WRONG_ORDER_RE.search(v):
             out.append(f"the post's {f} names the practice as bare MIGS — write CBG/MIGS (#CBGMIGS)")
+        # S9 whole: the summary once read "MIGS Monday Morning — … §0.8
+        # KB-anchored synthesis … verified PMIDs" on the live listing, and
+        # nothing here read the fields for anything but the practice's name
+        m = PROVENANCE_RE.search(v)
+        if m:
+            out.append(f"the post's {f} carries AI-provenance language: {m.group(0)!r}")
+        m = INTERNAL_RE.search(v)
+        if m:
+            out.append(f"the post's {f} carries an internal name, path or spec reference: {m.group(0)!r}")
+        m = re.search(r"Pending[^.]{0,40}review|\[Awaiting|\[\s*pending\s*\]|\[TODO|\bTBD\b|lorem ipsum|<!--", v, re.I)
+        if m:
+            out.append(f"the post's {f} carries a placeholder or build comment: {m.group(0)!r}")
     return out
 
 
