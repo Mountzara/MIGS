@@ -9307,6 +9307,11 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
     # pieces as well as the whole.
     parts = [ev]
     parts += re.split(r"\s+(?:AND|and)\s+", ev)
+    # an auditor quotes three places with " ... " between them, and the dots
+    # are legal characters of a run, so the whole quotation became ONE run
+    # whose first forty characters exist nowhere on the page (W29: four
+    # refusals on a sentence the repair never saw)
+    parts += re.split(r"\s*(?:\.\.\.|\u2026)\s*", ev)
     parts += re.findall(r"['\"\u2018\u2019\u201c\u201d]([^'\"\u2018\u2019\u201c\u201d]{30,})", ev)
     runs = []
     for part in parts:
@@ -9322,7 +9327,11 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
                 continue
             sents = _sentences_of(masked)
             for i, (t, e) in enumerate(sents):
-                if needle[:40] not in re.sub(r"\s+", " ", t):
+                # the sentence's own text may hold inline tags (<em>, <strong>);
+                # the passage was matched with tags stripped and the sentence
+                # was not, so a sentence with any tag in it was never a site
+                # (W29: four refusals on one sentence the repair never saw)
+                if needle[:40] not in re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))):
                     continue
                 a = ps.start(1) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
                 b = ps.start(1) + e
@@ -9352,7 +9361,7 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
                     continue
                 sents = _sentences_of(masked)
                 for i, (t, e) in enumerate(sents):
-                    if needle[:40] not in re.sub(r"\s+", " ", t):
+                    if needle[:40] not in re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))):
                         continue
                     a = em.start(2) + _sentence_start(masked, sents[i - 1][1] if i >= 1 else 0)
                     b = em.start(2) + e
@@ -9457,38 +9466,76 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
             still = [i for i in range(len(sites)) if i not in out]
             if still:
                 print(f"  audit repair: no rewrite came back for sentence(s) {still} of the defect's {len(sites)}")
-        # apply from the END so an earlier rewrite cannot move a later offset
-        for i in sorted(out, reverse=True):
-            if i >= len(sites):
-                continue
-            a, b, sentence = sites[i]
-            new_s = out[i]
+        stray_notes: list = []
+
+        def _apply_one(i, a, b, sentence, new_s):
+            nonlocal h, done
             if not new_s or new_s == sentence:
-                continue
+                return False
             _bad = writer_reject(new_s) or ("too long" if len(new_s) > max(400, int(len(sentence) * 1.5)) else "")
+            if not _bad:
+                # every figure a repair writes must be a figure its sources state:
+                # the repair of W29's "four women (30.7%)" came back "(16.7%)" —
+                # the auditor's 4-of-24 arithmetic — when the abstract says the
+                # 30.7% is of the 13 managed by myomectomy. A figure no source
+                # states is refused and the model is asked again with it named
+                _pool = set()
+                for q in cited:
+                    _pool |= _pool_tokens((papers.get(q) or {}).get("abstract") or "")
+                for cv in (counts or {}).values():
+                    _pool.add(str(cv))
+                _stray = [x for x in _num_tokens(new_s) if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in _pool]
+                if _stray:
+                    _bad = f"figure(s) no source states: {_stray[:3]}"
             if _bad:
                 print(f"  audit repair rejected ({_bad}): {new_s[:90]!r}")
-                continue
+                stray_notes.append((i, _bad))
+                return False
             keep = "".join(m.group(0) for m in SUP_RE.finditer(h[a:b]))
             # A repair may not resolve a defect by denying the brief holds a
-            # paper it is citing. W21's bottom line came back "…but it never
-            # made this brief's final list" with the marker still on it; the
-            # next read named that as a defect, the next repair reworded it,
-            # and the round budget ran out on a contradiction the repair kept
-            # re-creating.
+            # paper it is citing (W21's bottom line: "…but it never made this
+            # brief's final list" with the marker still on it)
             if _ABSENCE_RE.search(new_s) and any(
                     q and _has_card(h, q) for q in (_pmid_of(x.group(0)) for x in SUP_RE.finditer(keep))):
                 print(f"  audit repair rejected (it denies holding a paper it cites): {new_s[:90]!r}")
-                continue
+                return False
             if not _usable_span(h, a, b):
                 print(f"  audit repair skipped (the quoted span is not prose): {new_s[:80]!r}")
-                continue
+                return False
             h = _replace_span(h, a, b, new_s)
             at = _after_run(h, a + len(H.escape(new_s, quote=False)))
             if keep and keep not in h[a:at + len(keep)]:
                 h = h[:at] + keep + h[at:]
             done += 1
             print(f"  audit repair: {new_s[:110]!r}")
+            return True
+
+        # apply from the END so an earlier rewrite cannot move a later offset
+        for i in sorted(out, reverse=True):
+            if i >= len(sites):
+                continue
+            a, b, sentence = sites[i]
+            _apply_one(i, a, b, sentence, out[i])
+        if stray_notes:
+            # once more, with the refused figures named; the refused sentences
+            # are located again on the page as it now is
+            note = ("\nYOUR PREVIOUS REWRITE WAS REFUSED — " + "; ".join(f"sentence {i}: {b}" for i, b in stray_notes)
+                    + ". State only figures the abstracts above state, exactly as they state them (with the population "
+                      "they belong to), or drop the figure.")
+            out2: dict = {}
+            for e in ((_ask_cached(W, "audit_fix", prompt + note, timeout_s=900) or {}).get("sentences") or []):
+                try:
+                    out2[int(e.get("index"))] = re.sub(r"\s+", " ", str(e.get("sentence") or "")).strip()
+                except (TypeError, ValueError):
+                    continue
+            refused = [i for i, _b in stray_notes]
+            stray_notes = []
+            for i in refused:
+                if i >= len(sites) or i not in out2:
+                    continue
+                plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", sites[i][2]))).strip()
+                for a, b, sentence in _quoted_sites(h, plain)[:1]:
+                    _apply_one(i, a, b, sentence, out2[i])
     return h, done
 
 
@@ -9589,16 +9636,27 @@ def _confirm_numeric_claims(W: str, blocking: list, h: str) -> list:
             continue
         ev = H.unescape(re.sub(r"<[^>]+>", " ", str(d.get("evidence") or "")))
         sites = _quoted_sites(h, ev)
-        quoted = [t for _a, _b, t in sites] or [ev]
+        quoted = [re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).strip() for _a, _b, t in sites] or [ev]
+        # the source of truth goes with the sentences: without it the second
+        # reader confirmed "four women (30.7%)" as 4-of-24 when the abstract
+        # states 30.7% of the 13 managed by myomectomy (W29), and a correct
+        # sentence was then rewritten wrong
+        _cited = [q for q in dict.fromkeys(_pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:b])) if q]
+        _abs = real_from_work(W, _cited)
+        _src = "\n".join(f"PMID {q}: {(_abs[q].get('abstract') or '')[:2500]}" for q in _cited if q in _abs)
         v = _ask_cached(W, "confirm", f"""A first reader of a clinician-facing evidence brief reported this defect:
 CLAIM: {json.dumps(str(d.get("what"))[:600])}
 THE SENTENCE(S) EXACTLY AS THE PAGE HAS THEM:
 {json.dumps(quoted, ensure_ascii=False)[:4000]}
-You are the second reader. Decide whether the figures in these sentences actually disagree. Write the
-arithmetic out in "working" — every number, every subtraction, sum or ratio — and only then answer.
-A gap of "five to seven years" between an age of 16 and ages of 21 to 23 is correct arithmetic.
-Two different studies, a whole-cohort and a subgroup estimate, or a different rounding is not a
-contradiction. Default to confirmed=false unless the arithmetic shows a real disagreement.
+THE ABSTRACTS THESE SENTENCES CITE (the source of truth for every figure):
+{_src[:9000] or "(none cited)"}
+You are the second reader. Decide whether the figures actually disagree. Write the arithmetic out in
+"working" — every number, every subtraction, sum or ratio — and only then answer. A figure an abstract
+states, as it states it, is CORRECT even when the page does not restate its denominator or population;
+a gap of "five to seven years" between an age of 16 and ages of 21 to 23 is correct arithmetic; two
+different studies, a whole-cohort and a subgroup estimate, or a different rounding is not a
+contradiction. Confirm only when the page's figures contradict each other or the abstract and the
+abstract does not account for them. Default to confirmed=false.
 Reply with ONLY {{"confirmed": true|false, "working": "..."}}""", timeout_s=600)
         if v and v.get("confirmed") is True:
             kept.append(d)
