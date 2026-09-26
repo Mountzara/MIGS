@@ -6140,7 +6140,7 @@ Reply with ONLY {{"pmid": "<the matching pmid>"}} or {{"pmid": null}} when none 
                         timeout_s=600)
         got = str((v or {}).get("pmid") or "").strip()
         return not (got and got in pmids)
-    for _round in range(3):
+    for _round in range(4):
         edits = []
         for ps in _prose_passages(h):
             frag = ps.group(1)
@@ -6178,6 +6178,11 @@ Reply with ONLY {{"orphans": [{{"sentence": <number>, "study": "<how the sentenc
                 new = re.sub(r"\s+", " ", str(o.get("rewrite") or "")).strip()
                 if new and len(new) > len(sents[idx - 1][0]) + 60:
                     new = ""
+                # two rewrites that still report the unheld study are enough:
+                # a finding the brief does not hold cannot be cited, so on the
+                # third round the sentence goes, and a fourth read confirms
+                if _round >= 2:
+                    new = ""
                 study = str(o.get("study", ""))[:80]
                 if not confirm_orphan(sents[idx - 1][0], study):
                     print(f"  KEEPING a sentence flagged for {study!r}: it is a paper the brief holds")
@@ -6208,7 +6213,7 @@ Reply with ONLY {{"orphans": [{{"sentence": <number>, "study": "<how the sentenc
                 print(f"  removed a sentence that reported {study!r}, a study the brief does not hold")
             total += 1
         last_orphans = [e[3] for e in edits]
-    die(f"prose still reports studies the brief does not hold after two rewrites: {last_orphans[:4]}")
+    die(f"prose still reports studies the brief does not hold after two rewrites and a removal: {last_orphans[:4]}")
 
 
 def refresh_card_abstracts(h: str, real: dict) -> tuple:
