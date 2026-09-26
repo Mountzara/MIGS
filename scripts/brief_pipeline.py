@@ -4264,11 +4264,15 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     recorded with the body's digest; publish requires it.
     """
     abstracts = {}
-    for q in man["pmids"]:
+    # every paper a marker on the page cites, not only the carded ones: a
+    # sentence citing a deep-dive-only paper was judged with "CITED ABSTRACTS
+    # is empty" and called unsupported for want of a source (mast-cell brief)
+    for q in list(man["pmids"]) + [x for x in dict.fromkeys(_pmid_of(m.group(0)) for m in SUP_RE.finditer(h)) if x]:
         pf = W + f"papers/{q}.json"
-        if os.path.exists(pf):
-            pj = json.load(open(pf))
-            abstracts[q] = {"title": pj.get("title", ""), "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or ""}
+        if q in abstracts or not os.path.exists(pf):
+            continue
+        pj = json.load(open(pf))
+        abstracts[q] = {"title": pj.get("title", ""), "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or ""}
     faults, results = [], []
     frags = [(f_, None, piece_of(h, f_)) for f_ in prose_fragments(h)]
     # a card's paragraph is attributed to one paper: audited against that paper alone
@@ -4608,7 +4612,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         g = grounding_audit(W, h, man) + popover_audit(W, h)
         if man.get("format") == "trend":
             g += trend_prose_audit(W, h, man)
-        for _round in range(2):
+        for _round in range(3):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
             pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
             pop = [f_ for f_ in g if _POPOVER_FAULT_RE.match(f_)]
@@ -11405,7 +11409,7 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             g += trend_prose_audit(W, h, man)
         # the model's finding on a card or a deep dive is repaired from the
         # paper, and the same audit judges the rewrite on the next round
-        for _round in range(2):
+        for _round in range(3):
             att = [f_ for f_ in g if _ATTRIBUTED_FAULT_RE.match(f_)]
             pro = [f_ for f_ in g if _PROSE_FAULT_RE.match(f_)]
             pop = [f_ for f_ in g if _POPOVER_FAULT_RE.match(f_)]
