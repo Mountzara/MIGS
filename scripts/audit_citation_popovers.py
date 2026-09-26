@@ -276,7 +276,31 @@ def _worker(routes):
         return "", [f"{routes[0]}…: the citation gate crashed — {str(e).splitlines()[0][:160]}"]
 
 
+def _ensure_browser_trusts_proxy_ca():
+    """The sandbox's egress proxy re-terminates TLS; curl and python read
+    its CA from the system store, Chromium from the NSS store at
+    ~/.pki/nssdb. When the proxy regenerated its CA (2026-09-26 20:28)
+    the NSS store still held the old one and every live route failed with
+    ERR_CERT_AUTHORITY_INVALID — twice blocking a deploy. If the CA file
+    and certutil exist, the current CA is imported once, under a nickname
+    that names its fingerprint, so a rotation heals itself and TLS is never
+    switched off."""
+    import hashlib, shutil, subprocess, os
+    ca = "/root/.ccr/agent-proxy-ca.crt"
+    if not os.path.exists(ca) or not shutil.which("certutil"):
+        return
+    db = os.path.expanduser("~/.pki/nssdb")
+    os.makedirs(db, exist_ok=True)
+    nick = "ccr-proxy-ca-" + hashlib.sha1(open(ca, "rb").read()).hexdigest()[:12]
+    have = subprocess.run(["certutil", "-d", f"sql:{db}", "-L"], capture_output=True, text=True).stdout
+    if nick in have:
+        return
+    r = subprocess.run(["certutil", "-d", f"sql:{db}", "-A", "-t", "C,,", "-n", nick, "-i", ca], capture_output=True, text=True)
+    print(f"  proxy CA {'imported into' if r.returncode == 0 else 'NOT imported into'} the browser trust store ({nick})")
+
+
 def main():
+    _ensure_browser_trusts_proxy_ca()
     if not ROUTES:
         print("no routes given"); return 1
     n = max(1, min(WORKERS, len(ROUTES)))
