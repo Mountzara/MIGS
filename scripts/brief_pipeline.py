@@ -2510,7 +2510,12 @@ def drop_process_commentary(h: str) -> tuple:
 # practice name. The repair loop cannot reach these — it finds a quoted
 # sentence in the prose passages and takes the paper from the sentence's
 # markers, and an attributed container has neither.
-_ATTRIBUTED_FAULT_RE = re.compile(r'^\[(card|dialog):(\d{5,9})\] (.+?): "(.*?)" \((.*)\)$', re.S)
+_ATTRIBUTED_FAULT_RE = re.compile(r'^\[(card|dialog):(\d{5,9})(?::kb)?\] (.+?): "(.*?)" \((.*)\)$', re.S)
+# S10's words, on the site's own text: the word itself — except the
+# epidemiologist's comparator group ("never-users" / "never users"), a term
+# of art and not an absolute (the Million Women Study's comparator was
+# reported as the clinician's "never")
+_ABSOLUTE_WORD_RE = re.compile(r"\b(?:never|always)\b(?![ -]?users?\b)", re.I)
 
 
 def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
@@ -2614,6 +2619,41 @@ Return ONLY {{"text": "<rewritten text>"}}""")
             done += 1
         if edits:
             h = h[:cm.start()] + cont + h[cm.end():]
+    return h, done
+
+
+def fix_absolute_words(W: str, h: str, real: dict) -> tuple:
+    """S10's word in the site's own text is rewritten by the model, then the
+    gate reads the page again. (h, rewritten). A prose sentence goes through
+    repair_from_defects with its cited abstracts; a card's or a deep dive's
+    through fix_attributed_text with the container's paper; a heading is
+    left for the gate (headings are rewritten by the trend conformance)."""
+    done = 0
+    defects = []
+    for ps in _prose_passages(h):
+        masked = _mask_noprose(ps.group(1))
+        for t, _e in _sentences_of(masked):
+            plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
+            if _ABSOLUTE_WORD_RE.search(plain):
+                defects.append({"what": 'the sentence uses "never" or "always" — S10 forbids the words in the clinician\'s own prose; '
+                                        "rephrase without them, keeping every number and every citation marker exactly",
+                                "evidence": plain})
+    if defects:
+        h, done = repair_from_defects(W, h, defects)
+    att = []
+    for pm, card in card_texts(h):
+        for t in re.split(r"(?<=[.!?])\s+", H.unescape(re.sub(r"<[^>]+>", " ", card))):
+            if _ABSOLUTE_WORD_RE.search(t):
+                att.append(f'[card:{pm}] the word "never" or "always": "{t.strip()[:120]}" (S10 forbids the words in the clinician\'s prose)')
+    for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
+        own = _blank_paper_text(re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d))
+        own = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", own)
+        for t in re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", own))))):
+            if _ABSOLUTE_WORD_RE.search(t):
+                att.append(f'[dialog:{pm}] the word "never" or "always": "{t.strip()[:120]}" (S10 forbids the words in the clinician\'s prose)')
+    if att:
+        h, n2 = fix_attributed_text(W, h, att, real)
+        done += n2
     return h, done
 
 
@@ -3705,10 +3745,10 @@ def body_invariant_faults(h: str) -> list:
 
 
 def reader_prose_faults(h: str) -> list:
-    """S8, S9, S10 on the finished page: no patient-directed advice, no
-    placeholder or AI-provenance language, no internal path, no bare MIGS, no
-    never/always. Shared by the authoring path (prose_faults) and by
-    `renumber`, which published without them until standards-check said so."""
+    """S8, S9, S10 on the finished page, on the site's whole own text (cards
+    and deep dives included): no patient-directed advice, no placeholder or
+    AI-provenance language, no internal path, no bare MIGS, no "never"/"always".
+    Shared by the authoring path (prose_faults) and by `renumber`."""
     faults = list(body_invariant_faults(h))
     prose = " ".join(prose_fragments(h))
     text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
@@ -3751,9 +3791,13 @@ def reader_prose_faults(h: str) -> list:
         faults.append(f"internal path or spec reference: {m.group(0)!r}")
     if re.search(r"(?<!CBG/)\bMIGS\b", text):
         faults.append("bare 'MIGS' in the site's own prose — write CBG/MIGS")
-    m = absolute_claim(text)
+    # S10 is the WORDS, on the site's whole own text — prose, cards, deep
+    # dives, headings, popover findings — not a clinical-absolute test on
+    # the prose containers alone; the epidemiologist's comparator
+    # ("never-users") is a term of art, not an absolute
+    m = _ABSOLUTE_WORD_RE.search(own_text(h))
     if m:
-        faults.append(f"an absolutist clinical claim in the site's own prose: {m.group(0)!r}")
+        faults.append(f"\"never\"/\"always\" in the site's own prose: {m.group(0)!r}")
     return faults
 
 
@@ -4099,6 +4143,15 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
         secs_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
         secs_d = _blank_paper_text(secs_d)      # the legacy abstract body, the modal's title and meta
+        # "Where this sits in the established literature" discusses guidelines
+        # and prior work beyond this paper's abstract on purpose; it is judged
+        # as its own fragment with that said, not against the abstract alone
+        kb = re.search(r'<section class="mz-jc-section[^"]*" id="dd-\d+-kb"[\s\S]*?</section>', secs_d)
+        if kb:
+            secs_d = secs_d[:kb.start()] + " " + secs_d[kb.end():]
+            kb_txt = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", kb.group(0))
+            if re.sub(r"<[^>]+>", "", kb_txt).strip():
+                frags.append((kb_txt, pm, f"dialog:{pm}:kb"))
         secs_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", secs_d)
         if re.sub(r"<[^>]+>", "", secs_d).strip():
             frags.append((secs_d, pm, f"dialog:{pm}"))
@@ -4124,6 +4177,11 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
                       f"{card_pm}: the container attributes every one of them to that paper, so they carry no ⟦PMID⟧ token by "
                       f"design. Judge `supported` against that abstract alone. The absence of a token is NEVER a reason for "
                       f"supported=false; return cited=true and placement=null for every sentence here."
+                      + ("\nTHIS IS THE SECTION 'Where this sits in the established literature': it discusses guidelines and "
+                         "prior work BEYOND this paper's abstract on purpose. Judge `supported` only for what a sentence says "
+                         "about THIS paper; for a statement about other literature or a guideline return supported=null — "
+                         "unless it attributes to this paper something its abstract does not say."
+                         if pc.endswith(":kb") else "")
                       if card_pm else "")
         v = _ask_cached(W, "grounding", f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
 appear as ⟦PMID⟧ tokens inside the sentence they belong to.{attributed}
@@ -4236,6 +4294,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h, exp0 = fix_invented_experience(W, h)
     if exp0:
         print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
+    h, abs_n = fix_absolute_words(W, h, real)
+    if abs_n:
+        print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -4285,6 +4346,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h, exp3 = fix_invented_experience(W, h)
     if exp3:
         print(f"  {exp3} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
+    h, abs_n = fix_absolute_words(W, h, real)
+    if abs_n:
+        print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
     # a repair sentence is written like any other and may carry the practice
     # name without its prefix
     h, n_fix = canonical_practice_name(h)
@@ -10619,6 +10683,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, exp0 = fix_invented_experience(W, h)
         if exp0:
             print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
+        h, abs_n = fix_absolute_words(W, h, real)
+        if abs_n:
+            print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
         before_html = h
         # S10 and S13 on the page as published, before any pass reads it. The
         # deploy's live audit refused W34, W33 and W28 for the practice name
@@ -10875,6 +10942,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, exp1 = fix_invented_experience(W, h)
         if exp1:
             print(f"  {exp1} sentence(s) claiming the clinician's own experience rewritten from the paper at resume")
+        h, abs_n = fix_absolute_words(W, h, real)
+        if abs_n:
+            print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
         if fmt == "trend":
             h, gauge0 = retire_verdict_gauge(h)
             if gauge0:
@@ -10907,6 +10977,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     h, exp2 = fix_invented_experience(W, h)          # a repair may write a witness
     if exp2:
         print(f"  {exp2} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
+    h, abs_n = fix_absolute_words(W, h, real)
+    if abs_n:
+        print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
     # a repair sentence is written like any other and may carry the practice
     # name without its prefix
     h, n_fix = canonical_practice_name(h)
