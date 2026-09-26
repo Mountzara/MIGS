@@ -8282,10 +8282,13 @@ def trend_format_faults(h: str) -> list:
         faults.append('[S13] no framing label: no <p class="mz-framing"> whose text is one of the fixed framings')
     # one framing label PER ITEM where the brief has items: each <h3
     # class="mz-subhead"> subsection carries its own label from the fixed list
-    for tid, after in re.findall(r'<h3 class="mz-subhead" id="([^"]+)"[^>]*>[\s\S]{0,600}?(<p class="mz-framing"[^>]*>(?:<strong>)?[^<]+|</h3>[\s\S]{0,600}?<h3\b)', h):
-        lab = re.search(r'<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)', after)
+    heads = list(re.finditer(r'<h3 class="mz-subhead" id="([^"]+)"[^>]*>', h))
+    for i, hm in enumerate(heads):
+        nxt = re.search(r"<h[23]\b", h[hm.end():])
+        block = h[hm.end():hm.end() + (nxt.start() if nxt else len(h))]
+        lab = re.search(r'<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)', block)
         if not lab or lab.group(1).strip() not in FRAMINGS:
-            faults.append(f"[S13] item {tid} has no framing label from the fixed list under its subheading")
+            faults.append(f"[S13] item {hm.group(1)} has no framing label from the fixed list under its subheading")
     for f in framings:
         if f not in FRAMINGS:
             faults.append(f"[S13] framing label outside the fixed list: {f!r}")
