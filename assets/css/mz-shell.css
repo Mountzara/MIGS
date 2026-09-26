@@ -444,6 +444,9 @@ sup.mz-ref:hover .mz-ref-pop.mz-flip.mz-edge-right, sup.mz-ref:focus-within .mz-
 sup.mz-ref:hover a.mz-ref-pop-src, sup.mz-ref.mz-open a.mz-ref-pop-src, sup.mz-ref:focus a.mz-ref-pop-src, sup.mz-ref:focus-within a.mz-ref-pop-src { background: transparent; color: #6d28d9; padding: 0; border-radius: 0; }
 sup.mz-ref:hover a.mz-ref-pop-src:hover, sup.mz-ref.mz-open a.mz-ref-pop-src:hover, sup.mz-ref:focus-within a.mz-ref-pop-src:hover { color: #4c1d95; text-decoration: underline; }
 
+/* openers: a mouse click shows the border change only; keyboard focus keeps the ring */
+.card:focus:not(:focus-visible), .timeline-item:focus:not(:focus-visible), .rung:focus:not(:focus-visible), .featured-card:focus:not(:focus-visible) { outline: none; }
+
 /* ---------- card grids (phenotypes, pain sources, trial cards) ---------- */
 .card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
 @media (min-width: 560px) { .card-grid--2, .card-grid--3, .card-grid--4 { grid-template-columns: repeat(2, 1fr); } }
@@ -454,7 +457,7 @@ sup.mz-ref:hover a.mz-ref-pop-src:hover, sup.mz-ref.mz-open a.mz-ref-pop-src:hov
     cursor: pointer; position: relative; margin: 0;
     transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
 }
-.card:hover, .card:focus { transform: translateY(-2px); border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); box-shadow: var(--shadow-2); outline: none; }
+.card:hover, .card:focus { transform: translateY(-2px); border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); box-shadow: var(--shadow-2); }
 .card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
 .card h3 { font-size: 14.5px; font-weight: 600; color: var(--ink); margin: 0 0 6px 0; padding-right: 28px; line-height: 1.35; }
 .card p { font-size: 13px !important; line-height: 1.55; color: var(--ink-3); margin: 0; }
@@ -492,7 +495,7 @@ sup.mz-ref:hover a.mz-ref-pop-src:hover, sup.mz-ref.mz-open a.mz-ref-pop-src:hov
     border-radius: 11px; padding: 12px 14px;
     transition: border-color 0.22s, background 0.22s;
 }
-.timeline-item:hover, .timeline-item:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); outline: none; }
+.timeline-item:hover, .timeline-item:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); }
 .timeline-item:last-child { margin-bottom: 0; }
 .timeline-item::before { content: ''; position: absolute; left: -24px; top: 18px; width: 12px; height: 12px; border-radius: 50%; background: rgba(109, 40, 217, 0.95); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.16); }
 .timeline-item h3 { font-size: 15.5px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; padding-right: 96px; line-height: 1.35; }
@@ -508,7 +511,7 @@ sup.mz-ref:hover a.mz-ref-pop-src:hover, sup.mz-ref.mz-open a.mz-ref-pop-src:hov
     border-radius: 12px; padding: 16px 18px; margin: 0; cursor: pointer;
     transition: border-color 0.22s, background 0.22s, transform 0.22s;
 }
-.rung:hover, .rung:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); transform: translateY(-1px); outline: none; }
+.rung:hover, .rung:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.06); transform: translateY(-1px); }
 .rung .step-num { font-family: 'Fraunces', 'Avenir Next', Georgia, serif; font-size: 28px; font-weight: 530; letter-spacing: -0.02em; color: #6d28d9; line-height: 1; font-variant-numeric: tabular-nums; }
 .rung h3 { font-size: 15.5px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; line-height: 1.35; }
 .rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--ink-2); margin: 0; text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -529,7 +532,7 @@ sup.mz-ref:hover a.mz-ref-pop-src:hover, sup.mz-ref.mz-open a.mz-ref-pop-src:hov
     transition: border-color 0.22s, background 0.22s, transform 0.22s;
     align-items: center; position: relative;
 }
-.featured-card:hover, .featured-card:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.12); transform: translateY(-1px); outline: none; }
+.featured-card:hover, .featured-card:focus { border-color: #6d28d9; background: rgba(139, 92, 246, 0.12); transform: translateY(-1px); }
 .featured-card h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; padding-right: 96px; line-height: 1.35; }
 .featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--ink-2); margin: 0; }
 .featured-card .open-hint { position: absolute; top: 18px; right: 22px; }
