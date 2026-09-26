@@ -445,6 +445,10 @@ STAGE_STANDARDS = {
     "apply":   [f"S{i}" for i in range(1, 17) if i not in (3, 14)],
 }
 RENDERED_ONLY = {"S3": "hover and tap behaviour", "S14": "contrast on the rendered page"}
+# S16 is a property of the PIPELINE'S PROCESS — that a model read the body
+# back before it published — and this audit is that read-back; a reader of
+# the body cannot see whether it ran, and was asked to. Reported as met: null.
+PROCESS_ONLY = {"S16": "the read-back itself — this audit is it; audit_transform ran before it"}
 
 
 def stage_addendum(stage: str) -> str:
@@ -491,8 +495,9 @@ For EACH standard S1-S16 (S12 applies to weekly briefs only, S13 to trend briefs
 the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
 for the case that fails, not the case that passes.
 EXCEPT: """ + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + """ — these are properties of
-the RENDERED page, which you are not looking at. Report them as "met": null with a note; do not fail
-the audit on them. A browser measures both before this body is allowed to publish.
+the RENDERED page, which you are not looking at — and """ + "; ".join(f"{k} ({v})" for k, v in PROCESS_ONLY.items()) + """ — a
+property of the pipeline's process. Report them as "met": null with a note; do not fail the audit on
+them. A browser measures the first two before this body is allowed to publish.
 Reply with ONLY a JSON object:
 {{"passed": <true only if every applicable standard is met>,
   "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S16": {{...}}}},
@@ -503,11 +508,12 @@ Reply with ONLY a JSON object:
     if not v or "passed" not in v:
         die("standards audit returned no verdict")
     blocking = v.get("blocking") or []
+    _not_here = set(RENDERED_ONLY) | set(PROCESS_ONLY)
     unmet = [k for k, r in (v.get("standards") or {}).items()
-             if isinstance(r, dict) and r.get("met") is False and k not in RENDERED_ONLY]
+             if isinstance(r, dict) and r.get("met") is False and k not in _not_here]
     blocking = [b for b in blocking
                 if not (set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(b))) and
-                        set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(b))) <= set(RENDERED_ONLY))]
+                        set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(b))) <= _not_here)]
     out = {"digest": _sha_file(W + "body.applied.html"), "passed": bool(v.get("passed")) and not blocking and not unmet,
            "blocking": blocking, "unmet": unmet, "standards": v.get("standards"), "notes": v.get("notes")}
     json.dump(out, open(W + ".ledger/apply.standards.json", "w"), indent=1, ensure_ascii=False)
@@ -1279,16 +1285,16 @@ def cmd_curate(post_id: str) -> None:
         assignments = {}
         for _i in range(0, len(papers_ctx), 10):
             _batch = papers_ctx[_i:_i + 10]
-            _v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
-alone, for an audience of gynecologic surgeons. Answer with the heading the paper belongs under — which may be a DIFFERENT heading from the one it is
-currently filed under; a paper covering several of the headings goes under the one it covers most.
-Use "NONE" only when nothing in this brief is about it: a different organ, specialty or population (a
+            _v = _claude(f"""Classify each paper below under this brief's topic headings, from its title and abstract
+alone, for an audience of gynecologic surgeons. Answer with EVERY heading the paper genuinely bears on, best fit
+first — a paper covering several of the headings belongs under each of them, and may be discussed under each.
+Use ["NONE"] only when nothing in this brief is about it: a different organ, specialty or population (a
 keyword collision). A broad review that spans several of these headings is NOT "NONE".
 {TOPIC_FIT_RULE}
 TOPIC HEADINGS, each with what its area covers per the practice's reference library:
 {_area_brief}
 PAPERS: {json.dumps(_batch, ensure_ascii=False)}
-Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} with one entry for
+Reply with ONLY {{"assignments": {{"<pmid>": ["<exact heading>", ...] or ["NONE"], ...}}}} with one entry for
 EVERY paper given.""", timeout_s=900)
             if not _v or not isinstance(_v.get("assignments"), dict):
                 die(f"{tid}: corroboration returned no verdict")
@@ -1307,8 +1313,12 @@ EVERY paper given.""", timeout_s=900)
         by_title = {tt: ti for ti, tt in titles.items()}
         # a drop the second pass files under one of this brief's headings is
         # restored there — the first pass was wrong to remove it
+        def _heads(q):
+            a = v["assignments"].get(q, "")
+            a = a if isinstance(a, list) else [a]
+            return [str(x).strip() for x in a if str(x).strip()]
         for q, rec_d in dropped_ctx.items():
-            got = str(v["assignments"].get(q, "")).strip()
+            got = next((g for g in _heads(q) if by_title.get(g)), "")
             dest = by_title.get(got)
             if not dest:
                 continue
@@ -1325,9 +1335,13 @@ EVERY paper given.""", timeout_s=900)
                 json.dump(dt, open(W + f"topics/{dest}.json", "w"), ensure_ascii=False, indent=1)
             print(f"  RESTORE {q}: dropped from {tid}, filed under {dest} by the second pass")
         for q in list(d["keep"]):
-            got = str(v["assignments"].get(q, "")).strip()
-            if got == here:
+            heads = _heads(q)
+            # TOPIC_FIT_RULE: a paper that bears on several headings sits under
+            # each; the second pass used to be forced to name ONE and the paper
+            # was moved out of an approved heading whenever that one differed
+            if here in heads:
                 continue
+            got = next((g for g in heads if by_title.get(g)), "")
             dest = by_title.get(got)
             if dest and dest != tid:
                 moved.append((q, dest, got))
@@ -9120,9 +9134,11 @@ def writer_reject(new: str) -> str:
         return "invented experience"
     if ABSTRACT_LABEL_RE.search(new):
         return "raw abstract text"
-    m = absolute_claim(new)
+    m = _ABSOLUTE_WORD_RE.search(new)
     if m:
-        return f"an absolutist clinical claim ({m.group(0)!r})"
+        # S10 is the words themselves ("never-users" excepted): the gate reads
+        # them on the finished page, so a writer may not produce them
+        return f'the word "never" or "always" ({m.group(0)!r})'
     m = ADVICE_RE.search(new)
     if m:
         return f"patient-directed advice ({m.group(0)[:40]!r})"
