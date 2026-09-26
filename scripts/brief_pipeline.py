@@ -4126,7 +4126,12 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         for tid in man["topics"]:
             st = spans.get(tid)
             syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h[st.a:st.b]) if st else None
-            if not syn or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", syn.group(1)))) < 1000:
+            # substance scales with the topic: a one-paper topic's synthesis
+            # of 700 characters is a paragraph of substance; a seven-paper
+            # topic's is not (W24: three single-paper topics refused at 1,000)
+            n_cards = len(CARD_RE.findall(h[st.a:st.b])) if st else 0
+            floor = 600 if n_cards <= 2 else 1000
+            if not syn or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", syn.group(1)))) < floor:
                 faults.append(f"topic {tid} has no synthesis paragraph of substance above its cards")
         chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
         if sorted(chips) != sorted(man["topics"]):
@@ -11318,6 +11323,12 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, pops1 = refresh_popovers_from_abstracts(W, h, real)
         if pops1:
             print(f"  {pops1} hover card(s) refreshed from the papers' abstracts at resume")
+        # and the deep dives' verbatim abstracts: W24's page carried 1,578 of a
+        # 2,304-character abstract, and the S5 gate reported it as a label
+        # mismatch at character 0
+        h, _reps, n_abs = write_abstracts(W, h, real)
+        if n_abs:
+            print(f"  {n_abs} deep-dive abstract(s) restored to PubMed's text at resume")
         h, abs_n = fix_absolute_words(W, h, real)
         if abs_n:
             print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
