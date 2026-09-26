@@ -17,7 +17,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PATIENT_PAGES = ["index.html", "about/index.html", "education", "membership", "services"]
+# every patient-facing tree that exists: "membership" and "services" were dead
+# entries and learn/ — 30+ patient education pages — was never scanned
+# (curriculum/ is clinician training — hospice clerkship, the CBG/MIGS curriculum —
+# and may state doses; it is not a patient surface)
+PATIENT_PAGES = ["index.html", "about/index.html", "education", "learn", "portal/education"]
 NUM_WORDS = r"(?:one|two|three|four|five|six|seven|eight|nine|ten|twelve|twenty|fifty|hundred)"
 DOSE = re.compile(
     r"\b(?:\d[\d,.–—-]*|" + NUM_WORDS + r")[\s-]*"

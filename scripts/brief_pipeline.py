@@ -1964,6 +1964,9 @@ NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, c
 "never"/"always". When you name the practice write "CBG/MIGS", never bare "MIGS", and only where
 the paper actually bears on it — omit it rather than shoehorn it in.
 NO ADVICE: appraise the paper; never address a patient ("you should…", "take…", "ask your doctor…").
+TONE: the brief may be read by the person who made the claim it checks; write so they could read it and
+learn from it — no sneer, no gotcha, no scoreboard; do not use "verdict", "debunk", "myth",
+"misinformation", or "influencer" as a label; state plainly where the evidence is thin.
 Plain text with & < > escaped, no markup."""
 
 
@@ -2053,6 +2056,8 @@ READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
 Check: every fact traceable to the abstract; specific to this paper (design, population, key result
 named); no template phrasing that could sit under any paper; no AI/placeholder language; no
 "never"/"always"; no bare "MIGS"; 2-4 sentences; no markup.
+TONE: refuse any sneer, gotcha or scoreboard framing, and "verdict", "debunk", "myth", "misinformation"
+or "influencer" used as a label — the person who made the claim may be the reader.
 If fixable by tightening, return fixed_card with ok=true and problems listing the changes. Otherwise ok=false.
 GENERATED: {json.dumps(draft['card'])}
 Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_card": "..."}}""")
