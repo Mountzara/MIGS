@@ -8728,7 +8728,7 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
 _CONTRADICTION_RE = re.compile(
     r"(?:does\s*n[o']?t\s+match|do\s*n[o']?t\s+match|disagree|contradict|inconsist|mismatch"
     r"|two\s+different|conflicting|differs?\s+from|does\s*n[o']?t\s+(?:sum|add|equal)"
-    r"|(?:sum|total)s?\s+to\s+\d)", re.I)
+    r"|(?:sum|total)s?\s+to\s+\d|arithmetic|do(?:es)?\s*n[o']?t\s+(?:produce|yield|give|work\s+out))", re.I)
 # a contradiction stated plainly, with no mismatch verb at all:
 # "stated 11 topics but the page shows 10 topic sections"
 _COUNT_CLASH_RE = re.compile(
@@ -8756,6 +8756,80 @@ def _escalate_numeric_contradictions(defects: list) -> list:
             d["severity"] = "blocking"
             raised.append(d)
     return raised
+
+
+_RATIO_OF_RE = re.compile(r"(\d[\d,]*)\s+(?:of|out\s+of)\s+(?:the\s+)?(\d[\d,]*)\b[^.;%]{0,40}?\(?\s*(\d+(?:\.\d+)?)\s*%")
+_PCT_OF_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%\s*\(\s*(?:n\s*=\s*)?(\d[\d,]*)\s*(?:of|/)\s*(\d[\d,]*)\s*\)")
+
+
+def _ratio_arithmetic_defects(items: list) -> list:
+    """A share written beside its numerator and denominator must be that
+    share: "12 of 47 (31%)" and "31% (12/47)" are checked by division, no
+    reading involved. Half a point of tolerance covers rounding to a whole
+    percent. Returns defects in the shape numeric_consistency_defects emits.
+
+    W28 shipped a sentence whose stated gap between two ages was not the
+    difference of the ages; the model pass had been told to report only two
+    fault classes, and this was a third. Where the arithmetic is unambiguous
+    it is done here in code; where it needs reading (which figures a gap is
+    the difference of) the pass is now asked, explicitly."""
+    out = []
+    for x in items:
+        sent = x["sentence"]
+        checks = []
+        for m in _RATIO_OF_RE.finditer(sent):
+            checks.append((m.group(1), m.group(2), m.group(3), m.group(0)))
+        for m in _PCT_OF_RE.finditer(sent):
+            checks.append((m.group(2), m.group(3), m.group(1), m.group(0)))
+        for num, den, pct, shown in checks:
+            try:
+                n_, d_, p_ = float(num.replace(",", "")), float(den.replace(",", "")), float(pct)
+            except ValueError:
+                continue
+            if d_ <= 0 or n_ > d_:
+                continue
+            real = 100.0 * n_ / d_
+            if abs(real - p_) > 0.6:
+                out.append({"what": f"arithmetic: {num} of {den} is {real:.1f}%, the sentence says {pct}% ({shown.strip()!r})",
+                            "evidence": sent, "severity": "blocking"})
+    return out
+
+
+def _confirm_numeric_claims(W: str, blocking: list, h: str) -> list:
+    """Every blocking defect that says one number contradicts another is put
+    to a second reader with the sentences in front of it and one question:
+    do the figures actually disagree? The reader writes the arithmetic out
+    and answers; an unconfirmed claim is demoted to cosmetic and printed, so
+    the run neither rewrites a correct sentence nor hides that the auditor
+    was wrong. Defects the ratio check computed in code are not re-asked."""
+    kept = []
+    for d in blocking:
+        txt = f"{d.get('what', '')} {d.get('evidence', '')}"
+        numeric = (_CONTRADICTION_RE.search(txt) or _COUNT_CLASH_RE.search(txt)) and re.search(r"\d", txt)
+        if not numeric or str(d.get("what", "")).startswith("arithmetic:"):
+            kept.append(d)
+            continue
+        ev = H.unescape(re.sub(r"<[^>]+>", " ", str(d.get("evidence") or "")))
+        sites = _quoted_sites(h, ev)
+        quoted = [t for _a, _b, t in sites] or [ev]
+        v = _ask_cached(W, "confirm", f"""A first reader of a clinician-facing evidence brief reported this defect:
+CLAIM: {json.dumps(str(d.get("what"))[:600])}
+THE SENTENCE(S) EXACTLY AS THE PAGE HAS THEM:
+{json.dumps(quoted, ensure_ascii=False)[:4000]}
+You are the second reader. Decide whether the figures in these sentences actually disagree. Write the
+arithmetic out in "working" — every number, every subtraction, sum or ratio — and only then answer.
+A gap of "five to seven years" between an age of 16 and ages of 21 to 23 is correct arithmetic.
+Two different studies, a whole-cohort and a subgroup estimate, or a different rounding is not a
+contradiction. Default to confirmed=false unless the arithmetic shows a real disagreement.
+Reply with ONLY {{"confirmed": true|false, "working": "..."}}""", timeout_s=600)
+        if v and v.get("confirmed") is True:
+            kept.append(d)
+        else:
+            d["severity"] = "cosmetic"
+            d["what"] = f"[refuted by a second reader] {d.get('what')}"
+            print(f"  TRANSFORM AUDIT: a claimed numeric contradiction did not hold when the arithmetic was written out"
+                  f" — not repaired: {str(d.get('what'))[:110]} :: {str((v or {}).get('working', ''))[:160]}")
+    return kept
 
 
 def numeric_consistency_defects(W: str, h: str, facts: dict) -> list:
@@ -8791,8 +8865,12 @@ def numeric_consistency_defects(W: str, h: str, facts: dict) -> list:
                 break
         if len(items) >= 400:
             break
+    # Arithmetic a reader can check with no judgement at all is checked here
+    # with none: "12 of 47 (31%)" is either 25.5% or it is not. Reported
+    # before the model is asked, so a wrong share never depends on a reading.
+    out = _ratio_arithmetic_defects(items)
     if len(items) < 2:
-        return []
+        return out
     listing = "\n".join(f"[{x['passage']}] {x['sentence']}" for x in items)
     v = _ask_cached(W, "numeric", f"""Every sentence in one clinician-facing evidence brief that states a figure, with the passage it
 sits in. A reader meets all of these on one page and can compare them.
@@ -8802,21 +8880,27 @@ WHAT THE PAGE MEASURABLY HOLDS: {json.dumps(facts, ensure_ascii=False)}
 SENTENCES:
 {listing}
 
-Report ONLY these two faults:
+Report ONLY these three faults:
 (a) the SAME study or the SAME finding given different values in two different sentences — a
     different odds ratio, hazard ratio, percentage, sample size or follow-up for what is plainly the
     same result;
-(b) a document-wide total or share that disagrees with what the page measurably holds.
+(b) a document-wide total or share that disagrees with what the page measurably holds;
+(c) a DERIVED figure that the figures it is derived from do not produce — in one sentence or across
+    two: a gap, delay, interval or difference stated beside the two ages, dates or values it is the
+    difference of ("median age 16 at first symptoms; first consultation at 21–23; a gap of two years"
+    — the gap is five to seven); a share stated beside its numerator and denominator; parts that do
+    not sum to their stated total; a range whose stated median or mean lies outside it; a percentage
+    change that the before and after values do not give. Do the arithmetic; report only when it fails.
 Two different studies reporting different numbers is not a fault. The same study reported at two
 different timepoints, outcomes, or populations is not a fault WHEN each sentence names which one it
 means — a whole-cohort estimate and a subgroup estimate are different findings. It IS a fault when
 two sentences name the SAME population and outcome and give different values. A figure rounded
 differently (41% and 41.2%) is not a fault. Say nothing unless you are confident a reader would call it a
 contradiction.
-For each fault, quote BOTH sentences verbatim in "evidence", separated by " AND ".
+For each fault, quote BOTH sentences verbatim in "evidence", separated by " AND " — or the ONE sentence
+verbatim when the arithmetic fails inside it. In "what", show the arithmetic.
 Reply with ONLY {{"defects": [{{"what": "<the contradiction>", "evidence": "<sentence one> AND <sentence two>"}}, ...]}}
 and {{"defects": []}} when every figure agrees.""", timeout_s=900)
-    out = []
     for d in ((v or {}).get("defects") or [])[:8]:
         what, ev = str(d.get("what") or "").strip(), str(d.get("evidence") or "").strip()
         if what and ev:
@@ -9040,6 +9124,12 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
         print(f"  TRANSFORM AUDIT: filed as cosmetic, raised to blocking — a number contradicts "
               f"another number on the page: {str(d.get('what'))[:100]}")
     blocking = [d for d in (v.get("defects") or []) if str(d.get("severity", "")).lower() == "blocking"]
+    # An auditor's claim that figures disagree is judged by a second reader who
+    # must show the arithmetic, default refuted, before a sentence is touched:
+    # W28's read-back called "16, then 21 to 23 — a five-to-seven-year delay"
+    # an arithmetic contradiction and the repair loop rewrote a correct
+    # sentence on its word. The code-verified ratio faults need no reader.
+    blocking = _confirm_numeric_claims(W, blocking, after)
     for d in (v.get("defects") or [])[:12]:
         tag = "BLOCKING" if d in blocking else "cosmetic"
         print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
