@@ -3532,11 +3532,19 @@ def body_invariant_faults(h: str) -> list:
     cards = re.findall(r'<article class="mz-cite-card[\s\S]*?</article>', h)
     carded = {(re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c)
                or [None, None])[1] for c in cards} - {None}
-    cited = {_pmid_of(m.group(0)) for m in SUP_RE.finditer(h)} - {None}
-    if carded - cited:
-        out.append(f"{len(carded - cited)} carded paper(s) no sentence cites: {sorted(carded - cited)[:4]}")
-    if cited - carded:
-        out.append(f"{len(cited - carded)} cited paper(s) the brief does not card: {sorted(cited - carded)[:4]}")
+    # S4 says "cited in the prose". One set counted every marker on the page,
+    # the ones inside deep-dive dialogs included, so a paper cited only from
+    # inside a dialog's own editorial passed as cited when no sentence of the
+    # brief cites it. The two directions read different sets: a carded paper
+    # must be cited by the PROSE; a marker to an uncarded paper is a dead
+    # link wherever it sits, dialogs included.
+    cited_all = {_pmid_of(m.group(0)) for m in SUP_RE.finditer(h)} - {None}
+    cited_prose = {_pmid_of(m.group(0))
+                   for m in SUP_RE.finditer(re.sub(r"<dialog\b[\s\S]*?</dialog>", " ", h))} - {None}
+    if carded - cited_prose:
+        out.append(f"{len(carded - cited_prose)} carded paper(s) no sentence cites: {sorted(carded - cited_prose)[:4]}")
+    if cited_all - carded:
+        out.append(f"{len(cited_all - carded)} cited paper(s) the brief does not card: {sorted(cited_all - carded)[:4]}")
     first = {}
     for m in SUP_RE.finditer(h):
         q = _pmid_of(m.group(0))
@@ -3548,14 +3556,18 @@ def body_invariant_faults(h: str) -> list:
         lab = re.search(r"Paper\s*#\s*(\d+)", d.group(0))
         if q and lab and q in first and lab.group(1) != first[q]:
             out.append(f"the deep dive for {q} says Paper #{lab.group(1)} where its marker says {first[q]}")
-    # S10 on the whole page, dialog editorial text included: the deploy's live
-    # audit refused W34, W33 and W28 for bare MIGS no prose gate could see. A
-    # NOTE line (a paper's own words say MIGS) is printed, not counted
-    for f_ in practice_name_faults(h):
-        if f_.startswith("NOTE:"):
-            print("  " + f_)
+    # S10 on EVERY surface a reader sees, not only the prose containers: the
+    # deploy's live audit refused W34, W33 and W28 for the practice name
+    # written without its CBG/ prefix inside deep-dive dialog text and one
+    # synthesis, which the prose-only scans above never read. A line the
+    # checker prefixes "NOTE:" is information for the operator, not a fault;
+    # it is filtered here so every caller (the authoring path, renumber, the
+    # site audit) inherits the same reading.
+    for line in practice_name_faults(h):
+        if line.startswith("NOTE:"):
+            print("  " + line)
         else:
-            out.append(f_)
+            out.append(line)
     return out
 
 
@@ -3797,6 +3809,14 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         # within 60 minutes is not a figure from this paper's abstract, and
         # checking it against that abstract flagged correct sourcing.
         body_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-kb"[\s\S]*?</section>', " ", body_d)
+        # The page's OWN numbering is not a figure from the paper: the
+        # section headings ("12 · Questions worth journal-club dialogue")
+        # and the eyebrow ("Deep Dive · Paper #16") put 11, 12 and 16 in
+        # every dialog, and the number check below reported each as absent
+        # from the abstract — 47 of W20's 50 dialogs, on correct pages.
+        # Headings come out exactly as the S15 check above strips them.
+        body_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", body_d)
+        body_d = re.sub(r"Paper\s*#\s*\d+", " ", body_d)
         dt = H.unescape(re.sub(r"<[^>]+>", " ", body_d))
         if re.search(r"(?<!CBG/)\bMIGS\b", dt, re.I):
             faults.append(f"[dialog:{pm}] bare MIGS"); 
@@ -4072,9 +4092,13 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h = refresh_shape_chart(h)
     h = renumber_list_labels(h)
     h = tidy_prose_spacing(h)
-    h, migs0 = canonical_practice_name(h)
-    if migs0:
-        print(f"  {migs0} bare MIGS / wrong-order name(s) in the site's own text written as CBG/MIGS")
+    # S10 is fixed on the assembled body, not only refused: an author writes
+    # the practice name without its CBG/ prefix in a card, a dialog or a
+    # heading as readily as in a paragraph, and the prose-only scan below
+    # saw one surface of four
+    h, n_name = canonical_practice_name(h)
+    if n_name:
+        print(f"  {n_name} practice name(s) written without the CBG/ prefix corrected (S10)")
     h, exp0 = fix_invented_experience(W, h)
     if exp0:
         print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
@@ -4117,8 +4141,26 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         sec = h.rfind("<section", 0, m.start() if m else len(h))
         h = h[:sec] + DISCLAIMER + h[sec:]
 
+    # S16 FIRST. The read-back audit rewrites sentences, supplies and
+    # withdraws citations and renumbers as it goes, and it ran AFTER every
+    # post-condition, prose_faults and the grounding audit — so what they
+    # judged was not the body that published. It runs here, on the assembled
+    # page, and everything below reads its output.
+    h = audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
+                        {q: "" for q in dropped}, [], real=real, pmids=list(man["pmids"]), meta=verified_meta)
+    h, exp3 = fix_invented_experience(W, h)
+    if exp3:
+        print(f"  {exp3} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
+    # a repair sentence is written like any other and may carry the practice
+    # name without its prefix
+    h, n_fix = canonical_practice_name(h)
+    if n_fix:
+        print(f"  {n_fix} practice name(s) corrected in the audit's repairs")
+    # the citation order the checks compare against is the audited page's own
+    h, cite_order = _number_final_page(W, h, verified_meta)
+    stats["citations"] = len(cite_order)
+
     # ---- POST-CONDITIONS. Each of these is a fault that actually shipped. ----
-    prose = site_prose(h)
     faults = []
     # No dose check on a brief. These are clinician-facing; the rule governs the
     # patient-facing home page and educational materials, which
@@ -4164,7 +4206,11 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     # order of first appearance and resolve to the reference list, which is in
     # the same order and contains exactly the cited papers
     kept = list(man["pmids"])
-    uncited = [q for q in kept if q not in cite_order]
+    # S4 says cited in the PROSE. cite_order holds every marker on the page,
+    # the ones inside deep-dive dialogs included, so a paper cited only from
+    # inside a dialog counted as cited when no sentence of the brief cites it
+    prose_cited = {_pmid_of(x) for x in SUP_RE.findall(re.sub(r"<dialog\b[\s\S]*?</dialog>", " ", h))} - {None}
+    uncited = [q for q in kept if q not in prose_cited]
     if uncited:
         faults.append(f"{len(uncited)} kept paper(s) cited nowhere in the prose: {uncited[:6]}")
     # and the other direction: a marker pointing at a paper this brief does not
@@ -4218,9 +4264,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         # "INTRODUCTION:" as <h5>Introduction</h5>, so the raw label text is
         # correctly absent from the body. An earlier probe included it and
         # reported a false failure on a repair that had in fact landed.
-        # NOT `prose`: that name holds the site's own prose for the checks
-        # above, and reusing it here made the trend scoring-language gate scan
-        # a stray abstract fragment instead of the brief.
+        # NOT a name any check above reads: this held the site's own prose
+        # once, and reusing the name here made the trend scoring-language
+        # gate scan a stray abstract fragment instead of the brief.
         abstract_prose = re.sub(r"(^|\n)[A-Z][A-Z /&-]{2,40}:\s*", " ", abstract)
         probe = re.sub(r"\s+", " ", abstract_prose).strip()[:48]
         if len(probe) >= 24 and probe not in body_text:
@@ -4241,18 +4287,14 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
                 faults.append(f"[editorial] {label} is missing from the assembled body")
             elif len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", sm.group(1))))) < floor:
                 faults.append(f"[editorial] {label} is present but has no substance")
-        if re.search(r'mz-verdict|REVIEW REQUIRED', h):
-            faults.append("a verdict gauge or its label remains")
-
-        # S13's language rule covers the CARD LENS paragraphs too: site_prose
-        # strips cite cards as attributed text, so a "verdict"/"myth" written
-        # into a card was never scanned (standards-check, 2026-09-20).
-        card_prose = " ".join(re.sub(r"<[^>]+>", " ", re.sub(r"<details[\s\S]*?</details>", " ", c))
-                              for c in CARD_RE.findall(h))
-        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b",
-                         prose + " " + card_prose, re.I)
-        if bad:
-            faults.append(f"scoring language in the site's own prose: {sorted(set(b.lower() for b in bad))[:4]}")
+        # S13 whole — the gauge, the scoring language on every surface a
+        # reader sees (prose, card lens paragraphs, the placeholders inside
+        # dialogs), the bridge section, the framing labels — is one function
+        # shared with renumber, so the authoring path and the republishing
+        # path refuse the same page for the same reasons. The inline gauge
+        # check and a prose-plus-cards word scan stood here, and renumber
+        # had neither: eight trend briefs published carrying the gauge.
+        faults += trend_format_faults(h)
         for tid in man["topics"]:
             m = re.search(r'<h3[^>]*id="%s"[^>]*>[\s\S]{0,600}?<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)' % re.escape(tid), h)
             if not m:
@@ -4265,10 +4307,8 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             print("  FAULT:", f)
         die(f"{post_id}: {len(faults)} post-condition(s) failed")
 
-    # S16: the output is read back before it is written anywhere
-    h = audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
-                    {q: "" for q in dropped}, [], real=real, pmids=list(man["pmids"]), meta=verified_meta)
-
+    # (the S16 read-back ran above, before the post-conditions, so the body
+    # written here is the one every check judged)
     post["body_html"] = h
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
@@ -9252,6 +9292,25 @@ def _renumber_if_unnumbered(W: str, h: str, meta: dict | None, force: bool = Fal
     return h
 
 
+def _number_final_page(W: str, h: str, meta: dict | None) -> tuple:
+    """Deterministic numbering of the page as it will publish: (h, order).
+
+    Runs AFTER the read-back audit, whose repairs add, withdraw and rewrite
+    markers. The citation order the post-conditions compare against used to
+    be the one numbering produced BEFORE that audit, so the checks judged a
+    sequence the audited page no longer had: the audited body was not the
+    published body. Numbering is idempotent — on a page the audit left in
+    step this changes nothing — and `order` is first-appearance order over
+    the markers of this page, not a value carried over from an earlier one.
+    """
+    h, _dup = dedupe_run_markers(h)
+    h, order = number_citations(h, meta)
+    h, _badges = renumber_card_badges(h, order)   # badges and deep-dive labels follow the numbers
+    h = build_references(W, h, order, meta)
+    h = dedupe_element_ids(h)
+    return h, order
+
+
 def audit_transform(W: str, before: str, after: str, dropped, emptied: list, moved: list | None = None,
                     _repair: int = 5, real: dict | None = None, pmids: list | None = None,
                     meta: dict | None = None) -> str:
@@ -10291,15 +10350,12 @@ def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> 
     """dry=True runs the whole transformation and every check, and writes
     nothing to the site. Model verdicts are cached, so iterating on a regex
     after a failed check costs nothing."""
-    # No spec receipt required. That receipt certifies the AUTHORING pipeline,
-    # and this command authors nothing: it renumbers markers and rebuilds the
-    # reference list over prose that is already written, already reviewed and
-    # already published. Its own gate is its post-conditions (every marker a
-    # number in sequence resolving to an entry that exists, references in
-    # citation order, no duplicate ids), the site's publish audit, and a
-    # browser that checks every marker on hover and tap before and after
-    # publishing. Requiring the authoring receipt here left the owner's actual
-    # complaint sitting on the live site while the auditor refined wording.
+    # The spec receipt IS required for a run that publishes (see _renumber).
+    # It was waived here on the argument that this command authors nothing —
+    # and then the chain rewrote syntheses, narrative paragraphs and single
+    # sentences, and now authors a trend brief's bridge section and framing
+    # labels, all under rules no review had certified. A dry run still needs
+    # no receipt: it writes nothing to the site.
     W = os.path.join(SCRATCH, "renumber", post_id) + "/"
     os.makedirs(W + "papers", exist_ok=True)
     lock = hold_work_lock(W, post_id)
@@ -10318,12 +10374,79 @@ def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> 
         release_work_lock(lock)
 
 
+def _format_of_post(post: dict) -> str:
+    """"trend" or "weekly", from the post's KIND — never from its id. The id
+    prefixes read the other way round (scripts/_lib_brief_routes.py): the
+    weekly brief blog-2026-W20 is kind "evidence", and the trend brief
+    evidence-2026-05-19-… is kind "blog", which the trending shell lists.
+    renumber published eight trend briefs carrying the verdict gauge S13
+    forbids because nothing in it ever asked which format it was holding."""
+    return "trend" if (post.get("kind") or "").strip().lower() == "blog" else "weekly"
+
+
+def _paper_record(pm: str, r: dict) -> dict:
+    """The papers/<pmid>.json renumber writes, with every key its readers use.
+
+    It wrote pmid, title, meta_verified and pubmed_abstract only. prose_faults
+    reads "journal" for the card's journal-line check and real_from_work reads
+    "journal", "year" and "authors", so on a renumbered brief the journal
+    check passed vacuously and a card missing its journal line was never
+    reported. The verified meta line is built here too, so the two writers
+    in _renumber cannot drift apart."""
+    line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+    return {"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
+            "pubmed_abstract": r.get("abstract", ""), "abstract": r.get("abstract", ""),
+            "journal": r.get("journal", ""), "year": r.get("year", ""), "authors": r.get("authors", "")}
+
+
+def _carded_pmids(h: str) -> list:
+    """Every paper the page cards, in document order: by the card's id, or by
+    its deep-dive trigger on an older card that carries no id."""
+    out = []
+    for c in CARD_RE.findall(h):
+        q = (re.search(CARD_ID_RE, c) or re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+        if q and q not in out:
+            out.append(q)
+    return out
+
+
+def _manifest_of_page(W: str, h: str, fmt: str, real: dict | None = None) -> dict:
+    """The manifest prose_faults reads, built from a PUBLISHED page instead
+    of an authoring run: the carded papers, the format, and for a weekly
+    brief the live topic ids. S12 compares the jump-list chips against
+    exactly those ids, so an empty list would refuse every weekly brief that
+    has a TOC — the ids come from the page. A carded paper with no papers
+    file (a resume whose stage 0 ran under an older version) gets one from
+    PubMed's record so the abstract and card checks have text to read."""
+    pmids = _carded_pmids(h)
+    for pm in pmids:
+        pf = W + f"papers/{pm}.json"
+        if not os.path.exists(pf) and (real or {}).get(pm):
+            json.dump(_paper_record(pm, real[pm]), open(pf, "w"), ensure_ascii=False)
+    topics = [t.tid for t in _topic_sections(h)] if fmt != "trend" else []
+    return {"pmids": pmids, "format": fmt, "topics": topics}
+
+
+def _trend_authoring_faults(faults: list) -> list:
+    """The S13 faults only AUTHORING can fix — a missing "Where the two sides
+    can meet" section, a missing framing label — as opposed to those a
+    resume fixes on the page (a gauge, a word). trend_format_faults names
+    each in words, so this keys on the words it uses."""
+    return [f for f in faults if re.search(r"bridge|two sides|framing", f, re.I)]
+
+
 def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> None:
     if resume and resume not in RENUMBER_STAGES:
         die(f"unknown checkpoint {resume!r}; one of {RENUMBER_STAGES}")
     stage = RENUMBER_STAGES.index(resume) + 1 if resume else 0
+    if not dry:
+        # the receipt certifies that THIS version of the file was reviewed
+        # against THE STANDARDS; a chain that rewrites and authors prose and
+        # publishes it needs that as much as the authoring path does
+        require_spec_review()
     post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
     post = post.get("post", post)
+    fmt = _format_of_post(post)
     if stage == 0:
         h = normalize_legacy_markup(post["body_html"])
         # the practice's name, on the site's own text only (dialogs included)
@@ -10334,6 +10457,20 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         if exp0:
             print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
         before_html = h
+        # S10 and S13 on the page as published, before any pass reads it. The
+        # deploy's live audit refused W34, W33 and W28 for the practice name
+        # written without its CBG/ prefix inside deep-dive dialog text that
+        # no gate here could see, and renumber published eight trend briefs
+        # carrying the verdict gauge S13 forbids because it never ran the
+        # trend block. Both are fixed on the page itself, up front, so every
+        # later pass reads the page as it must publish.
+        h, n_name = canonical_practice_name(h)
+        if n_name:
+            print(f"  {n_name} practice name(s) written without the CBG/ prefix corrected (S10)")
+        if fmt == "trend":
+            h, n_gauge = retire_verdict_gauge(h)
+            if n_gauge:
+                print(f"  {n_gauge} verdict gauge(s) retired from the trend brief (S13)")
         before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
                   for x in SUP_RE.findall(h)]
         pmids = [x for x in dict.fromkeys(_pmid_of(x) for x in SUP_RE.findall(h)) if x]
@@ -10439,26 +10576,21 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # one gets its file and its journal line — not only the ones already cited
         meta = {}
         for pm in pmids_all:
-            r = real.get(pm) or {}
-            line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-            if line:
-                meta[pm] = line
-            json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
-                       "pubmed_abstract": r.get("abstract", "")},
-                      open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+            rec = _paper_record(pm, real.get(pm) or {})
+            if rec["meta_verified"]:
+                meta[pm] = rec["meta_verified"]
+            json.dump(rec, open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
         missing_meta = [pm for pm in pmids_all if pm not in meta]
         if missing_meta:
             # one more try before refusing: a partial PubMed response is transient
             again = fetch_pubmed(missing_meta)
             for pm in missing_meta:
                 r = again.get(pm) or {}
-                line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-                if line and r.get("title"):
+                rec = _paper_record(pm, r)
+                if rec["meta_verified"] and r.get("title"):
                     real[pm] = r
-                    meta[pm] = line
-                    json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
-                               "pubmed_abstract": r.get("abstract", "")},
-                              open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+                    meta[pm] = rec["meta_verified"]
+                    json.dump(rec, open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
             missing_meta = [pm for pm in pmids_all if pm not in meta]
         if missing_meta:
             die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
@@ -10478,6 +10610,17 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, refreshed = refresh_popovers_from_abstracts(W, h, real)
         if refreshed:
             print(f"  {refreshed} hover card(s) written from the papers' abstracts")
+        if fmt == "trend":
+            # S13 needs AUTHORING, not only removal: none of the eight
+            # published trend briefs has a "Where the two sides can meet"
+            # section or a framing label, and a gate can only refuse for
+            # that. The chain authors them here — after curation has settled
+            # which papers the brief holds and `real` is in hand, and before
+            # cite_and_review — so what it writes is cited and reviewed like
+            # every other sentence, and a --from=curated resume authors it.
+            h, notes = conform_trend_brief(W, h, real)
+            for note in notes:
+                print(f"  trend: {note}")
         h, named, declined = cite_and_review(W, h, pmids_all, real)
         _snap_put(W, "cited", h, named=named, declined=declined)
         print("  checkpoint: cited")
@@ -10554,12 +10697,25 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, talk0 = drop_process_commentary(h)
         if talk0:
             print(f"  {talk0} sentence(s) of commentary about the pipeline itself removed")
-        h, migs1 = canonical_practice_name(h)
-        if migs1:
-            print(f"  {migs1} bare MIGS / wrong-order name(s) written as CBG/MIGS at resume")
+        # the two fixes stage 0 makes on the page as published are made again
+        # on the banked page: a checkpoint written by an older version of this
+        # file, or a repair the audit banked, can carry either
+        h, name0 = canonical_practice_name(h)
+        if name0:
+            print(f"  {name0} practice name(s) written without the CBG/ prefix corrected at resume")
         h, exp1 = fix_invented_experience(W, h)
         if exp1:
             print(f"  {exp1} sentence(s) claiming the clinician's own experience rewritten from the paper at resume")
+        if fmt == "trend":
+            h, gauge0 = retire_verdict_gauge(h)
+            if gauge0:
+                print(f"  {gauge0} verdict gauge(s) retired at resume")
+            # a bridge section or a framing label cannot be supplied at this
+            # checkpoint: the chain authors and cites them from `curated` on
+            want = _trend_authoring_faults(trend_format_faults(h))
+            if want:
+                die(f"{post_id}: the banked page still lacks what only authoring supplies "
+                    f"({'; '.join(want)[:300]}) — resume with --from=curated so the chain can author and cite it")
         # a repair without the byline flipped two corrected names back (W21:
         # Yang for Guzelbag, Liu for Shen); the attribution pass reads the
         # banked page here so a resume corrects them without a full run
@@ -10570,22 +10726,40 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # compare every marker with the citation ORDER, so after any edit at
         # load the order is rebuilt from the page rather than trusted from
         # the checkpoint
-        h, dup_ = dedupe_run_markers(h)
-        h, order = number_citations(h, meta)
-        h, _badges = renumber_card_badges(h, order)   # badges and deep-dive labels follow the numbers
-        h = build_references(W, h, order, meta)
-        h = dedupe_element_ids(h)
+        h, order = _number_final_page(W, h, meta)
         _snap_put(W, "numbered", h, order=order)
 
-    # post-conditions, on exactly the two things reported plus what they touch
+    # S16 FIRST. The read-back audit rewrites sentences, supplies and
+    # withdraws citations and renumbers as it goes, and it ran AFTER the
+    # post-conditions — so they judged a body that was not the one published.
+    # It runs here, and every check below reads its output; the citation
+    # order they compare against is rebuilt from that page.
+    h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids, meta=meta)
+    h, exp2 = fix_invented_experience(W, h)          # a repair may write a witness
+    if exp2:
+        print(f"  {exp2} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
+    # a repair sentence is written like any other and may carry the practice
+    # name without its prefix
+    h, n_fix = canonical_practice_name(h)
+    if n_fix:
+        print(f"  {n_fix} practice name(s) corrected in the audit's repairs")
+    h, order = _number_final_page(W, h, meta)
+
+    # post-conditions, on the page exactly as it will publish
     faults = []
-    # S8/S9/S10 on the republished body. This path rewrites syntheses,
-    # narrative paragraphs and individual sentences, and none of these gates
-    # ran on it until standards-check said so (2026-09-20). The grounding of
-    # what it rewrites (S6) is judged sentence by sentence against the cited
-    # abstracts by review_inserted_citations above, and the finished page is
-    # read back by audit_transform below (S16).
-    faults += reader_prose_faults(h)
+    # THE STANDARDS, not a subset. This path rewrites syntheses, narrative
+    # paragraphs and single sentences, and authors a trend brief's bridge;
+    # until 2026-09-20 no prose gate ran on it, and after that only
+    # reader_prose_faults (S8/S9/S10) did — so S5 (the verbatim abstract),
+    # S12 (the weekly spine), S15 (the deep-dive sections) and the
+    # deterministic S1/S6 sentence checks never judged a republished brief,
+    # and the trend block never ran at all. prose_faults is the authoring
+    # path's own list, reader_prose_faults included; the manifest it reads
+    # is built from the page.
+    man = _manifest_of_page(W, h, fmt, real)
+    faults += prose_faults(W, h, man)
+    if fmt == "trend":
+        faults += trend_format_faults(h)
     # Citation coverage is no longer judged by matching surnames. Placement is
     # decided by the model reading each sentence against the papers, and it
     # deliberately declines where it cannot attribute — "Li and Ye" names two
@@ -10626,17 +10800,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         for f_ in faults:
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
-
-    h = audit_transform(W, before_html, h, removed, emptied, moved, real=real, pmids=pmids, meta=meta)
-    h, migs2 = canonical_practice_name(h)       # a repair may write the bare name
-    if migs2:
-        print(f"  {migs2} bare MIGS / wrong-order name(s) written as CBG/MIGS after the audit repair")
-    h, exp2 = fix_invented_experience(W, h)
-    if exp2:
-        print(f"  {exp2} sentence(s) claiming the clinician's own experience rewritten after the audit repair")
-    faults = reader_prose_faults(h)
-    if faults:
-        die(f"{post_id}: after the audit repair, {len(faults)} reader-visible fault(s): {faults[:3]}")
+    # (the S16 read-back ran above, before the post-conditions; the separate
+    # "after the audit repair" refusal that stood here read the same page
+    # with a smaller list, and the post-conditions now cover it)
 
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
@@ -10760,6 +10926,23 @@ def _run_chain(post_id: str, W: str, dry: bool = False) -> None:
                 die(f"{post_id}: refused and nothing to repair automatically — {e.msg[:400]}")
             print(f"  repairing: {fixed} — rerunning")
     die(f"{post_id}: still refused after {REPAIR_ROUNDS} repair rounds — {last[:400] if last else ''}")
+
+
+# ---------------------------------------------------------------------------
+# Supplied by the integrator. The five below are authored in parallel and the
+# wiring above calls them by exactly these names and signatures; each stub
+# refuses loudly so a run of this file as it stands cannot pass a gate it
+# does not yet have. They stand BEFORE the CLI guard because a command-line
+# run executes that block when it is reached, and a name defined after it
+# would not exist yet.
+# ---------------------------------------------------------------------------
+
+
+
+
+
+
+
 
 
 
