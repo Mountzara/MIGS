@@ -2724,7 +2724,7 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
         # more attempts, every objection accumulated (W24: stubs refused once
         # for a computed duration, again for a different overreach)
         for _attempt in range(2):
-            if not (err and err.startswith(("refused", "section(s) not passed"))):
+            if not (err and err.startswith(("refused", "section(s) not passed", "breaks a site rule"))):
                 break
             record_piece_objection(W, pm, err)
             _pm, n_probs, err = _author_one_paper((W, pm))
@@ -4696,6 +4696,14 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             print(f"  {n_att} card / deep-dive text(s), {n_pro} prose sentence(s) and {n_pop} hover card(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if man.get("format") == "trend" else [])
             g += reader_prose_faults(h)
+        # text written during the audit loop — an authored section, a repaired
+        # sentence — is read for the words and the name once more before the
+        # gate (W24: an "always" a late writer wrote refused the run)
+        h, _late_abs = fix_absolute_words(W, h, real)
+        h, _late_name = canonical_practice_name(h)
+        if _late_abs or _late_name:
+            print(f"  after the audit loop: {_late_abs} sentence(s) using never/always rewritten, {_late_name} name(s) corrected")
+        g += reader_prose_faults(h)
         for f_ in g:
             print("  GROUNDING:", f_)
         faults += g
@@ -11519,6 +11527,14 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             print(f"  {n_att} card / deep-dive text(s), {n_pro} prose sentence(s) and {n_pop} hover card(s) repaired from the audit's findings — auditing again")
             g = grounding_audit(W, h, man) + popover_audit(W, h) + (trend_prose_audit(W, h, man) if fmt == "trend" else [])
             g += reader_prose_faults(h)
+        # text written during the audit loop — an authored section, a repaired
+        # sentence — is read for the words and the name once more before the
+        # gate (W24: an "always" a late writer wrote refused the run)
+        h, _late_abs = fix_absolute_words(W, h, real)
+        h, _late_name = canonical_practice_name(h)
+        if _late_abs or _late_name:
+            print(f"  after the audit loop: {_late_abs} sentence(s) using never/always rewritten, {_late_name} name(s) corrected")
+        g += reader_prose_faults(h)
         for f_ in g:
             print("  GROUNDING:", f_)
         faults += g
