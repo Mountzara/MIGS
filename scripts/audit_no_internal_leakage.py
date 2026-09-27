@@ -122,6 +122,10 @@ RENDERED_BANNED = [
     ("a local path or private source file",  re.compile(r"/Users/[A-Za-z0-9._-]+/|\b[\w-]+\.docx\b")),
     ("JSON rendered as text",                 re.compile(r"\{\s*\"[a-z_]+\"\s*:")),
     ("an internal spec mark rendered",        re.compile(r"CLAUDE\.md|SYSTEM_MAP|§\s?0\.\d")),
+    # the pipeline's tooling words in fifty deep-dive headings ("Verbatim
+    # abstract (PubMed efetch)", "(KB placement)", "KB-grounded") — found by
+    # readers, never by this gate
+    ("pipeline tooling vocabulary rendered",  re.compile(r"\befetch\b|\bKB placement\b|\bKB-grounded\b|\bGenerated \d{4}-\d\d-\d\d")),
 ]
 
 

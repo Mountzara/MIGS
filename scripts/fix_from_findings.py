@@ -46,6 +46,298 @@ def container_of(f: dict) -> tuple:
     return None, None
 
 
+# The classes a finding can belong to, decided before any fix is chosen.
+# A reader's finding on an off-topic paper, a headline or a hover card has
+# no sentence to rewrite; routed to the text repair it was skipped in silence
+# (87 of 342 findings, 2026-09-27).
+OFFTOPIC_RE = re.compile(r"off-topic|keyword collision|sits under|carded under|off the heading|nothing to do with|"
+                         r"off the brief's subject|does not belong", re.I)
+# a finding about a deep dive's framing or its literature panel is text to
+# rewrite, not a paper to remove — judged on the finding's first clause
+NOT_PLACEMENT_RE = re.compile(r"deep[- ]dive|dialog|\blens\b|panel|fram(?:ed|ing)|established literature|knowledge-base"
+                              r"|carded twice|\bTOC\b|heading calls|in my experience|first-person", re.I)
+HEADING_LABEL_RE = re.compile(r"heading (?:calls|says|names|mislabels)|heading ['\"‘“][^'\"’”]{4,120}['\"’”] contains no"
+                              r"|mislabels its contents", re.I)
+POPOVER_SUBJECT_RE = re.compile(r"^(?:the\s+)?(?:[\w'’\[\]#.-]+\s+){0,2}?(?:popovers?|hover cards?)\b|popover (?:says|states|gives|reads|lists|reports)", re.I)
+
+
+def is_placement(w: str) -> bool:
+    first = re.split(r"(?<=[;.])\s", w, 1)[0]
+    return bool(OFFTOPIC_RE.search(first)) and not NOT_PLACEMENT_RE.search(first)
+
+
+HEADLINE_RE = re.compile(r"\bheadline\b|\bh1\b|post title|page title|title metadata|title field", re.I)
+DESIGN_RE = re.compile(r"design (?:chip|badge|label)s?|reference number label|citation number badge|card kicker", re.I)
+# fixed by a deterministic step every brief goes through (final_assembly,
+# conform_trend_brief) and verified by the gates after it — not by rewriting
+# a sentence
+STRUCTURAL_RE = re.compile(
+    r"verdict gauge|gauge (?:svg|element)|framing label|two sides can meet|evidence[- ]pyramid|pyramid (?:counts|tallies)"
+    r"|evidence-shape tally|shape of the evidence' tally|build (?:comments?|metadata)|spec-reference"
+    r"|mz-jc-placeholder|mz-jc-empty|synthesis paragraph sits|TOC group|chip row|carded twice"
+    r"|where it fits\W{1,3} anchor|(?:hero|counters|stat tiles|design chart|meta strip)\b[^.]{0,120}\b(?:\d+ papers|count)",
+    re.I)
+
+
+def container_by_name(f: dict, h: str, real: dict) -> tuple:
+    """(kind, pmid) for a finding that names its container by a paper's first
+    author or a title word ("Kashef card lens", "the Horrow dialog", "the
+    SPLM deep dive", "Ginindza popover", "popover for Basile") rather than
+    by PMID."""
+    t = f"{f.get('what', '')} {f.get('where', '')} {f.get('evidence', '')}"
+    carded = set(bp._carded_pmids(h))
+    first = {}
+    for q in carded:
+        au = ((real.get(q) or {}).get("authors") or "").split(",")[0].strip().split(" ")[0].lower()
+        if au:
+            first.setdefault(au, []).append(q)
+    name_ = r"([A-Z][\w'\u00c0-\u024f-]{2,})"
+    kind_ = r"(card|deep[- ]dive|dialog|popover|hover card)"
+    pairs = [(m.group(1), m.group(2)) for m in re.finditer(name_ + r"(?:'s)?\s+(?:[\w-]+\s+){0,2}?" + kind_, t)]
+    pairs += [(m.group(2), m.group(1)) for m in re.finditer(kind_ + r" for (?:the )?" + name_, t, re.I)]
+    for name0, kind0 in pairs:
+        kind0 = kind0.lower()
+        kind = "card" if kind0 == "card" else "popover" if kind0 in ("popover", "hover card") else "dialog"
+        hits = first.get(name0.lower()) or [q for q in carded if re.search(r"\b%s\b" % re.escape(name0), (real.get(q) or {}).get("title") or "", re.I)]
+        if len(hits) == 1:
+            return kind, hits[0]
+    return None, None
+
+
+_PAGE_INDEX: dict = {}
+
+
+def _page_index(h: str) -> tuple:
+    """(marker number -> pmid, pmid -> hover-card text) for one page, built
+    once per page: the marker pattern over an 800 KB brief takes seconds, and
+    the classifier asked it once per finding."""
+    key = hash(h)
+    if key not in _PAGE_INDEX:
+        num_to_pm = {}
+        for m in bp.SUP_RE.finditer(h):
+            a = re.search(r"<a\b[^>]*>([\s\S]*?)</a>", m.group(0))
+            n = re.search(r"\d+", re.sub(r"<[^>]+>", " ", a.group(1))) if a else None
+            pm = bp._pmid_of(m.group(0))
+            if n and pm:
+                num_to_pm.setdefault(n.group(0), pm)
+        pops = {}
+        for m in re.finditer(r'<span class="mz-ref-pop" id="ref-pop-(\d+)[^"]*"[^>]*>(.*?)</span></span>', h, re.S):
+            pops.setdefault(m.group(1), re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", m.group(2)))).lower())
+        _PAGE_INDEX.clear()
+        _PAGE_INDEX[key] = (num_to_pm, pops)
+    return _PAGE_INDEX[key]
+
+
+def popover_pmids(f: dict, h: str, real: dict, W: str = "") -> list:
+    """The paper(s) whose hover card a finding is about: by the marker number
+    it names ("Popover for [35]", "popover #44"), by the text it quotes from a
+    hover card, or by the first author it names."""
+    t = f"{f.get('what', '')} {f.get('evidence', '')} {f.get('where', '')}"
+    num_to_pm, pops = _page_index(h)
+    out = []
+    for n in re.findall(r"(?:popover|hover card)\s*(?:for\s*)?(?:#|\[)\s*(\d{1,3})|\[(\d{1,3})\]\s*(?:popover|hover card)|(?:#|\[)(\d{1,3})\]?\s*(?:'s)?\s*(?:popover|hover card)", t, re.I):
+        k = next(x for x in n if x)
+        if num_to_pm.get(k) and num_to_pm[k] not in out:
+            out.append(num_to_pm[k])
+    for q in quotes_of(t):
+        qn = re.sub(r"\s+", " ", q).strip().lower()[:40]
+        for pm, text in pops.items():
+            if qn and qn in text and pm not in out:
+                out.append(pm)
+    if not out:
+        kind, pm = container_by_name(f, h, real)
+        if pm:
+            out.append(pm)
+    if not out:
+        kind, pm = container_of(f)
+        if pm:
+            out.append(pm)
+    if not out and W and pops:
+        # the finding names the hover card by its content only ("Popover states
+        # arms in reverse order: the 25% and 7% figures…"): the model picks it
+        listing = "\n".join(f"[{pm}] {txt[:400]}" for pm, txt in pops.items())
+        v = bp._ask_cached(W, "locate", f"""A reviewer reported a defect in one hover card (the pop-up summary of a cited paper) of an evidence brief:
+DEFECT: {json.dumps(t[:1500], ensure_ascii=False)}
+Every hover card on the page, by PMID:
+{listing[:60000]}
+Which hover card(s) is the defect about? Reply with ONLY {{"pmids": ["...", ...]}}""", timeout_s=300)
+        out = [str(q) for q in ((v or {}).get("pmids") or []) if str(q) in pops][:3]
+    return out
+
+
+def rewrite_labelled_heading(W: str, h: str, f: dict) -> tuple:
+    """A section heading that mislabels what is under it ("papers on
+    antihistamine therapy for endometriosis pain" above two surgery reviews)
+    is written again from the section's own content. (h, changed)."""
+    t = f"{f.get('what', '')} {f.get('evidence', '')}"
+    qs = [q.strip() for q in re.findall(r"[\"“‘']([^\"”’']{6,160})[\"”’']", t) if len(q.strip()) >= 6]
+    for m in re.finditer(r"(<h([23])\b[^>]*>)([\s\S]*?)(</h\2>)", h):
+        plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", m.group(3)))).strip()
+        if not plain or not any(q.lower()[:30] in plain.lower() for q in qs):
+            continue
+        nxt = re.search(r"<h[12]\b|</section>", h[m.end():])
+        body = h[m.end():m.end() + (nxt.start() if nxt else 4000)]
+        body = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", bp.SUP_RE.sub(" ", body))))[:3000]
+        v = bp._ask_cached(W, "heading", f"""A reviewer found that this section heading of a clinician evidence brief misdescribes what sits under it:
+HEADING: {json.dumps(plain)}
+WHAT THE REVIEWER FOUND: {json.dumps(f.get('what', '')[:800], ensure_ascii=False)}
+WHAT THE SECTION HOLDS: {json.dumps(body, ensure_ascii=False)}
+Write the heading again: 3-12 words, saying exactly what the section holds — not a label it does not
+earn, no "verdict"/"myth"/"debunk", no "never"/"always", "CBG/MIGS" if the practice is named. Keep a
+trailing count in parentheses if the heading has one.
+Reply with ONLY {{"heading": "<text>"}}""", timeout_s=300)
+        new = re.sub(r"\s+", " ", str((v or {}).get("heading") or "")).strip().strip('"').rstrip(".")
+        if 3 <= len(new) <= 120 and not bp._ABSOLUTE_WORD_RE.search(new) and not bp.SCORING_LANGUAGE_RE.search(new) and new != plain:
+            print(f"  heading rewritten: {plain[:80]!r} -> {new[:80]!r}")
+            return h[:m.start(3)] + H.escape(new, quote=False) + h[m.end(3):], 1
+    return h, 0
+
+
+def remove_offtopic(W: str, h: str, fs: list, real: dict, fmt: str, post: dict) -> tuple:
+    """The papers the readers found off-topic, judged by the curator against
+    the owner's topic-fit rule — first pass, independent second pass — and
+    removed (or moved to the heading they belong under) only when it agrees.
+    The readers are not the rule: the owner's menopause heading is broad
+    ("a yoga trial in climacteric women … all belong there"), and a reader
+    calling a menopause-exercise paper off-topic under it is wrong. The
+    prose that argued from a removed paper is rewritten. (h, notes)."""
+    carded = list(dict.fromkeys(bp._carded_pmids(h)))
+    named = []
+    for f in fs:
+        t = f"{f.get('what', '')} {f.get('evidence', '')} {f.get('where', '')}"
+        pms = [q for q in dict.fromkeys(re.findall(r"\b(\d{7,9})\b", t)) if q in carded]
+        if not pms:
+            _k, pm = container_of(f)
+            if pm in carded:
+                pms = [pm]
+        if not pms:
+            _k, pm = container_by_name(f, h, real)
+            if pm:
+                pms = [pm]
+        if not pms:
+            listing = [{"pmid": q, "title": (real.get(q) or {}).get("title", "")} for q in carded]
+            v = bp._ask_cached(W, "offtopic_locate", f"""A reader of a clinician evidence brief reported that one or more of its papers are off-topic:
+FINDING: {json.dumps(t[:1800], ensure_ascii=False)}
+THE BRIEF'S PAPERS: {json.dumps(listing, ensure_ascii=False)[:30000]}
+Which of these papers does the finding name or describe as off-topic? List only those.
+Reply with ONLY {{"pmids": ["...", ...]}}""", timeout_s=300)
+            pms = [str(q) for q in ((v or {}).get("pmids") or []) if str(q) in carded]
+        named += [q for q in pms if q not in named]
+    notes = []
+    if not named:
+        return h, ["off-topic finding(s) named no paper the brief holds"]
+    papers_ctx = {q: {"title": (real.get(q) or {}).get("title", ""), "abstract": (real.get(q) or {}).get("abstract", "")} for q in carded}
+    gone = []
+    if fmt == "trend":
+        title = H.unescape(re.sub(r"<[^>]+>", "", (re.search(r'<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>([\s\S]*?)</h1>', h) or [None, ""])[1])).strip()
+        title = title.strip("“”\"") or str(post.get("title") or "")
+        h, removed = bp.curate_flat(h, title, papers_ctx, W, only=set(named))
+        gone = [q for q, _ in removed]
+        notes += [f"removed {q}: {why[:120]}" for q, why in removed]
+    else:
+        topics = {}
+        for tsec in bp._topic_sections(h):
+            seg = tsec.group(1)
+            tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
+            pm_here = list(dict.fromkeys(re.findall(bp.CARD_ID_RE, seg) + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
+            if pm_here:
+                ttl = H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else tsec.tid
+                topics[tsec.tid] = {"title": re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", ttl)[:90], "pmids": pm_here}
+        h, removed, moved, emptied = bp.curate_live(h, topics, papers_ctx, W, only=set(named))
+        notes += [f"removed {pm} from {topics[tid]['title']!r}: {why[:110]}" for tid, pm, why in removed]
+        notes += [f"moved {pm} from {topics[f_]['title']!r} to {topics[to]['title']!r}" for f_, to, pm, _ in moved]
+        notes += [f"heading left empty and removed: {x}" for x in emptied]
+        if removed or moved:
+            h, n = bp.rewrite_affected_syntheses(W, h, topics, removed, moved, real)
+            n and notes.append(f"{n} synthesis paragraph(s) rewritten for what the section now holds")
+        gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not bp._has_card(h, pm)]
+    kept = [q for q in named if q not in gone]
+    kept and notes.append(f"kept after the curator's two judgements: {kept}")
+    if gone:
+        h, n = bp.rewrite_narrative_for_removed(W, h, gone, real, surviving=[q for q in carded if q not in gone])
+        n and notes.append(f"{n} narrative paragraph(s) rewritten so nothing argues from a removed paper")
+    return h, notes
+
+
+def headline_fields(W: str, h: str, post: dict, fmt: str, fs: list) -> tuple:
+    """The headline, the post title and the listing summary say what the
+    brief holds. A trend brief's headline is the claim as it circulates —
+    quoted, not asserted — with the punctuation of its title. A weekly
+    brief's three fields are checked by one model call against the brief's
+    own topics and papers, and the counts in its summary are the page's.
+    Returns (h, {field: new}, notes)."""
+    fields, notes = {}, []
+    m = re.search(r'(<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>)([\s\S]*?)(</h1>)', h)
+    if not m:
+        return h, fields, notes
+    h1 = m.group(2).strip()
+    if fmt == "trend":
+        new = h1
+        words = re.findall(r"[\w'-]+,?", str(post.get("title") or ""))
+        for i, wd in enumerate(words[:-1]):
+            if wd.endswith(","):
+                a, b = wd[:-1], words[i + 1].rstrip(",")
+                new = re.sub(r"\b%s (?=%s\b)" % (re.escape(a), re.escape(b)), a + ", ", new)
+        if not new.startswith(("“", "&ldquo;", '"')):
+            new = "“" + new.rstrip(". ") + "”"
+        if new != h1:
+            h = h[:m.start(2)] + new + h[m.end(2):]
+            notes.append(f"headline set as the claim, quoted: {H.unescape(new)[:120]}")
+        return h, fields, notes
+    carded = list(dict.fromkeys(bp._carded_pmids(h)))
+    tops = []
+    for tsec in bp._topic_sections(h):
+        seg = tsec.group(1)
+        tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
+        pm_here = list(dict.fromkeys(re.findall(bp.CARD_ID_RE, seg) + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
+        titles = [H.unescape(re.sub(r"<[^>]+>", "", t)).strip()[:160] for t in re.findall(r'<p class="mz-cite-title">([\s\S]*?)</p>', seg)]
+        if pm_here:
+            tops.append({"heading": re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else tsec.tid),
+                         "papers": list(dict.fromkeys(titles))})
+    n_papers, n_topics = len(carded), len(tops)
+    summary = str(post.get("summary") or "")
+    s2 = re.sub(r"^\s*\d+ peer-reviewed papers across \d+ ", f"{n_papers} peer-reviewed papers across {n_topics} ", summary)
+    if s2 != summary:
+        fields["summary"] = s2
+        notes.append(f"summary counts set to the page's: {n_papers} papers, {n_topics} topics")
+    nm = re.search(r'<section class="[^"]*mz-(?:post-)?narrative\b[^"]*"[^>]*>([\s\S]*?)</section>', h)
+    narrative = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", bp.SUP_RE.sub(" ", nm.group(1))))).strip()[:1500] if nm else ""
+    cur = {"title": str(post.get("title") or ""), "h1": H.unescape(re.sub(r"<[^>]+>", "", h1)).strip(), "summary": fields.get("summary", summary)}
+    reported = "\n".join(f"- {f.get('what', '')[:400]}" for f in fs) or "(nothing reported)"
+    v = bp._ask_cached(W, "headline", f"""You check the three headline fields of a weekly evidence brief for clinicians ("CBG/MIGS Monday Mornings")
+against what the brief actually holds.
+THE BRIEF HOLDS these topic sections and papers: {json.dumps(tops, ensure_ascii=False)[:40000]}
+ITS OPENING NARRATIVE BEGINS: {json.dumps(narrative, ensure_ascii=False)}
+THE FIELDS NOW: {json.dumps(cur, ensure_ascii=False)}
+A READER REPORTED: {reported}
+RULES. Every subject a field names is the subject of a paper the brief holds (by the titles above) — a
+headline that promises a subject no paper covers is wrong. The title keeps its prefix exactly as it is
+(e.g. "CBG/MIGS Monday Mornings — W21: "). The h1 is one sentence, with no full stop required. The
+summary keeps its form and its counts exactly ("{n_papers} peer-reviewed papers across {n_topics} …").
+Topic names are written as names ("MHT", "C-section scar", "PCOS"), never as lowercase slugs; no typos.
+"CBG/MIGS", never bare "MIGS". No "never"/"always", no verdict or scoreboard words, no dosing.
+If all three already meet every rule, reply {{"ok": true}}. Otherwise reply with all three fields, each
+unchanged field copied exactly: {{"ok": false, "title": "...", "h1": "...", "summary": "...", "why": "<one clause>"}}
+Reply with ONLY the JSON.""", timeout_s=600)
+    if isinstance(v, dict) and v.get("ok") is False:
+        for k in ("title", "h1", "summary"):
+            val = re.sub(r"\s+", " ", str(v.get(k) or "")).strip()
+            if not val or val == cur[k]:
+                continue
+            if bp._ABSOLUTE_WORD_RE.search(val) or bp.SCORING_LANGUAGE_RE.search(val):
+                notes.append(f"{k} rewrite refused (absolute or scoring word): {val[:100]}")
+                continue
+            if k == "title" and not val.startswith(cur["title"].split(":")[0]):
+                notes.append(f"title rewrite refused (prefix changed): {val[:100]}")
+                continue
+            if k == "h1":
+                h = h[:m.start(2)] + H.escape(val, quote=False) + h[m.end(2):]
+            else:
+                fields[k] = val
+            notes.append(f"{k}: {val[:140]} ({str(v.get('why', ''))[:100]})")
+    return h, fields, notes
+
+
 def write_empty_headings(W: str, h: str) -> tuple:
     """A section heading with no text (legacy MHT had two) gets one written
     from its own section's content: a clear, specific signpost, not a
@@ -66,6 +358,31 @@ Reply with ONLY {{"heading": "<text>"}}""", timeout_s=300)
             h = h[:m.start(1)] + H.escape(t, quote=False) + h[m.end(1):]
             n += 1
     return h, n
+
+
+def structural_faults(h: str, fmt: str) -> list:
+    """The structural classes the readers found, as deterministic checks run
+    on every fixed page: a link to nothing, a trend brief without its S13
+    parts, a gauge element, a placeholder style on written text, tooling
+    words, a build timestamp, a lowercase topic slug in the headline."""
+    out = []
+    ids = set(re.findall(r'\bid="([^"]+)"', h))
+    dang = sorted({x for x in re.findall(r'href="#([^"]+)"', h) if x not in ids})
+    if dang:
+        out.append(f"link(s) to no element on the page: {dang[:5]}")
+    if fmt == "trend":
+        out += [x for x in bp.trend_format_faults(h)]
+        if re.search(r'<(?:div|figure|svg)\b[^>]*class="[^"]*mz-verdict-gauge', h):
+            out.append("a verdict gauge element is still on the page")
+    body = re.sub(r"<(style|script)\b[\s\S]*?</\1>", "", h)
+    n_ph = sum(1 for m in re.finditer(r'<p\b[^>]*class="[^"]*mz-jc-(?:placeholder|empty)[^"]*"[^>]*>([\s\S]*?)</p>', body)
+               if len(re.sub(r"<[^>]+>|\s", "", m.group(1))) >= 20)
+    if n_ph:
+        out.append(f"{n_ph} written paragraph(s) still styled as placeholders")
+    hm = re.search(r'<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>([\s\S]*?)</h1>', h)
+    if hm and re.search(r"(?<![\w/-])(?:mht|pcos|csection|icg)(?![\w/-])", hm.group(1)):
+        out.append(f"a lowercase topic slug in the headline: {hm.group(1)[:100]}")
+    return out
 
 
 def main():
@@ -158,23 +475,98 @@ def main():
         print(f"  {n_sys} deep-dive section(s) written again from their abstracts")
     findings = rest
 
-    # every other confirmed finding, fixed from the abstract
-    prose, attributed = [], []
+    # every other confirmed finding, routed by what it is BEFORE a fix is
+    # chosen: an off-topic paper, a headline, a hover card and a design label
+    # each have their own fix; a structural fault is fixed by the steps every
+    # brief goes through and verified by the gates after them
+    offtopic, headline, popover, design, text, labels = [], [], [], [], [], []
     for f in findings:
+        w = f.get("what", "")
+        if HEADING_LABEL_RE.search(w):
+            labels.append(f)
+            continue
+        if is_placement(w):
+            offtopic.append(f)
+            continue
+        if STRUCTURAL_RE.search(w):
+            continue
+        if HEADLINE_RE.search(w):
+            headline.append(f)
+            if not re.search(r"narrative|synthesis|prose|dialog|deep[- ]dive|card|popover", w, re.I):
+                continue          # the headline fields only: nothing in the body's prose to locate
+        if DESIGN_RE.search(w):
+            design.append(f)
+        if POPOVER_SUBJECT_RE.search(w[:120]) or re.search(r"popover (?:says|states|gives|reads|lists|reports)", w, re.I):
+            popover.append(f)
+            has_text = container_of(f)[0] or container_by_name(f, h, real)[0] in ("card", "dialog") \
+                or re.search(r"\bprose\b|synthesis|narrative|\bsentence", w, re.I)
+            if not has_text:
+                continue          # the hover card is the finding's whole subject
+        text.append(f)
+    if offtopic:
+        h, notes = remove_offtopic(W, h, offtopic, real, fmt, post)
+        for x in notes:
+            print(f"  off-topic: {x[:200]}")
+    h, fields, notes = headline_fields(W, h, post, fmt, headline)
+    for x in notes:
+        print(f"  headline: {x[:200]}")
+    json.dump(fields, open(W + "fields.json", "w"), ensure_ascii=False, indent=1)
+    for f in labels:
+        h, _n = rewrite_labelled_heading(W, h, f)
+        _n or print(f"  no heading on the page matches: {f.get('what', '')[:120]}")
+    if popover:
+        pf = []
+        for f in popover:
+            for pm in popover_pmids(f, h, real, W):
+                pf.append(f"[popover:{pm}] {f.get('what', '')[:600]}")
+        if pf:
+            h, n_pop = bp.fix_popover_findings(W, h, pf, real)
+            print(f"  {n_pop} hover card(s) written again from the abstract")
+    if design:
+        h, n_des = bp.verify_design_tags(W, h, real)
+        print(f"  {n_des} design badge(s) corrected from the abstract")
+
+    prose, attributed = [], []
+    for f in text:
         what = f"{f.get('standard', '')}: {f.get('what', '')}"
         ev = f.get("evidence") or ""
         kind, pm = container_of(f)
+        if not kind:
+            kind, pm = container_by_name(f, h, real)
+            kind = None if kind == "popover" else kind
         if kind:
-            for q in quotes_of(ev)[:3]:
-                attributed.append(f'[{kind}:{pm}] {what[:200]}: "{q}" ({f.get("what", "")[:200]})')
+            cont_text = " ".join(bp.container_pieces(h, kind, pm)).lower()
+            qs = [q for q in quotes_of(ev + " " + f.get("what", "")) if re.sub(r"\s+", " ", q).strip().lower()[:40] in re.sub(r"\s+", " ", cont_text)]
+            if not qs:
+                # the finding paraphrases: the pieces it is about, located
+                qs = bp.locate_in_container(W, h, kind, pm, f"{what}\nEVIDENCE: {ev}")
+                qs and print(f"  {kind} {pm}: {len(qs)} piece(s) located for a finding that quotes nothing on the page")
+            for q in qs[:4]:
+                attributed.append(f'[{kind}:{pm}] {what[:200]}: "{q}" ({f.get("what", "")[:300]})')
+            if not qs:
+                print(f"  {kind} {pm}: nothing in it carries the finding — {f.get('what', '')[:120]}")
         else:
             prose.append({"what": what, "evidence": ev})
     n_att = n_pro = n_cite = 0
     if attributed:
         h, n_att = bp.fix_attributed_text(W, h, attributed, real)
+    # a prose finding whose quotes are not on the page (paraphrased, or quoting
+    # across an ellipsis) gets its sentences located by the model first
+    located = []
+    for x in prose:
+        if bp._quoted_sites(h, x["evidence"]) or bp._quoted_sites(h, x["what"]):
+            located.append(x)
+            continue
+        more = bp.all_instances(W, h, f"{x['what']}\nEVIDENCE: {x['evidence']}")
+        if more:
+            print(f"  {len(more)} sentence(s) located for a finding that quotes nothing on the page")
+            located += [{"what": x["what"], "evidence": f'"{q}"'} for q in more]
+        else:
+            print(f"  no sentence of the prose carries: {x['what'][:140]}")
+    prose = located
     uncited = [x for x in prose if re.search(r"no (?:inline )?citation|uncited|without a citation|carries no", x["what"], re.I)]
     if uncited:
-        faults_u = [f'[prose] claim without a citation: "{q}" ({x["what"][:160]})' for x in uncited for q in quotes_of(x["evidence"])[:2]]
+        faults_u = [f'[prose] claim without a citation: "{q}" ({x["what"][:160]})' for x in uncited for q in (quotes_of(x["evidence"]) or [x["evidence"].strip('"')])[:2]]
         h, n_cite = bp.fix_placement(W, h, faults_u, real)
         prose = [x for x in prose if x not in uncited]
     expanded = []
@@ -208,6 +600,7 @@ def main():
         if hits:
             faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
     faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
+    faults += structural_faults(h, fmt)
     open(W + "fixed.html", "w", encoding="utf-8").write(h)
     if faults:
         print("  GATE FAULTS (not reviewed):")
@@ -294,7 +687,11 @@ def publish():
         sys.exit(3)
     print("  grounding audit: every sentence supported by its cited abstract")
     post["body_html"] = h
+    # the headline fields the fix wrote (title, summary) travel with the body
+    own = json.load(open(W + "fields.json")) if os.path.exists(W + "fields.json") else {}
+    post.update({k: v for k, v in own.items() if k in ("title", "summary") and isinstance(v, str) and v})
     fields, _n = bp.canonical_post_fields(post)
+    fields.update({k: post[k] for k in own if k in ("title", "summary") and post.get(k)})
     post.update(fields)
     if bp.post_field_faults(post):
         sys.exit(f"{pid}: {bp.post_field_faults(post)}")
@@ -350,6 +747,7 @@ def preflight():
         if hits:
             faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
     faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
+    faults += [x for x in structural_faults(h, fmt) if x not in faults]
     post["body_html"] = h
     json.dump(post, open(W + f"{pid}.preflight.json", "w"), ensure_ascii=False)
     aud = subprocess.run(["node", "-e",

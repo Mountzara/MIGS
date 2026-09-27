@@ -1154,7 +1154,15 @@ A PAPER DOES NOT BELONG only when one of these is true, and the reason must say 
       menopause heading. Name that heading exactly. This never applies when the two areas overlap:
       the paper then belongs under both;
   (c) it has no clinical or scientific content for this audience at all — a market analysis,
-      hospital administration, a commerce piece.
+      hospital administration, a commerce piece;
+  (d) it is not a study, review or guideline at all and reports no findings of its own — an
+      interview or profile of researchers ("The people behind the papers — …"), a news item, an
+      obituary, an erratum, a journal announcement. A profile that talks ABOUT a study is not that
+      study; it never belongs, whatever subject the study it discusses has.
+A SHARED WORD IS NOT A SHARED AREA. Under "Hysterectomy" in this practice's brief, a peripartum
+hysterectomy for placenta accreta spectrum is obstetric haemorrhage — a sequela of caesarean scar,
+so (b) under a caesarean-scar heading when the brief has one, and (a) when it has none; it is not
+the gynecologic hysterectomy the heading means.
 """
 
 
@@ -1167,7 +1175,7 @@ For EACH paper decide whether it belongs under that topic heading for THIS audie
 gynecologic surgeons reading a weekly literature brief.
 
 """ + TOPIC_FIT_RULE + """
-DROP means the paper does not belong by (a), (b) or (c) above — a neurology paper sharing a device
+DROP means the paper does not belong by (a), (b), (c) or (d) above — a neurology paper sharing a device
 name, a lung tumour sharing a histology
 word, a paediatric endocrine paper sharing a hormone word, a head-and-neck or hepatobiliary paper
 sharing an imaging dye. Being merely tangential is NOT enough to drop; being about something else is.
@@ -2870,6 +2878,59 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
 _PROSE_FAULT_RE = re.compile(r'^\[(?!card:|dialog:|headings)([^\]]+)\] (.+?): "(.*?)" \((.*)\)$', re.S)
 
 
+def container_pieces(h: str, kind: str, pm: str) -> list:
+    """The site's own text in one paper's card(s) or deep dive, piece by
+    piece, as the attributed repair reads it: the innermost paragraph, list
+    item or cell, markers dropped, the paper's own words excluded."""
+    if kind == "card":
+        conts = [x.group(0) for x in CARD_RE.finditer(h)
+                 if re.search(r'id="mz-cite-%s(?:-\d+)?"' % pm, x.group(0)) or f"openDeepDive('dd-{pm}')" in x.group(0)]
+    else:
+        dm = re.search(r'<dialog[^>]*\bid="dd-%s"[\s\S]*?</dialog>' % pm, h)
+        conts = [dm.group(0)] if dm else []
+    out = []
+    for cont in conts:
+        blanked = _blank_paper_text(cont)
+        for em in re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>((?:(?!<(?:p|li|dd|dt|td|blockquote|section)\b)[\s\S])*?)</\1>", blanked):
+            inner = cont[em.start(2):em.end(2)]
+            if re.search(r"<(?:p|li|dd|dt|td|section)\b", inner):
+                continue
+            plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", inner)))).strip()
+            if len(plain) >= 12 and plain not in out:
+                out.append(plain)
+    return out
+
+
+def locate_in_container(W: str, h: str, kind: str, pm: str, finding: str) -> list:
+    """The pieces of one paper's card or deep dive a confirmed finding is
+    about, when the finding paraphrases instead of quoting ("Card lens says
+    Mao characterized the axis in human DRG neurons"; "Equity section of the
+    Horrow dialog is a five-word non-answer"). Quote-matching found nothing
+    for 37 of the readers' 160 card and deep-dive findings, and the repair
+    skipped them in silence. One model call names the pieces; the repair
+    then rewrites exactly those from the abstract. Returns their text."""
+    pieces = container_pieces(h, kind, pm)
+    if not pieces:
+        return []
+    listing = "\n".join(f"[{i}] {x[:700]}" for i, x in enumerate(pieces))
+    v = _ask_cached(W, "locate", f"""A reviewer reported this defect in the {'cite card' if kind == 'card' else 'deep-dive analysis'} for one paper
+in a clinician-facing evidence brief:
+DEFECT: {json.dumps(finding[:1800], ensure_ascii=False)}
+Below is every piece of the site's own text in that {'card' if kind == 'card' else 'deep dive'}, numbered. List every piece
+that carries this defect — the text a fix must rewrite — and no other. An empty or stub section the
+defect names is the piece that holds its (short) text.
+PIECES:
+{listing[:60000]}
+Reply with ONLY {{"pieces": [<number>, ...]}}""", timeout_s=600)
+    out = []
+    for n in ((v or {}).get("pieces") or []):
+        try:
+            out.append(pieces[int(n)])
+        except (ValueError, IndexError, TypeError):
+            continue
+    return out
+
+
 def fix_placement(W: str, h: str, faults: list, real: dict) -> tuple:
     """A sentence whose markers sit bunched after several claims is rewritten
     with each marker placed after the claim it supports — split into more
@@ -3220,6 +3281,174 @@ def add_dialog_references(h: str, real: dict) -> tuple:
     return h, n
 
 
+# Internal tooling words a reader should never see, in the headings the
+# deep-dive generations used: "Verbatim abstract (PubMed efetch)", "Where it
+# fits in the literature (KB placement)", "KB-grounded journal-club
+# analysis" — fifty to seventy dialogs each, found by the readers, never by a
+# gate. The leakage gate now refuses them on the rendered text as well.
+_TOOLING_WORDS = (
+    (re.compile(r"\s*\(PubMed efetch\)"), " (PubMed)"),
+    (re.compile(r"\s*\(KB placement\)"), ""),
+    (re.compile(r"\bKB-grounded journal-club analysis\b"), "journal-club analysis"),
+    (re.compile(r"\bKey findings — extracted effect estimates\b"), "Key findings — effect estimates"),
+)
+# a common word in capitals, shouted in the clinician's own sentence
+# ("but NOT with rASRM stage", "NO measurable VTE risk", "ALL cesarean
+# deliveries"); NO before a nitric-oxide word and ALL before a leukaemia word
+# are the molecules and the disease, not emphasis
+_SHOUT_RE = re.compile(r"\b(NOT|ONLY|NEVER|ALWAYS|MUST|NONE|BOTH|ALL|NO)\b(?=\s+[a-z(])"
+                       r"(?!\s+(?:synthase|donor|production|levels?|signal\w*|release|bioavailability|metabolites?|survivors|relapse|blasts|cells)\b)")
+_SLUG_TOKENS = (("csection scar", "C-section scar"), ("icg fluorescence", "ICG fluorescence"),
+                ("mht", "MHT"), ("pcos", "PCOS"), ("nbi", "NBI"), ("icg", "ICG"))
+
+
+def _own_text_nodes(h: str, fn) -> tuple:
+    """Apply fn to every text node of the site's own words outside headings —
+    paper text, scripts, styles and h1-h6 untouched. (h, changed)."""
+    out, last, n = [], 0, 0
+    spans = _paper_text_spans(h) + [(len(h), len(h))]
+    for a, b in spans:
+        seg = h[last:a]
+        parts = re.split(r"(<[^>]+>)", seg)
+        depth = 0
+        for i, x in enumerate(parts):
+            if x.startswith("<"):
+                t = re.match(r"</?(h[1-6])\b", x, re.I)
+                if t:
+                    depth += -1 if x.startswith("</") else 1
+                continue
+            if depth <= 0 and x.strip():
+                y = fn(x)
+                if y != x:
+                    parts[i] = y
+                    n += 1
+        out.append("".join(parts))
+        out.append(h[a:b])
+        last = b
+    return "".join(out), n
+
+
+def house_style(h: str, fmt: str) -> tuple:
+    """The deterministic house-style fixes the readers found as classes across
+    the published briefs, each in every brief at once. (h, notes)."""
+    notes = []
+    for pat, rep in _TOOLING_WORDS:
+        h, k = pat.subn(rep, h)
+        k and notes.append(f"{k} internal tooling word(s) in headings")
+    # the build timestamp in the hero's meta strip
+    h, k = re.subn(r"\s*<div>\s*Generated\s*<strong>[^<]*</strong>\s*</div>", "", h)
+    k and notes.append("build timestamp removed from the hero")
+    # authored text still styled as a placeholder (grey italic on every trend
+    # brief's deep dives): a paragraph with words in it is not a placeholder
+    def _unplaceholder(m):
+        body = h_ref[m.end():_element_end(h_ref, "p", m.end())]
+        if len(re.sub(r"<[^>]+>|\s", "", body)) < 20:
+            return m.group(0)
+        cls = " ".join(c if c not in ("mz-jc-placeholder", "mz-jc-empty") else "mz-jc-p" for c in m.group(2).split())
+        return m.group(1) + cls + m.group(3)
+    h_ref = h
+    h2 = re.sub(r'(<p\b[^>]*\bclass=")([^"]*\bmz-jc-(?:placeholder|empty)\b[^"]*)(")', _unplaceholder, h)
+    if h2 != h:
+        notes.append("authored deep-dive text no longer styled as a placeholder")
+        h = h2
+    # shouted capitals in the clinician's own sentences
+    h, k = _own_text_nodes(h, lambda x: _SHOUT_RE.sub(lambda m: m.group(1).lower(), x))
+    k and notes.append(f"shouted capitals lowered in {k} text node(s)")
+    # topic slugs in the headline and hero subtitle ("signals from mht", "csection scar")
+    for cls in ("mz-post-title", "subtitle", "mz-post-lede"):
+        for m in list(re.finditer(r'(<(h1|p)\b[^>]*class="[^"]*\b%s\b[^"]*"[^>]*>)([\s\S]*?)(</\2>)' % cls, h))[::-1]:
+            t = m.group(3)
+            for slug, disp in _SLUG_TOKENS:
+                t = re.sub(r"(?<![\w/-])%s(?![\w/-])" % re.escape(slug), disp, t)
+            if t != m.group(3):
+                h = h[:m.start(3)] + t + h[m.end(3):]
+                notes.append("topic slug written as its name in the hero")
+    # a hero promise the cards do not keep: "a 'where it fits' anchor" on
+    # every card, on a page whose cards carry none (W20, W33, W34)
+    n_cards = len(CARD_RE.findall(h))
+    n_fits = len(re.findall(r'<(?:p|div|span)\b[^>]*class="[^"]*\bmz-cite-fits\b', h))
+    if n_cards and n_fits < n_cards:
+        h, k = re.subn(r',\s*a study-design label,\s*and a (?:"|&quot;|“)where it fits(?:"|&quot;|”) anchor against the established literature',
+                       " and a study-design label", h)
+        k and notes.append("hero no longer promises a 'where it fits' anchor the cards do not carry")
+    # the jump list: a group with no chips points at nothing (W20 "Surgical
+    # Tools", its link to a section that does not exist, its synthesis
+    # written for papers the brief does not hold) — it goes
+    for m in list(re.finditer(r'<div class="mz-toc-group">', h))[::-1]:
+        end = _element_end(h, "div", m.end())
+        grp = h[m.start():end]
+        chips = re.search(r'<div class="mz-toc-chips">([\s\S]*?)</div>', grp)
+        target = re.search(r'href="#(group-[^"]+)"', grp)
+        if (chips and not chips.group(1).strip()) or (target and f'id="{target.group(1)}"' not in h):
+            h = h[:m.start()] + h[end:]
+            notes.append("an empty jump-list group removed")
+    # a group's synthesis sits in the body above its topics, where a reader
+    # who jumps there lands — not only inside the jump list (W20)
+    for m in list(re.finditer(r'<div class="mz-toc-group">', h))[::-1]:
+        end = _element_end(h, "div", m.end())
+        grp = h[m.start():end]
+        syn = re.search(r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>', grp)
+        target = re.search(r'href="#(group-[^"]+)"', grp)
+        if not (syn and target):
+            continue
+        sec = re.search(r'<section\b[^>]*\bid="%s"[^>]*>' % re.escape(target.group(1)), h)
+        if not sec or sec.start() < end:
+            continue
+        sec_end = _element_end(h, "section", sec.end())
+        if "mz-toc-group-synthesis" in h[sec.end():sec_end]:
+            continue
+        hd = re.search(r"<h2\b[^>]*>[\s\S]*?</h2>", h[sec.end():sec_end])
+        at = sec.end() + (hd.end() if hd else 0)
+        para = syn.group(0)
+        h = h[:at] + para + h[at:]
+        h = h[:m.start() + syn.start()] + h[m.start() + syn.end():]
+        notes.append("a group synthesis placed above its topics")
+    # a card's design chip is the design, in the vocabulary's own words, with
+    # the sample size when there is one — not the year and journal on some
+    # cards and a bare label on others (PCS, H1/H2, mast-cell)
+    vocab = {v.lower(): v for v in DESIGN_VOCAB}
+    alias = {"rct": "Randomized Controlled Trial", "randomized trial": "Randomized Controlled Trial",
+             "translational study": "In Vitro / Translational", "in vitro": "In Vitro / Translational",
+             "mechanism study": "In Vitro / Translational", "systematic review and meta-analysis": "Meta-Analysis",
+             "cochrane systematic review": "Cochrane Review", "consensus statement": "Guideline / Consensus",
+             "guideline": "Guideline / Consensus", "position statement": "Guideline / Consensus"}
+    def _chip(m):
+        parts = [x.strip() for x in H.unescape(m.group(2)).split("·") if x.strip()]
+        if not parts:
+            return m.group(0)
+        d = vocab.get(parts[0].lower()) or alias.get(parts[0].lower())
+        if not d:
+            return m.group(0)
+        n = next((re.sub(r"^n\s*=\s*", "n = ", x) for x in parts[1:] if re.match(r"n\s*=\s*[\d,]+$", x)), None)
+        new = d + (f" · {n}" if n else "")
+        return m.group(1) + H.escape(new, quote=False) + m.group(3)
+    h2 = re.sub(r'(<span class="mz-cite-design">)([^<]*)(</span>)', _chip, h)
+    if h2 != h:
+        notes.append("card design chips written in one form")
+        h = h2
+    # the deep dive's own header names the same design the card does
+    chip_of = {}
+    for c in CARD_RE.findall(h):
+        pm = _pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+        d = re.search(r'<span class="mz-cite-design">([^<]*)</span>', c)
+        if pm and d and pm not in chip_of:
+            chip_of[pm] = H.unescape(d.group(1)).split("·")[0].strip()
+    def _meta(m):
+        pm = m.group(1)
+        d = chip_of.get(pm)
+        strong = re.search(r"<strong>([^<·]+)·\s*(\d{4})[^<]*</strong>", m.group(0))
+        if not d or not strong or strong.group(1).strip().lower() == d.lower():
+            return m.group(0)
+        return m.group(0).replace(strong.group(0), f"<strong>{H.escape(d, quote=False)} · {strong.group(2)}</strong>", 1)
+    # bounded at the dialog's own end: a dialog with no meta line must not
+    # reach into the next dialog's and write this paper's design there
+    h2 = re.sub(r'<dialog[^>]*\bid="dd-(\d+)"[^>]*>(?:(?!</dialog>)[\s\S])*?<p class="mz-jc-modal-meta">(?:(?!</dialog>)[\s\S])*?</p>', _meta, h)
+    if h2 != h:
+        notes.append("deep-dive headers name the card's design")
+        h = h2
+    return h, notes
+
+
 def final_assembly(W: str, h: str, real: dict, fmt: str) -> str:
     """Every deterministic step a finished brief goes through, in one place.
 
@@ -3242,6 +3471,7 @@ def final_assembly(W: str, h: str, real: dict, fmt: str) -> str:
     h = re.sub(r'(<span class="mz-cite-design">)\s*\[\d+\]\s*·\s*', r"\1", h)
     h, _ = drop_empty_list_items(h)
     h, _ = recount_section_headings(h)
+    h, _ = house_style(h, fmt)
     h, _ = refresh_page_counts(h)
     h, _ = add_dialog_references(h, real)
     h, _reps, _nab = write_abstracts(W, {"pmids": _carded_pmids(h), "format": fmt, "topics": []}, h, [], strict=False)
@@ -4609,6 +4839,14 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         for tid in man["topics"]:
             st = spans.get(tid)
             syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h[st.a:st.b]) if st else None
+            if st and not syn:
+                # a page that groups its topics carries the synthesis once, above
+                # the group's topics (W20): that paragraph is above this topic's cards
+                for g in re.finditer(r'<section class="[^"]*mz-topic-group[^"]*"[^>]*>', h[:st.a]):
+                    gb = _element_end(h, "section", g.end())
+                    if gb >= st.b:
+                        syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h[g.end():st.a])
+                        break
             # substance scales with the topic: a one-paper topic's synthesis
             # of 700 characters is a paragraph of substance; a seven-paper
             # topic's is not (W24: three single-paper topics refused at 1,000)
@@ -4619,7 +4857,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
         if sorted(chips) != sorted(man["topics"]):
             faults.append("the jump-to-topic TOC does not list exactly the live topics")
-        nm = re.search(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h)
+        nm = re.search(r'<section class="[^"]*mz-(?:post-)?narrative\b[^"]*"[^>]*>([\s\S]*?)</section>', h)
         if not nm or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", nm.group(1)))) < 400:     # a stub, not a length rule
             faults.append("the opening narrative is missing or too short")
     # deep-dive sections are the clinician's prose too: terms, advice, styling
@@ -6321,7 +6559,7 @@ DESIGN_VOCAB = ["Randomized Controlled Trial", "Meta-Analysis", "Systematic Revi
                 "Cross-Sectional", "Case-Control", "Case Report", "Case Series", "Trial Protocol",
                 "Qualitative Study", "Survey", "Guideline / Consensus", "Diagnostic Accuracy Study",
                 "Mendelian Randomization", "Cost-Effectiveness Analysis", "In Vitro / Translational",
-                "Animal Study"]
+                "Animal Study", "Cochrane Review", "Review Protocol"]
 
 
 def verify_design_tags(W: str, h: str, real: dict) -> tuple:
@@ -6349,7 +6587,8 @@ def verify_design_tags(W: str, h: str, real: dict) -> tuple:
         batch = distinct[i:i + 12]
         v = _ask_cached(W, "design", f"""Each item is a paper, the study-design badge shown on its card in a clinical brief, and the paper's own
 title and abstract. Judge whether the badge names the design the abstract describes. A narrative
-review badged as a cohort, a protocol badged as a trial, a cross-sectional survey badged as a cohort,
+review badged as a cohort, a protocol badged as a trial, a review protocol (Cochrane or other) badged
+as a trial protocol, a mouse study badged as in vitro, a cross-sectional survey badged as a cohort,
 or a sample size that is not the paper's are wrong. A badge that names the right design (with or
 without a sample size) is right; do not change wording that is merely different.
 DESIGN VOCABULARY (use exactly one): {json.dumps(DESIGN_VOCAB)}
@@ -8030,7 +8269,20 @@ def fix_document_totals(W: str, h: str, real: dict) -> tuple:
              "percent_of_total": {x["topic"]: round(100 * x["papers"] / total) for x in per} if total else {},
              "papers_by_study_design": dict(designs),
              "deep_dive_papers": deep, "papers_not_deep_dived": max(total - deep, 0)}
+    # a page that groups its topics (W20: "Menopause — Thirteen menopause
+    # papers…" above a group holding seven) states group totals too
+    groups = []
+    for g in re.finditer(r'<section class="[^"]*mz-topic-group[^"]*"[^>]*>', h):
+        gb = _element_end(h, "section", g.end())
+        seg = h[g.end():gb]
+        gt = re.search(r"<h2[^>]*>([\s\S]*?)</h2>", seg)
+        n_g = len(set(re.findall(CARD_ID_RE, seg)) | set(re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
+        if gt and n_g:
+            groups.append({"group": H.unescape(re.sub(r"<[^>]+>", "", gt.group(1))).strip()[:80], "papers": n_g})
+    if groups:
+        facts["per_group_of_topics"] = groups
     allowed = {total, len(per), deep, max(total - deep, 0)} | {x["papers"] for x in per} | set(facts["percent_of_total"].values()) | set(designs.values())
+    allowed |= {x["papers"] for x in groups}
     # numbers a writer derives from the facts: "the remaining 14 papers across
     # seven other topics" is the total minus the four largest topics
     from itertools import combinations
@@ -8062,7 +8314,7 @@ SENTENCES:
 {listing}
 Find every sentence stating a document-wide total or share — how many papers this week, how many
 topics, how many papers a topic has, a percentage of the whole, "the N papers not deep-read" — that
-disagrees with the facts. Give each such sentence rewritten with the right figures (words or digits
+disagrees with the facts.{" A group of topics states how many papers the group holds (per_group_of_topics)." if groups else ""} Give each such sentence rewritten with the right figures (words or digits
 as the original used) and nothing else changed; plain text, no citation markup. A sentence about a
 single study's own numbers is not a total and is not changed.
 Reply with ONLY {{"changes": [{{"sentence": <number>, "rewrite": "<text>"}}, ...]}} and {{"changes": []}} when
@@ -9448,7 +9700,7 @@ def _ask_cached(W: str, kind: str, prompt: str, timeout_s: int = 900):
     return v
 
 
-def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
+def curate_live(h: str, topics: dict, papers: dict, W: str = "", only: set | None = None) -> tuple:
     """Judge every (heading, paper) placement twice, and act on ONE placement.
 
     First pass: does this paper belong under THIS heading — by TOPIC_FIT_RULE
@@ -9504,7 +9756,9 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
     area = {tid: kb_area_context(W, t["title"]) for tid, t in topics.items()}
 
     for tid, t in topics.items():
-        pmids = [q for q in t["pmids"] if q in papers and q not in unjudgeable]
+        # `only`: the papers a confirmed finding names — judged against their
+        # heading with every other heading in view, and nothing else re-judged
+        pmids = [q for q in t["pmids"] if q in papers and q not in unjudgeable and (only is None or q in only)]
         if not pmids:
             continue
         for i in range(0, len(pmids), 10):
@@ -9519,7 +9773,7 @@ OTHER HEADINGS IN THIS BRIEF: {json.dumps([x for k, x in titles.items() if k != 
 For EACH paper: does it belong under THAT heading, by the rule above?
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"verdicts": [{{"pmid": "...", "verdict": "belongs"|"does_not_belong"|"cannot_tell",
-  "why": "<one clause; for does_not_belong it names (a), (b) or (c) and what the paper is actually about>",
+  "why": "<one clause; for does_not_belong it names (a), (b), (c) or (d) and what the paper is actually about>",
   "elsewhere": "<for (b) only: one heading copied exactly from OTHER HEADINGS IN THIS BRIEF; otherwise null>"}}, ...]}}
 with one object for EVERY paper given. "cannot_tell" is for a paper whose title and abstract do not let
 you judge; it is kept.""", timeout_s=900)
@@ -9550,7 +9804,8 @@ you judge; it is kept.""", timeout_s=900)
     # is there ANY heading in this brief the paper belongs under?
     gone = {(tid, pm) for tid, pm, _ in removed} | {(f, pm) for f, _, pm, _ in moved}
     distinct = list(dict.fromkeys([q for tid, t in topics.items() for q in t["pmids"]
-                                   if q in papers and q not in unjudgeable and (tid, q) not in gone]
+                                   if q in papers and q not in unjudgeable and (tid, q) not in gone
+                                   and (only is None or q in only)]
                                   + [pm for _, _, pm, _ in moved]))
     def _flat(x):
         return re.sub(r"\s+", " ", x or "")[:400]
@@ -9561,7 +9816,7 @@ you judge; it is kept.""", timeout_s=900)
 audience of gynecologic surgeons reading a weekly literature brief.
 {TOPIC_FIT_RULE}
 Put each paper under the heading whose area it belongs to, even when the fit is broad. Answer "NONE"
-ONLY for a paper that does not belong in a gynecology brief at all under (a) or (c) above — never
+ONLY for a paper that does not belong in a gynecology brief at all under (a), (c) or (d) above — never
 because no heading is a perfect match.
 HEADINGS, each with what its area covers per the practice's reference library:
 {area_brief}
@@ -9640,7 +9895,7 @@ Reply with ONLY {{"verdict": "keep"|"drop", "why": "<one clause>"}}""", timeout_
     return h, removed, moved, emptied
 
 
-def curate_flat(h: str, title: str, papers: dict, W: str = "") -> tuple:
+def curate_flat(h: str, title: str, papers: dict, W: str = "", only: set | None = None) -> tuple:
     """Curate a brief that has no topic headings: its title is its one heading.
 
     Curation was gated on topic sections existing, and a trend brief has
@@ -9657,6 +9912,8 @@ def curate_flat(h: str, title: str, papers: dict, W: str = "") -> tuple:
     survive under. Returns (h, removed) with removed = [(pmid, why)].
     """
     carded = list(dict.fromkeys(re.findall(CARD_ID_RE, h) + re.findall(r"openDeepDive\('dd-(\d+)'", h)))
+    if only is not None:
+        carded = [q for q in carded if q in only]
     pmids = [q for q in carded if len(((papers.get(q) or {}).get("abstract") or "").strip()) >= 60]
     skipped = [q for q in carded if q not in pmids]
     if skipped:
@@ -9728,7 +9985,7 @@ Reply with ONLY {{"belongs": true|false, "why": "<one clause>"}}""", timeout_s=6
             removed.append((q, why))
         else:
             print(f"  KEEPING {q}: rejected once, but a second judgement finds it bears on the subject")
-    if removed and len(removed) >= len(pmids):
+    if removed and len(removed) >= len(pmids) and only is None:
         # Every paper judged off-subject. Either the brief was built from the
         # wrong papers, in which case a person decides what replaces them, or
         # the judgement is wrong. Neither is a page to publish. Refuse with the
