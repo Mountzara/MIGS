@@ -9511,13 +9511,24 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
         sites = _quoted_sites(h, ev)
         # the finding often names the offending phrase itself ('refers back to
         # "these alternatives"'); a sentence holding that phrase is a site too
-        phrases = [q for q in re.findall(r'["\u201c]([^"\u201d]{12,160})["\u201d]', str(d.get("what") or "")) if q.strip()]
+        phrases = [q for q in re.findall(r'["\u201c\u2018\']([^"\u201d\u2019\']{12,160})["\u201d\u2019\']', str(d.get("what") or "")) if q.strip()]
         for ph in phrases[:3]:
             for site in _quoted_sites(h, ph):
                 if not any(site[0] < y and x < site[1] for x, y, _ in sites):
                     sites.append(site)
         if not sites:
             continue
+        # a dangling referent lives in the sentence AFTER the one the auditor
+        # quotes ("The PCS diagnosis itself remains contested. A workup for
+        # these…" — "these" pointed at a sentence the orphan pass removed);
+        # the following sentence is a site too, and the model may leave it
+        # unchanged
+        for a, b, _t in list(sites)[:4]:
+            nxt = _quoted_sites(h, re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h[_after_run(h, b):_after_run(h, b) + 400]))).strip()[:80])
+            for site in nxt[:1]:
+                if site[0] >= b and not any(site[0] < y and x < site[1] for x, y, _ in sites):
+                    sites.append(site)
+        sites.sort()
         # a sentence's markers stand AFTER its full stop, outside the quoted
         # span; read to the end of that run or the sentence cites nothing and
         # every figure the abstract states is "no source states" (W29)
