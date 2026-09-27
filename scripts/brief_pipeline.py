@@ -2623,6 +2623,11 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                   tkey = f"{kind}:{pm}:{em.group(1)}#{ordinal}"
                   tally[tkey] = tally.get(tkey, 0) + 1
                   remove_it = tally[tkey] >= 3
+                  if is_cell and "not stated in the abstract" in hay:
+                      # the removal's own output is what is faulted: the auditor
+                      # says the abstract DOES answer this cell, so the cell is
+                      # rewritten with that complaint, never "removed" into itself
+                      remove_it = False
                   if remove_it:
                       # faulted three times: the text goes. A cell says so plainly;
                       # a paragraph loses the faulted sentence and keeps the rest
