@@ -8359,7 +8359,7 @@ _HIDDEN_RE = re.compile(r"<script\b[\s\S]*?</script>|<style\b[\s\S]*?</style>|<!
 # the paper's own words on the page, never the site's: card abstracts, the
 # deep dive's verbatim abstract section and body, titles and meta lines
 # wherever they recur (card, dialog header, popover), the reference list
-_PAPER_TEXT_RE = re.compile(
+_S13_PAPER_TEXT_RE = re.compile(
     r'<(details)\b[^>]*>'
     r'|<(section)\b[^>]*\bid="dd-\d+-abstract"[^>]*>'
     r'|<(h2|h3|p|span|div|ol)\b[^>]*\bclass="[^"]*\b(?:mz-jc-abstract-body|mz-cite-title|mz-cite-meta'
@@ -8380,7 +8380,7 @@ def _own_text_mask(h: str, paper_text: bool = True) -> str:
     class="mz-verdict-gauge" or a PubMed href is never read as text."""
     out = _HIDDEN_RE.sub(lambda m: " " * len(m.group(0)), h)
     if paper_text:
-        for m in list(_PAPER_TEXT_RE.finditer(out)):
+        for m in list(_S13_PAPER_TEXT_RE.finditer(out)):
             if out[m.start()] != "<":
                 continue                    # inside an element already blanked
             tag = m.group(1) or m.group(2) or m.group(3)
@@ -10339,7 +10339,7 @@ _PAPER_TEXT_OPENERS = (
 )
 
 
-def _paper_text_spans(h: str) -> list:
+def _conform_paper_text_spans(h: str) -> list:
     """Every (a, b) of paper text in h, merged and in document order."""
     spans = []
     for pat, tag in _PAPER_TEXT_OPENERS:
