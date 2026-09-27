@@ -676,7 +676,9 @@ def grounding_pass(W: str, pid: str, h: str, man: dict) -> tuple:
         if att:
             h, n_a = bp.fix_attributed_text(W, h, att, real)
         if pro:
-            h, n_p = bp.repair_prose_findings(W, h, pro, real)
+            # rounds 1-2 rewrite; round 3 removes what a rewrite could not make
+            # supported or cited; rounds 4-5 remove a still-unsupported claim
+            h, n_p = bp.repair_prose_findings(W, h, pro, real, strict=_round >= 2, remove=_round >= 3)
         if pop:
             h, n_o = bp.fix_popover_findings(W, h, pop, real)
         print(f"  grounding round {_round + 1}: {len(g)} finding(s); repaired {n_a} card/deep-dive, {n_p} prose, {n_o} hover card(s)")

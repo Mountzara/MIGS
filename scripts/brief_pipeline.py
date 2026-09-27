@@ -3027,10 +3027,17 @@ Return ONLY {{"text": "<rewritten>"}}""")
     return h, done
 
 
-def repair_prose_findings(W: str, h: str, faults: list, real: dict) -> tuple:
+def repair_prose_findings(W: str, h: str, faults: list, real: dict, strict: bool = False, remove: bool = False) -> tuple:
     """The per-sentence audit's findings on the site's prose, repaired: a
     placement finding by fix_placement, every other by repair_from_defects
-    with the sentence's cited abstracts in hand. (h, repaired)."""
+    with the sentence's cited abstracts in hand. (h, repaired).
+
+    Convergence, as the attributed containers already have it (a third fault
+    removes): `strict` removes an unsupported sentence the rewrite could not
+    make supported and an uncited claim the placement and supply passes could
+    not cite; `remove` takes out a still-unsupported prose claim without
+    another rewrite. W25 ran three rounds of rewrites and stopped with twelve
+    prose sentences still faulted, most of them reworded every round."""
     h, n_place = fix_placement(W, h, faults, real)
     # a claim WITHOUT a citation is not repaired by rewriting: the chain's
     # placement passes supply the marker (the audit stage does the same),
@@ -3050,16 +3057,38 @@ def repair_prose_findings(W: str, h: str, faults: list, real: dict) -> tuple:
     if n_supply or n_place:
         meta = {q: _paper_record(q, r)["meta_verified"] for q, r in (real or {}).items() if _paper_record(q, r)["meta_verified"]}
         h = _renumber_if_unnumbered(W, h, meta, force=True)
+    n_drop = 0
+    if strict or remove:
+        # a claim still uncited after the placement pass and every supply pass:
+        # no paper the brief holds could be cited for it, so it cannot stay
+        for f in faults:
+            m = _PROSE_FAULT_RE.match(f)
+            if not m or "claim without a citation" not in m.group(2):
+                continue
+            for a, b, _t in sorted(_quoted_sites(h, m.group(3)), key=lambda x: -x[0])[:2]:
+                end = _after_run(h, b)
+                if SUP_RE.search(h[a:end]) or not _usable_span(h, a, end):
+                    continue
+                _pl = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h[a:b]))).strip()
+                h = _replace_span(h, a, end, "")
+                n_drop += 1
+                print(f"  removed an uncited claim no paper in the brief could be cited for: {_pl[:100]!r}")
     defects = []
     for f in faults:
         m = _PROSE_FAULT_RE.match(f)
         if not m or "citation does not follow each claim" in m.group(2) or "claim without a citation" in m.group(2):
             continue
-        defects.append({"what": f"{m.group(2)} — {m.group(4)}", "evidence": m.group(3)})
+        what = f"{m.group(2)} — {m.group(4)}"
+        if remove and "not supported" in m.group(2):
+            # the wording that sends repair_from_defects down its remove-without-
+            # rewrite branch: after two rewrites the claim is still not in any
+            # cited abstract, however it is worded
+            what = "no cited abstract supports this sentence after repeated rewrites — " + what
+        defects.append({"what": what, "evidence": m.group(3)})
     n_fix = 0
     if defects:
-        h, n_fix = repair_from_defects(W, h, defects)
-    return h, n_place + n_fix + n_supply
+        h, n_fix = repair_from_defects(W, h, defects, drop_unsupported=(strict or remove))
+    return h, n_place + n_fix + n_supply + n_drop
 
 
 _POPOVER_FAULT_RE = re.compile(r"^\[popover:(\d{5,9})\] (.+)$", re.S)
