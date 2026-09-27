@@ -2731,6 +2731,12 @@ def fix_absolute_words(W: str, h: str, real: dict) -> tuple:
     if att:
         h, n2 = fix_attributed_text(W, h, att, real)
         done += n2
+    # a hover card carrying the words is written again from its abstract
+    bad_cards = sorted({_pmid_of(m.group(0)) for m in SUP_RE.finditer(h)
+                        if _ABSOLUTE_WORD_RE.search(H.unescape(re.sub(r"<[^>]+>", " ", (re.search(r'<span class="mz-ref-pop-finding">([\s\S]*?)</span>', m.group(0)) or [None, ""])[1])))} - {None})
+    if bad_cards:
+        h, n3 = fix_popover_findings(W, h, [f'[popover:{q}] citation summary: uses the word "never" or "always" (S10 forbids the words in the site\'s own text)' for q in bad_cards], real)
+        done += n3
     return h, done
 
 
@@ -2802,30 +2808,43 @@ def fix_placement(W: str, h: str, faults: list, real: dict) -> tuple:
     (h, rewritten). The markers are ⟦PMID⟧ tokens to the model and are put
     back as the markup they were, in order."""
     done = 0
+    carded = sorted(_carded_pmids(h))
     for f in faults:
         m = _PROSE_FAULT_RE.match(f)
-        if not m or "citation does not follow each claim" not in m.group(2):
+        if not m or ("citation does not follow each claim" not in m.group(2) and "claim without a citation" not in m.group(2)):
             continue
         for a, b, _t in _quoted_sites(h, m.group(3))[:1]:
             b = _after_run(h, b)
             span = h[a:b]
             marks = list(SUP_RE.finditer(span))
-            if not marks:
-                continue
             tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", span)
             plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
-            pmids = [q for q in dict.fromkeys(_pmid_of(x.group(0)) for x in marks) if q]
+            if marks:
+                pmids = [q for q in dict.fromkeys(_pmid_of(x.group(0)) for x in marks) if q]
+                allowed = set(pmids)
+                rule = ("Each ⟦token⟧ is a citation to one paper. Use every token exactly once and add none; a claim no "
+                        "listed paper supports is dropped rather than left uncited.")
+            else:
+                # no marker at all (the pelvic-congestion lede): the model may
+                # cite any paper the brief CARDS, by its ⟦PMID⟧ token; the
+                # markers are then built the way the chain builds them
+                pmids = carded
+                allowed = set(carded)
+                rule = ("The sentence carries no citation. Cite each factual claim with the ⟦PMID⟧ token of the listed "
+                        "paper that supports it, placed IMMEDIATELY after the claim; a claim about the ABSENCE of "
+                        "evidence carries no token; a claim no listed paper supports is dropped.")
             papers = _papers_for_prompt(real_from_work(W, pmids) or {q: real[q] for q in pmids if q in real}, pmids)
-            v = _ask_cached(W, "placement", f"""One sentence of a clinician-facing evidence brief carries its citations bunched at the end, after
-several distinct claims. Each ⟦token⟧ is a citation to one paper. Rewrite so that every claim is followed
-IMMEDIATELY by the token of the paper that supports it — split into two or three sentences if that is what
-it takes — keeping the wording otherwise, first person surgeon's voice, plain text, no markup. Use every
-token exactly once and add none; a claim no listed paper supports is dropped rather than left uncited.
+            v = _ask_cached(W, "placement", f"""One sentence of a clinician-facing evidence brief needs its citations placed after the claims they support.
+{rule} Split into two or three sentences if that is what it takes — keeping the wording otherwise, first
+person surgeon's voice, plain text, no markup.
 THE SENTENCE: {json.dumps(plain, ensure_ascii=False)}
 THE PAPERS (pmid, title, abstract): {json.dumps(papers, ensure_ascii=False)[:30000]}
 Return ONLY {{"text": "<rewritten>"}}""")
             new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
-            if not new or sorted(re.findall(r"⟦\d+⟧", new)) != sorted(re.findall(r"⟦\d+⟧", plain)):
+            new_toks = re.findall(r"⟦(\d+)⟧", new)
+            ok = bool(new) and (sorted("⟦%s⟧" % t for t in new_toks) == sorted(re.findall(r"⟦\d+⟧", plain)) if marks
+                                else (bool(new_toks) and all(t in allowed for t in new_toks)))
+            if not ok:
                 print(f"  placement: no usable rewrite for {plain[:70]!r}")
                 continue
             _cb = re.sub(r"\s+([.,;:])", r"\1", re.sub(r"\s+", " ", re.sub(r"⟦\d+⟧", " ", new))).strip()
@@ -2839,7 +2858,12 @@ Return ONLY {{"text": "<rewritten>"}}""")
             for x in marks:
                 by_pm.setdefault(_pmid_of(x.group(0)), []).append(x.group(0))
             pieces = re.split(r"(⟦\d+⟧)", new)
-            rebuilt = "".join(by_pm[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm.get(x[1:-1]) else H.escape(x, quote=False)
+
+            def _marker_for(q):
+                if by_pm.get(q):
+                    return by_pm[q].pop(0)
+                return _sup_markup(q, real, W) or ""       # a new citation, built as the chain builds one
+            rebuilt = "".join(_marker_for(x[1:-1]) if re.fullmatch(r"⟦\d+⟧", x) else H.escape(x, quote=False)
                               for x in pieces)
             h = _replace_span(h, a, b, rebuilt, raw=True)
             done += 1
@@ -2851,16 +2875,34 @@ def repair_prose_findings(W: str, h: str, faults: list, real: dict) -> tuple:
     placement finding by fix_placement, every other by repair_from_defects
     with the sentence's cited abstracts in hand. (h, repaired)."""
     h, n_place = fix_placement(W, h, faults, real)
+    # a claim WITHOUT a citation is not repaired by rewriting: the chain's
+    # placement passes supply the marker (the audit stage does the same),
+    # and the page is renumbered so the new marker carries a number
+    n_supply = 0
+    if any("claim without a citation" in f for f in faults if _PROSE_FAULT_RE.match(f)):
+        pmids = sorted(_carded_pmids(h))
+        # the per-sentence placement pass (the model decides which sentence
+        # cites which paper), then the named-study and card backstops; then
+        # numbering with the papers' verified meta lines — numbering with no
+        # meta is a no-op, and the proof showed a raw PMID left on the page
+        h, n0 = cite_prose(W, h, pmids, real)
+        h, n1 = cite_missing_studies(W, h, pmids, real)
+        h, n2 = cite_named_unique(h, real, W)
+        h, n3 = cite_uncited_cards(W, h, real)
+        n_supply = n0 + n1 + n2 + n3
+    if n_supply or n_place:
+        meta = {q: _paper_record(q, r)["meta_verified"] for q, r in (real or {}).items() if _paper_record(q, r)["meta_verified"]}
+        h = _renumber_if_unnumbered(W, h, meta, force=True)
     defects = []
     for f in faults:
         m = _PROSE_FAULT_RE.match(f)
-        if not m or "citation does not follow each claim" in m.group(2):
+        if not m or "citation does not follow each claim" in m.group(2) or "claim without a citation" in m.group(2):
             continue
         defects.append({"what": f"{m.group(2)} — {m.group(4)}", "evidence": m.group(3)})
     n_fix = 0
     if defects:
         h, n_fix = repair_from_defects(W, h, defects)
-    return h, n_place + n_fix
+    return h, n_place + n_fix + n_supply
 
 
 _POPOVER_FAULT_RE = re.compile(r"^\[popover:(\d{5,9})\] (.+)$", re.S)
@@ -5487,6 +5529,12 @@ Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
         if not _synopsis_words_in_abstract(t, abstract):
             note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: its opening words are not the abstract's. Open with what "
                     "the abstract itself concludes, in the abstract's own terms.")
+            t = ""
+            continue
+        if _ABSOLUTE_WORD_RE.search(t):
+            # S10 reads the hover cards too (own text); a card written with
+            # "never"/"always" refused the pelvic-congestion brief twice
+            note = "\nA PREVIOUS ATTEMPT WAS REJECTED: it used the word \"never\" or \"always\". Rephrase without them."
             t = ""
             continue
         t_norm = re.sub(r"[^a-z0-9]", "", t.lower())
