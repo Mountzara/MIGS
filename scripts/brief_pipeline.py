@@ -2766,7 +2766,7 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
             if key in NOT_AUTHORABLE or key == "abstract":
                 continue
             sm = re.search(r'id="dd-%s-%s"[^>]*>([\s\S]*?)</section>' % (re.escape(pm), re.escape(key)), inner_d)
-            inner_t = H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", sm.group(1)))) if sm else ""
+            inner_t = H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", strip_template(sm.group(1))))) if sm else ""
             if len(inner_t.strip()) < 120:
                 stubs.append(key)
         if not stubs or not (real.get(pm) or {}).get("abstract"):
@@ -4303,8 +4303,11 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             if not sm:
                 faults.append(f"[dialog:{q}] deep dive has no {key} section")
                 continue
+            # the section's fixed template intro ("Equity considerations in
+            # evidence appraisal matter…") is not its content: an equity
+            # section of intro plus an empty paragraph passed as written (PCS)
             inner_t = H.unescape(re.sub(r"<[^>]+>", " ",
-                                        re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", sm.group(1))))
+                                        re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", strip_template(sm.group(1)))))
             if len(inner_t.strip()) < 120:
                 faults.append(f"[dialog:{q}] the {key} section is empty or a stub")
     # S12 (weekly)
