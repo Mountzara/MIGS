@@ -2571,6 +2571,7 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
             needle = re.sub(r"\s+", " ", H.unescape(shown)).strip()[:40]
             if len(needle) < 12:
                 continue
+            found = False
             for em in re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked):
                 if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
                     continue
@@ -2578,8 +2579,18 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                 marks = list(SUP_RE.finditer(inner))
                 tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", inner)
                 plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
-                if needle not in re.sub(r"⟦\d+⟧", "", plain).replace("  ", " "):
+                hay = re.sub(r"⟦\d+⟧", "", plain).replace("  ", " ")
+                if em.group(1) == "dd":
+                    # the auditor reads a definition list's label and value as one
+                    # sentence ("Design Editorial commentary."); the value alone
+                    # never held that text and the cell was skipped in silence
+                    # (SKYLIGHT 1, a phase-3 trial, stayed "Editorial commentary")
+                    dt = re.search(r"<dt\b[^>]*>([\s\S]*?)</dt>\s*$", cont[:em.start()])
+                    if dt:
+                        hay = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", dt.group(1))) + " " + hay).strip()
+                if needle not in hay:
                     continue
+                found = True
                 is_cell = em.group(1) in ("dd", "dt", "td")
                 shape = ("THIS IS A DATA CELL of a summary table (Sample, Comparator, Outcome…): return a short value — a phrase "
                          "or one plain sentence, no first person, no commentary — stating the figure exactly as the abstract gives it."
@@ -2628,6 +2639,8 @@ Return ONLY {{"text": "<rewritten text>"}}""")
                 edits.append((em.start(2), em.end(2), rebuilt))
                 taken.add(em.start(2))
                 break
+            if not found:
+                print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
         for a, b, new in sorted(edits, reverse=True):
             cont = cont[:a] + new + cont[b:]
             done += 1
