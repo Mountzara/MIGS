@@ -2883,7 +2883,8 @@ def fix_placement(W: str, h: str, faults: list, real: dict) -> tuple:
                 allowed = set(carded)
                 rule = ("The sentence carries no citation. Cite each factual claim with the ⟦PMID⟧ token of the listed "
                         "paper that supports it, placed IMMEDIATELY after the claim; a claim about the ABSENCE of "
-                        "evidence carries no token; a claim no listed paper supports is dropped.")
+                        "evidence (no RCT exists, only case series) cites the systematic review or guideline in the list that "
+                        "REPORTS that absence, and carries no token when none does; a claim no listed paper supports is dropped.")
             papers = _papers_for_prompt(real_from_work(W, pmids) or {q: real[q] for q in pmids if q in real}, pmids)
             v = _ask_cached(W, "placement", f"""One sentence of a clinician-facing evidence brief needs its citations placed after the claims they support.
 {rule} Split into two or three sentences if that is what it takes — keeping the wording otherwise, first
@@ -9835,6 +9836,19 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
         if not sites:
             continue
         quoted_sites = {x for x, _y, _t in sites}
+        if drop_unsupported and re.search(r"none of (?:th(?:e|ose|ese)\s+)?(?:\w+\s+)?(?:cited\s+)?(?:abstracts|sources|papers)|not grounded in any|no cited abstract|unsupported by any|never mention", str(d.get("what", "")), re.I):
+            # the reviewer says NO source on the page supports this content: a
+            # rewrite only re-words it (PCS: payer claims re-worded three times)
+            for a, b, _t in sorted(sites, key=lambda x: -x[0]):
+                if a not in quoted_sites:
+                    continue
+                end = _after_run(h, b)
+                if _usable_span(h, a, end):
+                    _pl = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", h[a:b])))).strip()
+                    h = _replace_span(h, a, end, "")
+                    done += 1
+                    print(f"  removed content no cited source supports: {_pl[:100]!r}")
+            continue
         # a dangling referent lives in the sentence AFTER the one the auditor
         # quotes ("The PCS diagnosis itself remains contested. A workup for
         # these…" — "these" pointed at a sentence the orphan pass removed);

@@ -62,7 +62,11 @@ def main():
         # the fixes already made (and paid for) are on disk: continue from them
         h = open(W + "fixed.html", encoding="utf-8").read()
         print("  resuming from the saved fixed page")
-        findings = []
+        # the review's own findings are this round's fix list (one round)
+        rv = json.load(open(W + "fixed.review.json")) if os.path.exists(W + "fixed.review.json") else {}
+        findings = [{"standard": (re.match(r"(S\d+|OWNER)", str(x)) or [None, ""])[1], "what": str(x), "evidence": str(x), "where": ""}
+                    for x in (rv.get("unmet") or [])]
+        findings and print(f"  {len(findings)} review finding(s) to fix")
     # the mechanical fixes, in code
     h = bp.normalize_legacy_markup(h)
     h, n = bp.canonical_practice_name(h); n and print(f"  {n} practice name(s) written as CBG/MIGS")
@@ -106,9 +110,14 @@ def main():
                 attributed.append(f'[{kind}:{pm}] {what[:200]}: "{q}" ({f.get("what", "")[:200]})')
         else:
             prose.append({"what": what, "evidence": ev})
-    n_att = n_pro = 0
+    n_att = n_pro = n_cite = 0
     if attributed:
         h, n_att = bp.fix_attributed_text(W, h, attributed, real)
+    uncited = [x for x in prose if re.search(r"no (?:inline )?citation|uncited|without a citation|carries no", x["what"], re.I)]
+    if uncited:
+        faults_u = [f'[prose] claim without a citation: "{q}" ({x["what"][:160]})' for x in uncited for q in quotes_of(x["evidence"])[:2]]
+        h, n_cite = bp.fix_placement(W, h, faults_u, real)
+        prose = [x for x in prose if x not in uncited]
     if prose:
         h, n_pro = bp.repair_from_defects(W, h, prose, drop_unsupported=True)
     h, n_exp = bp.fix_invented_experience(W, h)
@@ -138,7 +147,7 @@ def main():
     # any other spec mark inside a script's comment
     h = re.sub(r"(<script\b[^>]*>[\s\S]*?</script>)",
                lambda m: re.sub(r"(//[^\n]*?)\s*\(?\u00a7\s?\d+(?:\.\d+)*[^)\n]*\)?", r"\1", m.group(1)), h)
-    print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_abs} never/always, {n_st} empty section(s)")
+    print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_cite} citation(s) placed, {n_abs} never/always, {n_st} empty section(s)")
 
     # deterministic gates before the review is paid for — the deploy's own
     # leakage checks included, on the source and on the rendered text
