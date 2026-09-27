@@ -36,7 +36,36 @@ def container_of(f: dict) -> tuple:
     m = re.search(r"(?:card|mz-cite-)\D{0,30}?(\d{7,9})", t, re.I)
     if m:
         return "card", m.group(1)
+    # the PMID named BEFORE the container word ("PMID 24430001 (KEEPS-Cog) cite card")
+    m = re.search(r"(\d{7,9})\D{0,40}?(?:deep[- ]dive|dialog)", t, re.I)
+    if m:
+        return "dialog", m.group(1)
+    m = re.search(r"(\d{7,9})\D{0,40}?\bcard\b", t, re.I)
+    if m:
+        return "card", m.group(1)
     return None, None
+
+
+def write_empty_headings(W: str, h: str) -> tuple:
+    """A section heading with no text (legacy MHT had two) gets one written
+    from its own section's content: a clear, specific signpost, not a
+    scoreboard. One model call per empty heading, cached."""
+    n = 0
+    for m in list(re.finditer(r'<h2 class="mz-section-title">(\s*)</h2>', h))[::-1]:
+        end = h.find("</section>", m.end())
+        body = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", bp.SUP_RE.sub(" ", h[m.end():end if end > 0 else m.end() + 3000]))))[:2500]
+        if len(body.strip()) < 40:
+            continue
+        v = bp._ask_cached(W, "heading", f"""Write the heading for this section of a clinician-facing evidence brief: 3-9 words, a clear,
+specific signpost a reader can navigate by — not a label, not a scoreboard, no "verdict"/"myth"/"debunk", no
+"never"/"always", "CBG/MIGS" if the practice is named. It must describe what the section says.
+SECTION TEXT: {json.dumps(body, ensure_ascii=False)}
+Reply with ONLY {{"heading": "<text>"}}""", timeout_s=300)
+        t = re.sub(r"\s+", " ", str((v or {}).get("heading") or "")).strip().strip('"').rstrip(".")
+        if 3 <= len(t) <= 90 and not bp._ABSOLUTE_WORD_RE.search(t) and not bp.SCORING_LANGUAGE_RE.search(t):
+            h = h[:m.start(1)] + H.escape(t, quote=False) + h[m.end(1):]
+            n += 1
+    return h, n
 
 
 def main():
@@ -76,6 +105,8 @@ def main():
             if not re.sub(r"<[^>]+>|\s", "", m.group(1)) and re.sub(r"<[^>]+>|\s", "", old):
                 h = h[:m.start(1)] + old + h[m.end(1):]
                 print("  an emptied section heading restored from the live page")
+    h, n_hd = write_empty_headings(W, h)
+    n_hd and print(f"  {n_hd} empty section heading(s) written from their sections' content")
     # the mechanical fixes, in code
     h = bp.normalize_legacy_markup(h)
     # a card's design badge is the design alone, on every card ("[2] · RCT ·
