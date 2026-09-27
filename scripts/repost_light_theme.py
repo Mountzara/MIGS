@@ -23,8 +23,13 @@ import json, re, sys, os, base64, urllib.request
 BASE = "https://mountzara.com"
 APPLY = "--apply" in sys.argv
 BACKUP = "/tmp/mz-posts-backup"
-ADMIN_USER = "chris.mabini@gmail.com"
-ADMIN_PASS = os.environ.get("ADMIN_PASS_ENV") or "MartyBeans!2345"
+_admin_auth = os.environ.get("MZ_ADMIN_AUTH") or ""
+if not _admin_auth:
+    try:
+        _admin_auth = open(os.path.expanduser("~/.config/mountzara/admin-auth.txt")).read().strip()
+    except OSError:
+        _admin_auth = ""
+ADMIN_USER, _, ADMIN_PASS = _admin_auth.partition(":")   # user:password; never a literal here
 
 def req(path, method="GET", body=None, auth=False):
     # curl, not urllib: the session's egress proxy rejects urllib's request

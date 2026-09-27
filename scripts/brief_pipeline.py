@@ -71,7 +71,25 @@ ROOT = "/home/user/MIGS"
 # behaviour to keep.
 SCRATCH = os.environ.get("MZ_BRIEF_SCRATCH") or os.path.join(ROOT, ".brief-work")
 UA = "mz-operator-tools/1.0 (brief-pipeline)"
-ADMIN = os.environ.get("MZ_ADMIN_AUTH", "chris.mabini@gmail.com:MartyBeans!2345")
+def _admin_auth() -> str:
+    """The admin credential, from the environment or the operator's config
+    file — never a literal in this file (one sat here through five pushed
+    commits, 2026-09-27)."""
+    v = os.environ.get("MZ_ADMIN_AUTH")
+    if v:
+        return v
+    for p in (os.path.expanduser("~/.config/mountzara/admin-auth.txt"), "/Users/beans/.config/mountzara/admin-auth.txt"):
+        try:
+            with open(p) as f:
+                v = f.read().strip()
+            if v:
+                return v
+        except OSError:
+            continue
+    return ""
+
+
+ADMIN = _admin_auth()
 BASE = "https://www.mountzara.com"
 
 # Lexical wrong-paper screen. Calibrated on 12 known-bad drafts (share
@@ -127,6 +145,8 @@ def flat(x) -> str:
 def curl_json(url: str, method: str = "GET", auth: bool = False, data_file: str | None = None):
     cmd = ["curl", "-sS", "--fail-with-body", "-X", method, "-A", UA]
     if auth:
+        if not ADMIN:
+            die("no admin credential: set MZ_ADMIN_AUTH or write ~/.config/mountzara/admin-auth.txt (user:password)")
         cmd += ["-u", ADMIN]
     if data_file:
         cmd += ["-H", "Content-Type: application/json", "--data-binary", "@" + data_file]
@@ -10241,6 +10261,11 @@ def writer_reject(new: str) -> str:
         # "not a settled verdict" after the trend conform step had run, and
         # the gate refused the brief for a word no writer should produce
         return f"scoring language ({m.group(0)!r})"
+    m = INTERNAL_RE.search(new) or re.search(r"\bS(?:1[0-6]|[1-9])'s\b|\b(?:standard|standards|per|under)\s+S(?:1[0-6]|[1-9])\b", new)
+    if m:
+        # a repair on the GLP-1 brief wrote "Above, I'm referring to S13's
+        # Cochrane review" — a standard's number, leaked as prose
+        return f"an internal reference ({m.group(0)!r})"
     return ""
 
 

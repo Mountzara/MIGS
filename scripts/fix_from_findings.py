@@ -186,7 +186,8 @@ def rewrite_labelled_heading(W: str, h: str, f: dict) -> tuple:
 HEADING: {json.dumps(plain)}
 WHAT THE REVIEWER FOUND: {json.dumps(f.get('what', '')[:800], ensure_ascii=False)}
 WHAT THE SECTION HOLDS: {json.dumps(body, ensure_ascii=False)}
-Write the heading again: 3-12 words, saying exactly what the section holds — its clinical content, never
+If the heading already describes exactly what the section holds, return it unchanged. Otherwise
+write the heading again: 3-12 words, saying exactly what the section holds — its clinical content, never
 the page's own organisation ("already listed", "duplicate", "see above", "included here") — not a label it
 does not earn, no "verdict"/"myth"/"debunk", no "never"/"always", "CBG/MIGS" if the practice is named.
 Keep a trailing count in parentheses if the heading has one.
@@ -259,6 +260,28 @@ Reply with ONLY {{"pmids": ["...", ...]}}""", timeout_s=300)
         gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not bp._has_card(h, pm)]
     kept = [q for q in named if q not in gone]
     kept and notes.append(f"kept after the curator's two judgements: {kept}")
+    if fmt == "trend":
+        # a paper kept as the comparator or the treatment landscape may sit
+        # under a heading that calls it a study of the subject ("Foundational
+        # papers on GLP-1 receptor agonist therapy" over a surgery review):
+        # the heading is written for what the section holds
+        for q in kept:
+            cm = re.search(r'<article class="mz-cite-card[^>]*\bid="mz-cite-%s(?:-\d+)?"' % q, h) or re.search(r"openDeepDive\('dd-%s'\)" % q, h)
+            if not cm:
+                continue
+            hd = None
+            for m in re.finditer(r"<h[23]\b[^>]*>([\s\S]*?)</h[23]>", h[:cm.start()]):
+                hd = m
+            if not hd:
+                continue
+            heading = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", hd.group(1)))).strip()
+            title = (real.get(q) or {}).get("title", "")
+            h, n = rewrite_labelled_heading(W, h, {
+                "what": (f"Section heading \u201c{heading}\u201d may mislabel its contents: \u201c{title[:140]}\u201d sits under it as a "
+                         f"comparator or treatment-landscape paper the brief argues against, not as a study of the heading's "
+                         f"subject; if the heading calls it one, the heading is wrong"),
+                "evidence": f"\u201c{heading}\u201d"})
+            n and notes.append(f"heading over the kept paper {q} rewritten for what the section holds")
     if gone:
         h, n = bp.rewrite_narrative_for_removed(W, h, gone, real, surviving=[q for q in carded if q not in gone])
         n and notes.append(f"{n} narrative paragraph(s) rewritten so nothing argues from a removed paper")
@@ -363,6 +386,54 @@ Reply with ONLY {{"heading": "<text>"}}""", timeout_s=300)
         if 3 <= len(t) <= 90 and not bp._ABSOLUTE_WORD_RE.search(t) and not bp.SCORING_LANGUAGE_RE.search(t):
             h = h[:m.start(1)] + H.escape(t, quote=False) + h[m.end(1):]
             n += 1
+    return h, n
+
+
+def gate_faults(h: str, fmt: str) -> list:
+    """Every deterministic gate the fixer runs before the paid review: the
+    pipeline's reader gate, the deploy's leakage checks on source and rendered
+    text, and the structural checks."""
+    faults = list(bp.reader_prose_faults(h))
+    import audit_no_internal_leakage as leak
+    for label, pat in leak.BANNED:
+        hits = leak.spec_hits(h, pat) if label == "internal spec reference" else pat.findall(h)
+        if hits:
+            faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
+    faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
+    faults += structural_faults(h, fmt)
+    return faults
+
+
+def repair_gate_faults(W: str, h: str, real: dict, fmt: str, faults: list) -> tuple:
+    """Each deterministic gate fault routed to the repair that handles it,
+    instead of the run stopping on the first. (h, repairs)."""
+    n = 0
+    txt = "\n".join(faults)
+    if "never" in txt or "always" in txt:
+        h, k = bp.fix_absolute_words(W, h, real); n += k
+    if re.search(r"no sentence cites|cited nowhere", txt):
+        h, k = bp.cite_uncited_cards(W, h, real); n += k
+    if "practice's own patients" in txt:
+        h, k = bp.fix_invented_experience(W, h); n += k
+    if "is empty or a stub" in txt or "no deep dive for this carded paper" in txt:
+        h, k = bp.author_stub_sections(W, h, real); n += k
+    if fmt == "trend" and "[S13]" in txt:
+        h, notes = bp.conform_trend_brief(W, h, real); n += len(notes)
+    m = re.search(r"link\(s\) to no element on the page: \[([^\]]*)\]", txt)
+    if m:
+        # a link to nothing is unwrapped; its text stays
+        for tid in re.findall(r"'([^']+)'", m.group(1)):
+            h, k = re.subn(r'<a\b[^>]*href="#%s"[^>]*>([\s\S]*?)</a>' % re.escape(tid), r"\1", h); n += k
+    # any other fault that quotes the site's own words: the sentence is
+    # rewritten from its cited abstracts, removed when nothing supports it
+    defects = []
+    for x in faults:
+        if re.search(r"never|always|no sentence cites|cited nowhere|empty or a stub|\[S13\]|link\(s\) to no element|leakage gate|comment", x):
+            continue
+        for q in re.findall(r"[\"'\u2018\u201c]([^\"'\u2019\u201d]{12,300})[\"'\u2019\u201d]", x):
+            defects.append({"what": x[:400], "evidence": q})
+    if defects:
+        h, k = bp.repair_from_defects(W, h, defects, drop_unsupported=True); n += k
     return h, n
 
 
@@ -614,15 +685,20 @@ def main():
     print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_cite} citation(s) placed, {n_abs} never/always, {n_st} empty section(s)")
 
     # deterministic gates before the review is paid for — the deploy's own
-    # leakage checks included, on the source and on the rendered text
-    faults = bp.reader_prose_faults(h)
-    import audit_no_internal_leakage as leak
-    for label, pat in leak.BANNED:
-        hits = leak.spec_hits(h, pat) if label == "internal spec reference" else pat.findall(h)
-        if hits:
-            faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
-    faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
-    faults += structural_faults(h, fmt)
+    # leakage checks included, on the source and on the rendered text — and
+    # every fault they raise routed to its repair, in a loop, before the run
+    # may stop: eight briefs each stopped here on one fault today
+    faults = gate_faults(h, fmt)
+    for _r in range(3):
+        if not faults:
+            break
+        h, k = repair_gate_faults(W, h, real, fmt, faults)
+        if not k:
+            break
+        h = bp.final_assembly(W, h, real, fmt)
+        again = gate_faults(h, fmt)
+        print(f"  gate round {_r + 1}: {len(faults)} fault(s); {k} repair(s); {len(again)} remain")
+        faults = again
     open(W + "fixed.html", "w", encoding="utf-8").write(h)
     if faults:
         print("  GATE FAULTS (not reviewed):")

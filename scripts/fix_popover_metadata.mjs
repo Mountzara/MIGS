@@ -38,7 +38,10 @@ const APPLY = process.argv.includes("--apply");
 const BASE = "https://mountzara.com";
 const UA = "mz-operator-tools/1.0 (fix_popover_metadata)";
 const ADMIN_USER = "chris.mabini@gmail.com";
-const ADMIN_PASS = process.env.ADMIN_PASS_ENV || "MartyBeans!2345";
+const _adminAuth = process.env.MZ_ADMIN_AUTH || (() => {
+  try { return readFileSync(join(process.env.HOME || "", ".config/mountzara/admin-auth.txt"), "utf8").trim(); } catch { return ""; }
+})();   // user:password; never a literal here
+const ADMIN_PASS = _adminAuth.split(":").slice(1).join(":");
 const corpus = JSON.parse(readFileSync(join(ROOT, "scripts", "popover_meta_corpus.json"), "utf8")).records;
 
 const strip = (s) => String(s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();

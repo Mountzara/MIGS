@@ -14,7 +14,8 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 BASE="${MZ_BASE:-https://www.mountzara.com}"
-AUTH="${MZ_ADMIN_AUTH:-chris.mabini@gmail.com:MartyBeans!2345}"
+AUTH="${MZ_ADMIN_AUTH:-$(cat "$HOME/.config/mountzara/admin-auth.txt" 2>/dev/null)}"
+[ -n "$AUTH" ] || { echo "no admin credential: set MZ_ADMIN_AUTH or write ~/.config/mountzara/admin-auth.txt (user:password)"; exit 1; }
 UA="mz-operator-tools/1.0 (weekly_briefs)"
 
 command -v claude >/dev/null || { echo "claude CLI not on PATH — the pipeline authors and reviews through it"; exit 1; }
