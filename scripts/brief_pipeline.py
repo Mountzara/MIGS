@@ -4408,7 +4408,9 @@ For EVERY sentence return one object:
  n: its number
  claim: true if it asserts a fact about a study, a finding, a number, a population, a mechanism, a
         design, or what the literature shows; false for the author's own interpretation, a question,
-        a transition, or a statement about the brief itself
+        a transition, a statement about the brief itself, or a sentence that REPORTS a claim the brief is
+        examining ("A claim circulating on social media — that X does Y — …" reports the claim; it does not
+        assert it, and needs no citation for what the claim says)
  cited: true if the sentence carries at least one ⟦PMID⟧ token
  placement: false if any factual claim in the sentence is not followed by the citation that supports it
         — a marker parked at the end of a sentence carrying two different studies' findings attributes
