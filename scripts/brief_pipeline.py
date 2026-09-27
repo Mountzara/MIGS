@@ -1780,7 +1780,15 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
     if rule_bad:
         return pmid, None, "breaks a site rule: " + "; ".join(rule_bad[:3])
     final["_verified"] = "adversarial review passed"
-    json.dump(final, open(W + f"drafts_dd/{pmid}.json", "w"), ensure_ascii=False)
+    # merge, not overwrite: sections authored on an earlier pass stay with
+    # the paper (a partial re-author used to discard them)
+    with _LEDGER_LOCK:
+        _dd = W + f"drafts_dd/{pmid}.json"
+        _prev = json.load(open(_dd)) if os.path.exists(_dd) else {}
+        if not isinstance(_prev, dict) or set(_prev) <= {"sections", "blocks"}:
+            _prev = {}
+        _prev.update(final)
+        json.dump(_prev, open(_dd, "w"), ensure_ascii=False)
     return pmid, len(verdict.get("problems") or []), None
 
 
