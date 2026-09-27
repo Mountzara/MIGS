@@ -2943,7 +2943,9 @@ def fix_placement(W: str, h: str, faults: list, real: dict) -> tuple:
         m = _PROSE_FAULT_RE.match(f)
         if not m or ("citation does not follow each claim" not in m.group(2) and "claim without a citation" not in m.group(2)):
             continue
-        for a, b, _t in _quoted_sites(h, m.group(3))[:1]:
+        # every place the claim stands (a closing section repeats the lede),
+        # last first so an edit never shifts a site still to be done
+        for a, b, _t in sorted(_quoted_sites(h, m.group(3)), key=lambda x: -x[0]):
             b = _after_run(h, b)
             span = h[a:b]
             marks = list(SUP_RE.finditer(span))
@@ -2973,7 +2975,12 @@ THE PAPERS (pmid, title, abstract): {json.dumps(papers, ensure_ascii=False)[:300
 Return ONLY {{"text": "<rewritten>"}}""")
             new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
             new_toks = re.findall(r"⟦(\d+)⟧", new)
-            if not marks and new and not new_toks and "claim without a citation" in m.group(2):
+            if not marks and not new_toks and "claim without a citation" in m.group(2) and v is not None:
+                # an empty text is the model dropping the claim, as the rule
+                # tells it to when no listed paper supports it (mast-cell:
+                # "Hormonal suppressive therapy reduces both pain and
+                # recurrence…" stood uncited through the review as "no usable
+                # rewrite")
                 # the model found no paper the brief holds that supports it: an
                 # uncited claim with no possible citation goes (GLP-1: "No major
                 # society recommends…", a guideline the brief does not hold)
@@ -3507,6 +3514,25 @@ def final_assembly(W: str, h: str, real: dict, fmt: str) -> str:
     h = dedupe_element_ids(h)
     h = strip_build_comments(h)
     h = re.sub(r"<!--[\s\S]*?-->", "", h)
+    h = strip_code_comments(h)
+    return h
+
+
+def strip_code_comments(h: str) -> str:
+    """CSS and JavaScript comments in the body's own <style> and <script>:
+    build history ("extracted verbatim from blog-2026-W21 modal CSS; adopted
+    for trend briefs 2026-05-21", "UX parity with W21") shipped in the page
+    source of every trend brief after the HTML comments were gone. CSS
+    comments go whole; in a script, block comments and whole-line // comments
+    go (a trailing // may be inside a string, a URL, so it stays)."""
+    def _style(m):
+        return m.group(1) + re.sub(r"/\*[\s\S]*?\*/", "", m.group(2)) + m.group(3)
+    def _script(m):
+        body = re.sub(r"(?m)^[ \t]*/\*[\s\S]*?\*/[ \t]*\n?", "", m.group(2))
+        body = re.sub(r"(?m)^[ \t]*//[^\n]*\n?", "", body)
+        return m.group(1) + body + m.group(3)
+    h = re.sub(r"(<style\b[^>]*>)([\s\S]*?)(</style>)", _style, h)
+    h = re.sub(r"(<script\b[^>]*>)([\s\S]*?)(</script>)", _script, h)
     return h
 
 

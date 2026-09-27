@@ -379,6 +379,10 @@ def structural_faults(h: str, fmt: str) -> list:
                if len(re.sub(r"<[^>]+>|\s", "", m.group(1))) >= 20)
     if n_ph:
         out.append(f"{n_ph} written paragraph(s) still styled as placeholders")
+    code = "".join(re.findall(r"<style\b[^>]*>([\s\S]*?)</style>", h))
+    scripts = "".join(re.findall(r"<script\b[^>]*>([\s\S]*?)</script>", h))
+    if re.search(r"/\*[\s\S]*?\*/", code) or re.search(r"(?m)^[ \t]*//", scripts):
+        out.append("a CSS or JavaScript comment is still in the page source")
     hm = re.search(r'<h1[^>]*class="[^"]*mz-post-title[^"]*"[^>]*>([\s\S]*?)</h1>', h)
     if hm and re.search(r"(?<![\w/-])(?:mht|pcos|csection|icg)(?![\w/-])", hm.group(1)):
         out.append(f"a lowercase topic slug in the headline: {hm.group(1)[:100]}")
@@ -565,6 +569,11 @@ def main():
             print(f"  no sentence of the prose carries: {x['what'][:140]}")
     prose = located
     uncited = [x for x in prose if re.search(r"no (?:inline )?citation|uncited|without a citation|carries no", x["what"], re.I)]
+    for x in list(uncited):
+        # "…repeated near-verbatim in Closing thoughts": the other places too
+        if re.search(r"\be\.g\.|for example|such as|repeat", x["what"], re.I):
+            more = bp.all_instances(W, h, x["what"])
+            uncited += [{"what": x["what"], "evidence": f'"{q}"'} for q in more if q not in x["evidence"]]
     if uncited:
         faults_u = [f'[prose] claim without a citation: "{q}" ({x["what"][:160]})' for x in uncited for q in (quotes_of(x["evidence"]) or [x["evidence"].strip('"')])[:2]]
         h, n_cite = bp.fix_placement(W, h, faults_u, real)
