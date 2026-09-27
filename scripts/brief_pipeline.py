@@ -1704,6 +1704,10 @@ def piece_objection(W: str, pmid: str) -> str:
             + "\n".join(f"  - {x}" for x in items))
 
 
+import threading as _threading
+_LEDGER_LOCK = _threading.Lock()   # papers are authored in parallel; the ledger file is shared
+
+
 def record_piece_objection(W: str, pmid: str, why: str) -> None:
     """Accumulate, do not overwrite.
 
@@ -1713,14 +1717,15 @@ def record_piece_objection(W: str, pmid: str, why: str) -> None:
     everything that has been refused for this paper.
     """
     path = W + ".ledger/author.pieces.json"
-    d = json.load(open(path)) if os.path.exists(path) else {}
-    prior = [x.strip() for x in str(d.get(pmid, "")).split(" || ") if x.strip()]
-    fresh = why.strip()[:300]
-    if fresh and fresh not in prior:
-        prior.append(fresh)
-    d[pmid] = " || ".join(prior[-6:])
-    os.makedirs(W + ".ledger", exist_ok=True)
-    json.dump(d, open(path, "w"), indent=1, ensure_ascii=False)
+    with _LEDGER_LOCK:
+        d = json.load(open(path)) if os.path.exists(path) else {}
+        prior = [x.strip() for x in str(d.get(pmid, "")).split(" || ") if x.strip()]
+        fresh = why.strip()[:300]
+        if fresh and fresh not in prior:
+            prior.append(fresh)
+        d[pmid] = " || ".join(prior[-6:])
+        os.makedirs(W + ".ledger", exist_ok=True)
+        json.dump(d, open(path, "w"), indent=1, ensure_ascii=False)
 
 
 def _author_one_paper(args_t: tuple) -> tuple:
@@ -1767,10 +1772,11 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
     rule_bad = draft_rule_faults(final)
     if not rule_bad:
         pth = W + ".ledger/author.pieces.json"
-        if os.path.exists(pth):
-            d0 = json.load(open(pth))
-            if d0.pop(pmid, None) is not None:
-                json.dump(d0, open(pth, "w"), indent=1, ensure_ascii=False)
+        with _LEDGER_LOCK:
+            if os.path.exists(pth):
+                d0 = json.load(open(pth))
+                if d0.pop(pmid, None) is not None:
+                    json.dump(d0, open(pth, "w"), indent=1, ensure_ascii=False)
     if rule_bad:
         return pmid, None, "breaks a site rule: " + "; ".join(rule_bad[:3])
     final["_verified"] = "adversarial review passed"
@@ -2760,6 +2766,7 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
     in its deep dives, and until the republish path ran prose_faults nothing
     read them; the gate now refuses them, and this fills them first."""
     written = 0
+    jobs = []
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
         stubs = []
         for key in JC_KEYS:
@@ -2777,12 +2784,25 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
         pf = W + f"papers/{pm}.json"
         pj = json.load(open(pf)) if os.path.exists(pf) else _paper_record(pm, real[pm])
         pj["abstract"] = pj.get("abstract") or pj.get("pubmed_abstract") or real[pm]["abstract"]
-        pj["pending"] = stubs
         os.makedirs(W + "papers", exist_ok=True); os.makedirs(W + "drafts_dd", exist_ok=True)
-        json.dump(pj, open(pf, "w"), ensure_ascii=False)
         dd_path = W + f"drafts_dd/{pm}.json"
-        if not os.path.exists(dd_path):
-            json.dump({}, open(dd_path, "w"))
+        prev = json.load(open(dd_path)) if os.path.exists(dd_path) else {}
+        # a section already authored AND passed by the reviewer on an earlier
+        # run is reused, not paid for again (the author calls the model
+        # directly, with no cache of its own)
+        done_keys = set(prev.get("_authored_keys") or []) if prev.get("_verified") else set()
+        todo = [k for k in stubs if k not in done_keys or not isinstance(prev.get(k), str) or not prev.get(k).strip()]
+        if todo:
+            pj["pending"] = todo
+            json.dump(pj, open(pf, "w"), ensure_ascii=False)
+            if not os.path.exists(dd_path):
+                json.dump({}, open(dd_path, "w"))
+        jobs.append((pm, stubs, todo, dd_path))
+
+    def _author(job):
+        pm, stubs, todo, dd_path = job
+        if not todo:
+            return pm, None
         _pm, n_probs, err = _author_one_paper((W, pm))
         # the reviewer's objection goes in front of the author for up to two
         # more attempts, every objection accumulated (W24: stubs refused once
@@ -2792,8 +2812,19 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
                 break
             record_piece_objection(W, pm, err)
             _pm, n_probs, err = _author_one_paper((W, pm))
-        if err:
-            print(f"  deep dive {pm}: {len(stubs)} stub section(s) could not be authored — {err[:120]}")
+        if not err:
+            with _LEDGER_LOCK:
+                secs = json.load(open(dd_path))
+                secs["_authored_keys"] = sorted(set(secs.get("_authored_keys") or []) | set(todo))
+                json.dump(secs, open(dd_path, "w"), ensure_ascii=False)
+        return pm, err
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        errs = dict(pool.map(_author, jobs))
+    for pm, stubs, todo, dd_path in jobs:
+        if errs.get(pm):
+            print(f"  deep dive {pm}: {len(todo)} section(s) could not be authored — {errs[pm][:120]}")
             continue
         secs = json.load(open(dd_path))
         for key in stubs:
@@ -2809,7 +2840,6 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
             h = h[:m.start()] + m.group(1) + f"<h3>{title}</h3>" + inner.strip() + m.group(3) + h[m.end():]
             written += 1
     return h, written
-
 
 _PROSE_FAULT_RE = re.compile(r'^\[(?!card:|dialog:|headings)([^\]]+)\] (.+?): "(.*?)" \((.*)\)$', re.S)
 
