@@ -2585,6 +2585,7 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
         if not conts:
             continue
         missing: set = set()
+        hit: set = set()
         # last card first: each splice below rewrites h, and a card earlier in
         # the page keeps valid offsets only if everything after it is done
         # (splicing first-to-last nested a card inside another's opening tag)
@@ -2688,16 +2689,13 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                   edits.append((em.start(2), em.end(2), rebuilt))
                   taken.add(em.start(2))
                   break
-              if not found:
-                  missing.add(needle)
-              else:
-                  missing.discard(needle)
+              (hit if found else missing).add(needle)
           for a, b, new in sorted(edits, reverse=True):
               cont = cont[:a] + new + cont[b:]
               done += 1
           if edits:
               h = h[:cm.start()] + cont + h[cm.end():]
-        for needle in sorted(missing):
+        for needle in sorted(missing - hit):
             print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
     json.dump(tally, open(tally_path, "w"))
     return h, done
