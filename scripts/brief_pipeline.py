@@ -3420,6 +3420,26 @@ def house_style(h: str, fmt: str) -> tuple:
         h = h[:at] + para + h[at:]
         h = h[:m.start() + syn.start()] + h[m.start() + syn.end():]
         notes.append("a group synthesis placed above its topics")
+    # a trend brief's section whose every card repeats a paper already carded
+    # above it is a second listing under a heading that promises something
+    # else (PCS: "Where the biology comes from — mechanism-level studies" held
+    # only the Basile review already under Foundational papers). It goes,
+    # heading and all. Weekly briefs keep the owner's rule: a paper may sit
+    # under two topic headings.
+    if fmt == "trend":
+        seen, drop = set(), []
+        for m in re.finditer(r'<section class="mz-post-section[^"]*"[^>]*>', h):
+            end = _element_end(h, "section", m.end())
+            if any(a < m.start() < b for a, b in drop):
+                continue
+            seg = h[m.start():end]
+            cards = {(_pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]) for c in CARD_RE.findall(seg)} - {None}
+            if cards and cards <= seen:
+                drop.append((m.start(), end))
+            seen |= cards
+        for a, b in sorted(drop, reverse=True):
+            h = h[:a] + h[b:]
+            notes.append("a trend section holding only cards already listed above removed")
     # a card's design chip is the design, in the vocabulary's own words, with
     # the sample size when there is one — not the year and journal on some
     # cards and a bare label on others (PCS, H1/H2, mast-cell)

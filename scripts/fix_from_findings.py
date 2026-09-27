@@ -57,7 +57,11 @@ OFFTOPIC_RE = re.compile(r"off-topic|keyword collision|sits under|carded under|o
 NOT_PLACEMENT_RE = re.compile(r"deep[- ]dive|dialog|\blens\b|panel|fram(?:ed|ing)|established literature|knowledge-base"
                               r"|carded twice|\bTOC\b|heading calls|in my experience|first-person", re.I)
 HEADING_LABEL_RE = re.compile(r"heading (?:calls|says|names|mislabels)|heading ['\"‘“][^'\"’”]{4,120}['\"’”] contains no"
-                              r"|mislabels its contents", re.I)
+                              r"|mislabels its contents|\b[Hh][23] heading\b|section (?:heading|title)\b[^.]{0,80}\b(?:reads|is a|leak)"
+                              r"|heading at line", re.I)
+# a heading that talks about the page instead of the medicine
+PAGE_TALK_RE = re.compile(r"already (?:listed|carded|covered|discussed|shown)|duplicate|see above|as above|listed (?:above|below|under)"
+                          r"|included here|this section", re.I)
 POPOVER_SUBJECT_RE = re.compile(r"^(?:the\s+)?(?:[\w'’\[\]#.-]+\s+){0,2}?(?:popovers?|hover cards?)\b|popover (?:says|states|gives|reads|lists|reports)", re.I)
 
 
@@ -182,12 +186,14 @@ def rewrite_labelled_heading(W: str, h: str, f: dict) -> tuple:
 HEADING: {json.dumps(plain)}
 WHAT THE REVIEWER FOUND: {json.dumps(f.get('what', '')[:800], ensure_ascii=False)}
 WHAT THE SECTION HOLDS: {json.dumps(body, ensure_ascii=False)}
-Write the heading again: 3-12 words, saying exactly what the section holds — not a label it does not
-earn, no "verdict"/"myth"/"debunk", no "never"/"always", "CBG/MIGS" if the practice is named. Keep a
-trailing count in parentheses if the heading has one.
+Write the heading again: 3-12 words, saying exactly what the section holds — its clinical content, never
+the page's own organisation ("already listed", "duplicate", "see above", "included here") — not a label it
+does not earn, no "verdict"/"myth"/"debunk", no "never"/"always", "CBG/MIGS" if the practice is named.
+Keep a trailing count in parentheses if the heading has one.
 Reply with ONLY {{"heading": "<text>"}}""", timeout_s=300)
         new = re.sub(r"\s+", " ", str((v or {}).get("heading") or "")).strip().strip('"').rstrip(".")
-        if 3 <= len(new) <= 120 and not bp._ABSOLUTE_WORD_RE.search(new) and not bp.SCORING_LANGUAGE_RE.search(new) and new != plain:
+        if (3 <= len(new) <= 120 and not bp._ABSOLUTE_WORD_RE.search(new) and not bp.SCORING_LANGUAGE_RE.search(new)
+                and not PAGE_TALK_RE.search(new) and new != plain):
             print(f"  heading rewritten: {plain[:80]!r} -> {new[:80]!r}")
             return h[:m.start(3)] + H.escape(new, quote=False) + h[m.end(3):], 1
     return h, 0
