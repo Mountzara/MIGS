@@ -2776,7 +2776,7 @@ Return ONLY {{"text": "<rewritten>"}}""")
             pieces = re.split(r"(⟦\d+⟧)", new)
             rebuilt = "".join(by_pm[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm.get(x[1:-1]) else H.escape(x, quote=False)
                               for x in pieces)
-            h = _replace_span(h, a, b, rebuilt)
+            h = _replace_span(h, a, b, rebuilt, raw=True)
             done += 1
     return h, done
 
@@ -8755,7 +8755,7 @@ def _sentence_start(masked: str, from_pos: int) -> int:
     return n
 
 
-def _replace_span(h: str, a: int, b: int, new_text: str) -> str:
+def _replace_span(h: str, a: int, b: int, new_text: str, raw: bool = False) -> str:
     """Replace the prose in h[a:b] with escaped text, keeping the inline
     markup balanced.
 
@@ -8787,7 +8787,10 @@ def _replace_span(h: str, a: int, b: int, new_text: str) -> str:
     # answered with a second closing tag, which is what left the document with
     # two </em> and one <em>
     reopen = "".join(tag for _, tag in stack)
-    return h[:a] + H.escape(new_text, quote=False) + closers + reopen + h[b:]
+    # raw: the caller has escaped its text and interleaved marker markup
+    # (fix_placement); escaping that turned every placed citation into the
+    # literal text "&lt;sup class=…" — markers gone, popover text on the page
+    return h[:a] + (new_text if raw else H.escape(new_text, quote=False)) + closers + reopen + h[b:]
 
 
 def _card_in(seg: str, pmid: str):
