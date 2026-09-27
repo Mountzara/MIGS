@@ -45,6 +45,7 @@
 		B10000000000000000000025 /* BillingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000025 /* BillingView.swift */; };
 		B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000026 /* BillingClaimDetailView.swift */; };
 		B10000000000000000000027 /* AdminAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000027 /* AdminAI.swift */; };
+		B10000000000000000000028 /* BriefReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000028 /* BriefReader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +88,7 @@
 		F10000000000000000000025 /* BillingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingView.swift; sourceTree = "<group>"; };
 		F10000000000000000000026 /* BillingClaimDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingClaimDetailView.swift; sourceTree = "<group>"; };
 		F10000000000000000000027 /* AdminAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAI.swift; sourceTree = "<group>"; };
+		F10000000000000000000028 /* BriefReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefReader.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -146,6 +148,7 @@
 				F1000000000000000000001E /* AdminSpotlight.swift */,
 				F1000000000000000000001F /* MZAdminIntents.swift */,
 				F10000000000000000000027 /* AdminAI.swift */,
+				F10000000000000000000028 /* BriefReader.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -309,6 +312,7 @@
 				B10000000000000000000025 /* BillingView.swift in Sources */,
 				B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */,
 				B10000000000000000000027 /* AdminAI.swift in Sources */,
+				B10000000000000000000028 /* BriefReader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +452,8 @@
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphoneos*]" = "MZAdmin/Info-iOS.plist";
+				"INFOPLIST_FILE[sdk=iphonesimulator*]" = "MZAdmin/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "MZ Admin";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -485,6 +491,8 @@
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphoneos*]" = "MZAdmin/Info-iOS.plist";
+				"INFOPLIST_FILE[sdk=iphonesimulator*]" = "MZAdmin/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "MZ Admin";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

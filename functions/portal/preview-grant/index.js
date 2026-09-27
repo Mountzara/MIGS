@@ -44,10 +44,10 @@ ${refresh}
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg-base: #120b22;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --bg-base: #FBFAF8;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --accent: #6d28d9;
     --accent-soft: #a78bfa;
     --glow-purple: 167, 139, 250;
@@ -104,7 +104,7 @@ h1 em {
     display: inline-block;
     padding: 14px 26px;
     font-size: 15px; font-weight: 500; letter-spacing: 0.01em;
-    color: #fff; text-decoration: none;
+    color:#1A1726; text-decoration: none;
     background: linear-gradient(180deg, var(--accent-soft), var(--accent));
     border-radius: 12px;
     box-shadow: 0 12px 30px -10px rgba(var(--glow-purple), 0.5), 0 0 0 1px rgba(var(--glow-purple), 0.35) inset;
@@ -132,6 +132,7 @@ h1 em {
     * { animation: none !important; transition: none !important; }
     .eyebrow, h1, .lede, .cta, .footer { opacity: 1 !important; transform: none !important; }
 }
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
 </head>
 <body>

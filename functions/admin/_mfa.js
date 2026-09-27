@@ -66,7 +66,7 @@ export function mfaPromptHtml({ next = "/admin/", error = "" } = {}) {
         body {
             margin: 0; min-height: 100vh;
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #050514; color: #ffffff;
+            background: #FBFAF8; color: #4A4658;
             display: flex; align-items: center; justify-content: center;
             padding: 24px;
         }
@@ -82,10 +82,10 @@ export function mfaPromptHtml({ next = "/admin/", error = "" } = {}) {
                    text-transform: uppercase; color: rgba(167, 139, 250, 0.95); margin-bottom: 14px; }
         h1 { font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
              letter-spacing: -0.018em; margin: 0 0 12px; line-height: 1.15; }
-        p  { font-size: 15px; line-height: 1.55; color: #ffffff; margin: 0 0 22px; }
+        p  { font-size: 15px; line-height: 1.55; color: #4A4658; margin: 0 0 22px; }
         form { display: grid; gap: 14px; }
         label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
-                color: #ffffff; }
+                color: #6E6A7C; }
         input[type="text"] {
             font: inherit; font-size: 22px; letter-spacing: 0.32em; text-align: center;
             background: rgba(0, 0, 0, 0.22); color: inherit;
@@ -107,7 +107,7 @@ export function mfaPromptHtml({ next = "/admin/", error = "" } = {}) {
             color: rgba(252, 165, 165, 0.95); padding: 10px 14px; border-radius: 8px;
             font-size: 14px; line-height: 1.45;
         }
-        details { font-size: 13px; color: #ffffff; margin-top: 6px; }
+        details { font-size: 13px; color: #4A4658; margin-top: 6px; }
         details summary { cursor: pointer; }
     </style>
 </head>

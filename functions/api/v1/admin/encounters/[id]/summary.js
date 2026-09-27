@@ -25,12 +25,22 @@ import {
 
 const now = () => Date.now();
 
-async function readBody(env, key, wrapped, aad) {
+// Accepts one AAD or a list. Two sealing conventions exist for these
+// columns — the admin generate path (visit_summary_*:<id>) and the
+// transcription-app sync path (encounter/<encounter_id>/summary_*) — and
+// a reader that knows only one silently shows an empty summary for the
+// other. Trying both is safe: AAD is authenticated data, so the wrong
+// string fails decryption rather than opening anything.
+async function readBody(env, key, wrapped, aads) {
     if (!key) return "";
-    try {
-        const got = await getPhiObject(env, key, wrapped, aad);
-        return typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
-    } catch { return ""; }
+    for (const aad of Array.isArray(aads) ? aads : [aads]) {
+        try {
+            const got = await getPhiObject(env, key, wrapped, aad);
+            const text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+            if (text) return text;
+        } catch { /* next convention */ }
+    }
+    return "";
 }
 
 export async function onRequest(ctx) {
@@ -41,7 +51,8 @@ export async function onRequest(ctx) {
 
         const enc = await env.DB.prepare(
             `SELECT id, patient_id, clinician_id, visit_date, visit_type_actual,
-                    chief_complaint, note_r2_key
+                    chief_complaint, note_r2_key, note_wrapped_dek, note_aad, note_key_lost,
+                    icd10_codes_json, created_at
                FROM encounters WHERE id = ? LIMIT 1`
         ).bind(encounterId).first();
         if (!enc) return jsonError("encounter not found", 404);
@@ -56,14 +67,31 @@ export async function onRequest(ctx) {
             let patientText = "", clinicianText = "";
             if (existing) {
                 patientText = await readBody(env, existing.patient_visible_r2_key,
-                    existing.patient_visible_wrapped_dek, `visit_summary_patient:${existing.id}`);
+                    existing.patient_visible_wrapped_dek, [`visit_summary_patient:${existing.id}`, `encounter/${encounterId}/summary_patient`]);
                 clinicianText = await readBody(env, existing.clinician_full_r2_key,
-                    existing.clinician_full_wrapped_dek, `visit_summary_clinician:${existing.id}`);
+                    existing.clinician_full_wrapped_dek, [`visit_summary_clinician:${existing.id}`, `encounter/${encounterId}/summary_clinician`]);
+            }
+            let jargon = [];
+            if (patientText) {
+                try {
+                    const { flagJargon } = await import("../../../../../_lib/note_extract.js");
+                    jargon = flagJargon(patientText);
+                } catch { jargon = []; }
             }
             return jsonResponse({
                 ok: true,
+                // Words she would have to look up, with the plain
+                // equivalent. Advisory: a draft lifted from his note keeps
+                // his language, which is right for a draft and wrong for
+                // the thing she reads.
+                jargon,
                 encounter: { id: enc.id, visit_date: enc.visit_date, visit_type: enc.visit_type_actual,
-                             chief_complaint: enc.chief_complaint, has_note: Boolean(enc.note_r2_key) },
+                             chief_complaint: enc.chief_complaint,
+                             has_note: Boolean(enc.note_r2_key) && !enc.note_key_lost,
+                             // Distinguishing "no note" from "a note we cannot open"
+                             // matters: the second is a data-loss event the clinician
+                             // must be told about, not an empty visit.
+                             note_key_lost: Boolean(enc.note_key_lost) },
                 summary: existing ? {
                     id: existing.id, status: existing.status,
                     patient_text: patientText, clinician_text: clinicianText,
@@ -85,14 +113,72 @@ export async function onRequest(ctx) {
         const action = String(body?.action || "");
 
         // ---- generate -------------------------------------------------
+        // ---- draft_from_note ------------------------------------------
+        // The deterministic path: lift his own assessment and plan out of
+        // the note verbatim (no model involved, so it works with no API key
+        // and no bridge). Used by the sync rail for new notes and by
+        // scripts/backfill_avs_drafts.mjs for ones that arrived before it
+        // existed. Refuses when a draft already exists — his edits are not
+        // something a backfill gets to overwrite.
+        if (action === "draft_from_note") {
+            if (existing) {
+                return jsonError("A summary already exists for this encounter — drafting again would discard it.", 409);
+            }
+            if (!enc.note_r2_key || enc.note_key_lost || !enc.note_wrapped_dek) {
+                return jsonError("This note cannot be read, so there is nothing to draft from.", 409);
+            }
+            const noteText = await readBody(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
+            if (!noteText) return jsonError("The note decrypted empty.", 409);
+            const { draftFromNote } = await import("../../../../../_lib/note_extract.js");
+            const draft = draftFromNote(noteText, { chiefComplaint: enc.chief_complaint });
+            if (!draft) {
+                return jsonError("This note has no recognisable assessment or plan, so no draft was made. A draft assembled from fragments would be worse than none.", 422);
+            }
+            const sumId = newId();
+            const pKey = `encounter/${enc.patient_id}/${enc.id}/summary_patient.bin`;
+            const put = await putPhiObject(env, pKey, new TextEncoder().encode(draft), `visit_summary_patient:${sumId}`);
+            await env.DB.prepare(`
+                INSERT INTO encounter_ai_summaries
+                    (id, encounter_id, patient_id, clinician_id, source, ai_model,
+                     patient_visible_r2_key, patient_visible_wrapped_dek,
+                     status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, 'note_extract', 'note-extract/1', ?, ?, 'pending_clinician_review', ?, ?)
+            `).bind(sumId, enc.id, enc.patient_id, enc.clinician_id || null,
+                    pKey, put.wrapped_dek, now(), now()).run();
+            return jsonResponse({ ok: true, summary_id: sumId, status: "pending_clinician_review",
+                                  drafted_from: "note", chars: draft.length });
+        }
+
         if (action === "generate") {
             if (!enc.note_r2_key) {
                 return jsonError("This encounter has no note yet. A summary of nothing would be a fabrication.", 409);
             }
-            const noteText = await readBody(env, enc.note_r2_key, null, null);
+            // These used to be `null, null`. The wrapped DEK was never
+            // stored (schema/0038), so this could only ever fail — and
+            // passing a null AAD made getPhiObject skip its AAD check, so
+            // the failure surfaced as a generic decrypt error that read
+            // like something transient rather than a missing key.
+            if (enc.note_key_lost || !enc.note_wrapped_dek) {
+                return jsonError(
+                    "This note was saved before the encryption key was being stored, so it cannot be decrypted. " +
+                    "Re-sync the encounter from the Transcription app to replace it.", 409);
+            }
+            const noteText = await readBody(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
             if (!noteText.trim()) return jsonError("the encounter note could not be read", 500);
 
+            // Her language, not ours. A summary she cannot read is not a
+            // summary; see SUPPORTED_AVS_LANGUAGES in _lib/visit_summary.js
+            // for how the review copy stays English so the approval gate
+            // still means something.
+            let patientLang = "en";
+            try {
+                const pl = await env.DB.prepare(
+                    `SELECT preferred_language FROM patients WHERE id = ? LIMIT 1`).bind(enc.patient_id).first();
+                if (pl && pl.preferred_language) patientLang = String(pl.preferred_language);
+            } catch { /* default English */ }
+
             const gen = await generateSummary(env, {
+                language: patientLang,
                 noteText, visitDate: enc.visit_date, visitType: enc.visit_type_actual,
                 chiefComplaint: enc.chief_complaint,
                 encounterId: enc.id, patientId: enc.patient_id,
@@ -188,10 +274,99 @@ export async function onRequest(ctx) {
                 record_type: "encounter_ai_summary", record_id: existing.id, success: true,
                 details: { encounter_id: enc.id, review_action: body.review_action, status: r.status } });
 
+            // ATTACH THE READING FOR THIS VISIT. Selection is by the visit's
+            // ICD-10 codes against the practice's own published primers —
+            // never authored here, never chosen by asking a model what the
+            // note seems to be about. An unmatched visit attaches nothing,
+            // because a generic pamphlet stapled to a specific visit teaches
+            // her the attachments are noise.
+            let attached = [];
+            if (r.patient_sees) {
+                try {
+                    const edu = await import("../../../../../_lib/avs_education.js");
+                    let icd10 = [];
+                    try { icd10 = JSON.parse(enc.icd10_codes_json || "[]"); } catch { icd10 = []; }
+                    // Codes the visit's ORDERS carry count too — an order
+                    // placed at this visit is part of what was discussed.
+                    try {
+                        const ords = await env.DB.prepare(
+                            `SELECT icd10_json, modality FROM clinical_orders
+                              WHERE patient_id = ? AND created_at >= ?`
+                        ).bind(enc.patient_id, (enc.created_at || 0) - 86400000).all();
+                        for (const o of (ords?.results || [])) {
+                            try { icd10 = icd10.concat(JSON.parse(o.icd10_json || "[]")); } catch {}
+                        }
+                    } catch {}
+                    const lib = await env.DB.prepare(
+                        `SELECT id, slug, title, summary, topic_tags_json FROM education_materials
+                          WHERE status = 'published'`).all();
+                    const pick = edu.selectForVisit(lib?.results || [], {
+                        icd10, visit_type: enc.visit_type_actual || "",
+                    });
+                    for (const m of pick.materials) {
+                        await env.DB.prepare(`
+                            INSERT INTO patient_education_assignments
+                                (id, patient_id, material_id, assigned_by_role, assigned_by_id, reason, assigned_at)
+                            VALUES (?, ?, ?, 'clinician', ?, ?, ?)
+                        `).bind(newId(), enc.patient_id, m.id, admin.user,
+                                edu.reasonLine(m.matched_on, enc.visit_date), now()).run();
+                    }
+                    attached = pick.materials.map((m) => ({ slug: m.slug, title: m.title }));
+                } catch (e) {
+                    // Reading is an enhancement; never fail an approval for it.
+                    console.error("summary approve: education attach failed", String(e).slice(0, 200));
+                }
+            }
+
+            // TELL HER. Approving used to say "the patient can now see it in
+            // their portal" and enqueue nothing — and until 2026-08-14 there
+            // was no portal page either, so the sentence was false twice
+            // over. The email carries no clinical content, same posture as
+            // every other template: something is ready, sign in to read it.
+            let notified = false;
+            if (r.patient_sees) {
+                try {
+                    const pt = await env.DB.prepare(
+                        "SELECT email FROM patients WHERE id = ? LIMIT 1"
+                    ).bind(enc.patient_id).first();
+                    if (pt?.email) {
+                        const { notify } = await import("../../../../../_lib/notify.js");
+                        const out = await notify(env, {
+                            to: pt.email, template: "visit_summary_ready",
+                            patient_id: enc.patient_id,
+                            data: { portalUrl: `${new URL(request.url).origin}/portal/visits/` },
+                        });
+                        notified = Boolean(out?.sent);
+                    }
+                } catch (e) {
+                    // Never fail an approval because an email did not go out.
+                    console.error("summary approve: notify failed", String(e).slice(0, 200));
+                }
+            }
+
+            let approvedJargon = [];
+            if (r.patient_sees) {
+                try {
+                    const { flagJargon } = await import("../../../../../_lib/note_extract.js");
+                    const txt = await readBody(env, existing.patient_visible_r2_key,
+                        existing.patient_visible_wrapped_dek,
+                        [`visit_summary_patient:${existing.id}`, `encounter/${encounterId}/summary_patient`]);
+                    approvedJargon = flagJargon(txt);
+                } catch { approvedJargon = []; }
+            }
             return jsonResponse({
                 ok: true, status: r.status, visible_to_patient: r.patient_sees,
+                patient_notified: notified, education_attached: attached,
+                // Not a block — his call — but never silent. Approving an
+                // unedited extraction hands her the note in his words.
+                jargon_in_approved_text: approvedJargon,
+                jargon_warning: approvedJargon.length
+                    ? `She will read ${approvedJargon.length} term(s) most patients would look up: ${approvedJargon.map(j => j.term).join(", ")}. Edit and re-approve if that was not intended.`
+                    : undefined,
                 message: r.patient_sees
-                    ? "Approved. The patient can now see it in their portal."
+                    ? (notified
+                        ? "Approved. It is in her portal now and she has been emailed."
+                        : "Approved and visible in her portal. The email did not send — check /api/v1/admin/notifications/health.")
                     : "Rejected. The patient will never see this draft.",
             });
         }

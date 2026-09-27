@@ -35,7 +35,11 @@
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { requireRole } from "../../../../_lib/auth.js";
 import { computeAvailableSlots } from "../../../../_lib/scheduling.js";
-import { getVisitType } from "../../../../_lib/visit_types.js";
+import {
+    getVisitType,
+    isTelehealthOnly,
+    isBookableVisitTypeKey,
+} from "../../../../_lib/visit_types.js";
 
 const CLINICIAN_ID = "mabini-christopher-z";
 const DEFAULT_WINDOW_DAYS = 14;
@@ -101,6 +105,8 @@ export async function onRequestGet(ctx) {
         SELECT id, ai_visit_type, ai_duration_min, ai_urgency,
                ai_in_person_required, ai_preferred_time_of_day,
                clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_urgency, clinician_override_in_person_required,
+               clinician_override_preferred_time_of_day,
                final_visit_type, final_duration_min, clinician_reviewed_at
         FROM appointment_triage
         WHERE patient_id = ? AND clinician_reviewed_at IS NOT NULL
@@ -114,25 +120,62 @@ export async function onRequestGet(ctx) {
 
     const visit_type = triage.final_visit_type || triage.clinician_override_visit_type || triage.ai_visit_type;
     const duration_min = triage.final_duration_min || triage.clinician_override_duration_min || triage.ai_duration_min;
-    const in_person_required = !!triage.ai_in_person_required; // overrides not persisted; clinician release implies acceptance
-    const preferred_time_of_day = triage.ai_preferred_time_of_day || "any";
+    // His override wins over the AI, when he made one. The line this
+    // replaces read only ai_in_person_required with the comment "overrides
+    // not persisted" — and it was accurate: release.js validated the
+    // in-person checkbox, wrote it to the audit log, and dropped it. Every
+    // live triage row has ai_in_person_required = 1, so the checkbox could
+    // never open a visit to telehealth; it flipped, the toast said
+    // released, and the patient stayed hard-blocked. Both halves are fixed
+    // together: release.js now persists the override columns, and this
+    // reads them. NULL means "he did not touch it", so ?? not ||, or an
+    // override TO false would be indistinguishable from no override.
+    const in_person_required = !!(triage.clinician_override_in_person_required
+        ?? triage.ai_in_person_required);
+    const preferred_time_of_day = triage.clinician_override_preferred_time_of_day
+        || triage.ai_preferred_time_of_day || "any";
 
     if (visit_type === "manual_review_required") {
         return err(409, "manual_review_required",
             "Your triage requires manual review. You'll be notified once the clinician confirms your visit type.");
     }
 
-    // Resolve modality. Patient's choice can downgrade in_person_required
-    // only if the visit type permits (i.e., not procedure / OMT / annual).
+    // Resolve modality.
+    //
+    // While the practice is telehealth-only there is nothing to resolve:
+    // every offered slot is a video slot, and a visit type that needs
+    // hands is not offered at all. Answering that case here — before the
+    // old capping logic — matters, because that logic reads
+    // `vt.modality_preferred` off the RAW catalog, where eleven types
+    // still say "in_person" for the day in-person care resumes. Left in
+    // front, it would silently cap every telehealth request back to
+    // in-person and the patient would see an empty calendar.
     const vt = getVisitType(visit_type);
-    let modality = modalityParam || (in_person_required ? "in_person" : "any");
-    if (modalityParam === "telehealth") {
-        if (in_person_required || (vt && (vt.category === "procedure" || vt.modality_preferred === "in_person"))) {
-            // Cap their override silently — they can't go telehealth on a
-            // visit that requires in-person.
-            modality = "in_person";
-        } else {
-            modality = "telehealth";
+    const telehealthOnly = isTelehealthOnly();
+    let modality;
+    let effective_in_person_required = in_person_required;
+    if (telehealthOnly) {
+        // `vt` falsy means the key is not in the catalog at all — a
+        // different failure with its own message, handled by the
+        // unknown_visit_type guard below. Don't tell that patient their
+        // visit needs an examination; we have no idea what it needs.
+        if (vt && !isBookableVisitTypeKey(visit_type)) {
+            return err(409, "visit_type_not_offered",
+                "This visit needs an in-person examination, and in-person visits, office procedures and surgery are not currently offered through this practice at this time. "
+                + "He has been notified and will contact you about the right next step. If you would like to know where he sees patients in person and performs surgery, ask through Get in touch on mountzara.com.");
+        }
+        modality = "telehealth";
+        effective_in_person_required = false;
+    } else {
+        modality = modalityParam || (in_person_required ? "in_person" : "any");
+        if (modalityParam === "telehealth") {
+            if (in_person_required || (vt && (vt.category === "procedure" || vt.modality_preferred === "in_person"))) {
+                // Cap their override silently — they can't go telehealth on a
+                // visit that requires in-person.
+                modality = "in_person";
+            } else {
+                modality = "telehealth";
+            }
         }
     }
 
@@ -173,7 +216,7 @@ export async function onRequestGet(ctx) {
         appointments: apptsRes?.results || [],
         visit_type,
         duration_min,
-        in_person_required,
+        in_person_required: effective_in_person_required,
         preferred_time_of_day,
         modality,
         now: new Date(),
@@ -200,7 +243,11 @@ export async function onRequestGet(ctx) {
             visit_type,
             duration_min,
             urgency: triage.ai_urgency,
-            in_person_required,
+            // The EFFECTIVE value, not the stored one. The booking UI
+            // renders this row verbatim; showing "in person (required)"
+            // off a legacy triage row while every offered slot is a
+            // video slot is how a patient shows up at a door.
+            in_person_required: effective_in_person_required,
             preferred_time_of_day,
             // Phase 17 R1 — surface the chaperone policy so the booking UI can
             // prompt the patient before a telehealth booking of a

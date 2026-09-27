@@ -57,17 +57,21 @@ async function sha256Hex(bytes) {
 }
 
 async function insertDocument(env, args) {
-    const { patient_id, encounter_id, kind, r2_key, mime, size_bytes, sha256, wrapped_dek, filename, description, now } = args;
+    const { patient_id, encounter_id, kind, r2_key, mime, size_bytes, sha256, wrapped_dek, filename, description, phi_aad, now } = args;
     const id = newId();
+    // phi_aad records the AAD this object was sealed with. These rows use
+    // `clinical_ai/<session_id>/<part>`, which is nothing like the
+    // patient-upload convention a reader would otherwise assume — see
+    // schema/0037 for why guessing broke downloads.
     await env.DB.prepare(`
         INSERT INTO documents
             (id, patient_id, kind, r2_key, r2_bucket, filename, mime_type, size_bytes,
              sha256, encrypted, envelope_dek_wrapped,
-             uploaded_by_role, uploaded_by_id, source_app, description, uploaded_at)
-        VALUES (?, ?, ?, ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'clinical_ai_pipeline', 'clinical_ai', ?, ?)
+             uploaded_by_role, uploaded_by_id, source_app, description, phi_aad, uploaded_at)
+        VALUES (?, ?, ?, ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'clinical_ai_pipeline', 'clinical_ai', ?, ?, ?)
     `).bind(
         id, patient_id, kind, r2_key, filename, mime, size_bytes, sha256, wrapped_dek,
-        description, now
+        description, phi_aad || null, now
     ).run();
     return id;
 }
@@ -128,6 +132,7 @@ export async function onRequestPost(ctx) {
             wrapped_dek: analysisPut.wrapped_dek,
             filename: `${case_kind}-${session_id}.json`,
             description: description || `${case_kind} from MountZaraClinicalAI session ${session_id}`,
+            phi_aad: `clinical_ai/${session_id}/analysis`,
             now,
         }));
 
@@ -149,6 +154,7 @@ export async function onRequestPost(ctx) {
                 wrapped_dek: put.wrapped_dek,
                 filename: `${case_kind}-${session_id}.html`,
                 description: `Rendered HTML for ${case_kind}`,
+                phi_aad: `clinical_ai/${session_id}/html`,
                 now,
             }));
         }
@@ -171,6 +177,7 @@ export async function onRequestPost(ctx) {
                 wrapped_dek: put.wrapped_dek,
                 filename: `${case_kind}-${session_id}.pdf`,
                 description: `Rendered PDF for ${case_kind}`,
+                phi_aad: `clinical_ai/${session_id}/pdf`,
                 now,
             }));
         }

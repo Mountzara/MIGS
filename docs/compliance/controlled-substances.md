@@ -49,6 +49,26 @@ This baseline is **more conservative** than the most recent DEA proposed rules i
 
 Prescriptions issued without a documented in-person evaluation within the qualifying window are **policy violations** and are subject to internal review.
 
+### 3.1 — Practical consequence while the practice is telehealth-only (from 2026-09-15)
+
+The practice is currently video-only: Dr. Mabini performs no in-person evaluations. Read against
+Section 3, that has one unavoidable consequence, stated here rather than left to be discovered at
+the prescribing screen:
+
+> **No controlled substance of any schedule can be prescribed to a patient whose only encounters
+> with this practice are telehealth encounters.** There is no qualifying in-person evaluation to
+> read back against, so the DoseSpot gate in Section 6 will refuse the order, correctly.
+
+The only patients who could satisfy the baseline are those with a documented in-person encounter
+by Dr. Mabini within the preceding 24 months — a closed and shrinking set, and one that empties
+entirely 24 months after the last in-person clinic day.
+
+This is not a gap to work around. The standard-of-care response in Section 9 applies without
+change, except that step 1 — "schedule an in-person evaluation" — means a referral to a clinician
+who can perform one, not an appointment at this practice. The patient-facing
+[telehealth consent](/telehealth-consent/) §8 states this in plain language, and the two documents
+must be revised together.
+
 ---
 
 ## Section 4 — Exception conditions (not currently applicable)
@@ -123,7 +143,9 @@ Every controlled-substance prescription is documented in the patient's chart wit
 
 Telehealth visits at Mount Zara are held to the same standard of care as in-person visits (see `standard-of-care.md`). When a clinician determines during a telehealth encounter that a controlled-substance prescription is clinically appropriate but the patient does not have a qualifying in-person evaluation within the past 24 months, the standard-of-care response is:
 
-1. Schedule an in-person evaluation at the earliest mutually feasible time.
+1. Schedule an in-person evaluation at the earliest mutually feasible time. While the practice is
+   telehealth-only (see §3.1), this means referring the patient to a clinician who can perform one;
+   this practice cannot.
 2. Bridge with non-controlled alternatives where clinically reasonable.
 3. Refer to an emergency department or local in-person provider when the clinical situation does not permit a wait.
 4. Document the decision rationale in the chart.

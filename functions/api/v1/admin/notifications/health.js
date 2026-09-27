@@ -1,0 +1,186 @@
+// =====================================================================
+// GET /api/v1/admin/notifications/health — is email actually working?
+// =====================================================================
+// On 2026-08-14 six notifications had failed and nothing anywhere said so.
+// Three of them were magic-link SIGN-IN emails — one to the owner's own
+// address. A patient requesting a link sees "if an account exists, a
+// sign-in link has been issued", and then nothing arrives, and no screen
+// in the system reports it. From the patient's side it is indistinguishable
+// from having no account; from the practice's side it is invisible.
+//
+// The cause was not a bug in the code. It is that AWS SES is still in the
+// SANDBOX, which refuses any recipient that is not a verified identity:
+//
+//   "Email address is not verified. The following identities failed the
+//    check in region US-EAST-2: chris.mabini@gmail.com"
+//
+// That is an account-level condition, fixed in the AWS console and nowhere
+// else. What the CODE can do is refuse to let it be silent — which is what
+// this endpoint is for. It answers, in one call: can this practice send
+// email to a patient right now, and if not, what is the specific reason.
+//
+// Read-only. No PHI: addresses are masked.
+// =====================================================================
+
+import { adminRoute, jsonResponse, jsonError } from "../../../../_lib/admin_api.js";
+
+const SANDBOX_HINT = /not verified|identities failed the check/i;
+
+function maskEmail(e) {
+    const s = String(e || "");
+    return s.replace(/^(.{2}).*?@/, "$1***@");
+}
+
+/**
+ * Turn the outbox's raw errors into the one sentence he needs. Grouped by
+ * cause rather than listed row by row: six copies of the same SES sandbox
+ * refusal is one problem, not six.
+ */
+export function diagnose(rows) {
+    // "abandoned" is a CLOSED outcome, not a live failure: every abandoned
+    // row carries an explicit reason (reserved-domain recipient, expired
+    // magic link, permanent provider refusal) and was retired on purpose.
+    // Counting them as failures kept this endpoint red forever after the
+    // 2026-08-23 provider switch, when the entire backlog was consciously
+    // dispositioned and the one deliverable message was delivered — an
+    // alarm that cannot go green teaches people to ignore it.
+    const failed = rows.filter((r) => r.status !== "sent" && r.status !== "abandoned");
+    if (!failed.length) {
+        return { healthy: true, headline: "Email is delivering.", causes: [] };
+    }
+    const buckets = new Map();
+    for (const r of failed) {
+        const err = String(r.error || "unknown");
+        let key, explain, action;
+        if (SANDBOX_HINT.test(err)) {
+            key = "ses_sandbox";
+            explain = "AWS SES is still in the sandbox, so it will only deliver to addresses you have verified individually. Every patient email fails until production access is granted.";
+            action = "These failures are from the SES sandbox era. The fix is NOTIFY_PROVIDER=cloudflare (scripts/setup_cloudflare_email.sh) — no approval process, no sandbox. Rows retry automatically once a working provider is configured.";
+        } else if (/NOTIFY_PROVIDER|not set|not configured/i.test(err)) {
+            key = "not_configured";
+            explain = "No mail provider is configured for this deployment.";
+            action = "Set NOTIFY_PROVIDER, the provider credentials and NOTIFY_FROM as Pages secrets, then redeploy.";
+        } else if (/BAA/i.test(err)) {
+            key = "baa";
+            explain = "The configured provider does not sign a BAA, and patient notifications require one.";
+            action = "Use NOTIFY_PROVIDER=ses.";
+        } else if (/invalid recipient/i.test(err)) {
+            key = "bad_address";
+            explain = "One or more stored addresses are not valid email addresses.";
+            action = "Correct the address on the patient record; these are abandoned rather than retried forever.";
+        } else {
+            key = "other";
+            explain = "Delivery failed for a reason not recognised here.";
+            action = "Read the error text below.";
+        }
+        const b = buckets.get(key) || { cause: key, explain, action, count: 0, sample_error: err.slice(0, 300), recipients: [] };
+        b.count++;
+        if (b.recipients.length < 5) b.recipients.push(maskEmail(r.to_email));
+        buckets.set(key, b);
+    }
+    const causes = [...buckets.values()].sort((a, b) => b.count - a.count);
+    return {
+        healthy: false,
+        headline: causes[0].cause === "ses_sandbox"
+            ? `Email is NOT reaching patients: SES is still in the sandbox (${failed.length} undelivered).`
+            : `${failed.length} notification(s) have not been delivered.`,
+        causes,
+    };
+}
+
+export async function onRequestGet(ctx) {
+    return adminRoute(ctx, async ({ env }) => {
+        if (!env.DB) return jsonError("D1 not bound", 500);
+
+        const res = await env.DB.prepare(`
+            SELECT id, to_email, template, status, error, attempts, created_at, sent_at
+              FROM notification_outbox
+             ORDER BY created_at DESC
+             LIMIT 500
+        `).all().catch(() => null);
+
+        if (!res) {
+            return jsonResponse({
+                ok: true, healthy: false,
+                headline: "The notification outbox table does not exist — nothing is recording whether email is delivering.",
+                causes: [], counts: {},
+            });
+        }
+        const rows = res.results || [];
+        const counts = rows.reduce((a, r) => { a[r.status] = (a[r.status] || 0) + 1; return a; }, {});
+        const d = diagnose(rows);
+
+        // Is the bounce/complaint pipeline actually receiving anything?
+        //
+        // On 2026-08-18 the SNS subscription sat in PendingConfirmation for
+        // hours while AWS's own metrics reported "delivered, 0 failed" —
+        // every dashboard green, nothing arriving. The only honest signal is
+        // whether a REAL SNS event has ever reached our endpoint, so it is
+        // reported here rather than inferred from configuration.
+        // Count only requests AWS actually made: the first version of this
+        // check counted any row whose topic looked like an ARN, which our own
+        // curl probe satisfied — and it cheerfully reported the pipeline
+        // healthy while the subscription was still unconfirmed. A liveness
+        // check that a test can satisfy is worse than none. SNS identifies
+        // itself by user agent; nothing else here does.
+        const activeProvider = String(env.NOTIFY_PROVIDER || "").toLowerCase();
+        let sns = { configured: !!env.SES_SNS_TOPIC_ARN, last_inbound_at: null, real_events: 0 };
+        try {
+            const row = await env.DB.prepare(`
+                SELECT MAX(at) AS last_at,
+                       SUM(CASE WHEN body LIKE '%Amazon Simple Notification Service%' THEN 1 ELSE 0 END) AS real_events
+                  FROM sns_confirmations`).first();
+            if (row) { sns.last_inbound_at = row.last_at || null; sns.real_events = Number(row.real_events) || 0; }
+        } catch { /* table appears on first inbound event */ }
+        if (activeProvider === "cloudflare") {
+            // With Cloudflare Email Sending, the SNS pipeline is not the
+            // bounce path: the REST send response reports permanent_bounces
+            // synchronously and notify.js writes the suppression row in the
+            // same request. Reporting the SNS subscription as unhealthy here
+            // would send someone to fix plumbing the active provider does
+            // not use.
+            sns.healthy = true;
+            sns.note = "Not in use — the Cloudflare send response reports bounces synchronously and suppression is written at send time. (SNS remains wired for the SES fallback.)";
+        } else {
+            sns.healthy = sns.configured && sns.real_events > 0;
+            sns.note = !sns.configured
+                ? "SES_SNS_TOPIC_ARN is not set — the feedback endpoint refuses all input."
+                : sns.real_events > 0
+                    ? "Bounce/complaint events are reaching the application."
+                    : "Configured, but no SNS event has EVER arrived. Bounces are not being auto-suppressed yet — the subscription is probably still unconfirmed.";
+        }
+
+        // The most recent SUCCESSFUL send is the honest liveness signal:
+        // "0 failures" means nothing if nothing has been attempted.
+        const lastSent = rows.find((r) => r.status === "sent");
+
+        return jsonResponse({
+            ok: true,
+            ...d,
+            counts,
+            total_recorded: rows.length,
+            undelivered: rows.filter((r) => r.status !== "sent" && r.status !== "abandoned").length,
+            abandoned_with_reason: rows.filter((r) => r.status === "abandoned").length,
+            last_successful_send: lastSent
+                ? { at: lastSent.sent_at || lastSent.created_at, template: lastSent.template }
+                : null,
+            never_delivered_anything: !lastSent,
+            provider: {
+                active: activeProvider || null,
+                // The BAA question is a launch gate, not a config detail —
+                // surfaced here so it cannot be forgotten. See BAA_PROVIDERS
+                // in _lib/notify.js for the reasoning.
+                baa_confirmed: activeProvider === "ses",
+                baa_note: activeProvider === "cloudflare"
+                    ? "Cloudflare Email Service's BAA coverage is undocumented. Fine pre-launch (no patients enrolled). Before PORTAL_PUBLIC_LAUNCH: confirm a BAA with Cloudflare or switch providers."
+                    : null,
+            },
+            sns_feedback_pipeline: sns,
+            recent: rows.slice(0, 20).map((r) => ({
+                id: r.id, template: r.template, to: maskEmail(r.to_email),
+                status: r.status, attempts: r.attempts, created_at: r.created_at,
+                error: r.error ? String(r.error).slice(0, 200) : null,
+            })),
+        });
+    });
+}

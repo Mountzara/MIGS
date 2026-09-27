@@ -14,7 +14,7 @@
 //   * Auto-captured PHI-free context: route, viewport, document.referrer,
 //     page-load timing, scroll percentage at submit time.
 //
-// §3.10 design — Apple-glass purple, mzRise animation, prefers-reduced-motion
+// design — Apple-glass purple, mzRise animation, prefers-reduced-motion
 // respected, focus-visible ring, Escape closes modal, outside-click closes,
 // scroll-locked body, accessible aria.
 // =====================================================================
@@ -38,7 +38,7 @@
             padding: 11px 16px 11px 14px;
             font: 500 13px/1 'Avenir Next', 'Nunito Sans', system-ui, -apple-system, sans-serif;
             letter-spacing: 0.01em;
-            color: #ffffff;
+            color: #1A1726;
             border: 1px solid rgba(167, 139, 250, 0.45);
             border-radius: 999px;
             background: linear-gradient(180deg, rgba(167, 139, 250, 0.95), rgba(109, 40, 217, 0.95));
@@ -75,12 +75,12 @@
             background:
                 radial-gradient(ellipse 80% 60% at 50% -20%, rgba(167, 139, 250, 0.12), transparent 60%),
                 rgba(14, 14, 19, 0.94);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            border: 1px solid #E9E5EE;
             border-radius: 18px;
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
             box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(167, 139, 250, 0.18) inset;
-            color: rgba(245, 245, 247, 0.92);
+            color: #1A1726;
             font-family: 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
             transform: translateY(8px) scale(0.985);
             opacity: 0;
@@ -107,20 +107,20 @@
         }
         .mz-fb-modal h2 {
             margin: 6px 0 0; font-size: 19px; font-weight: 400;
-            letter-spacing: -0.01em; color: #fff;
+            letter-spacing: -0.01em; color: #1A1726;
         }
         .mz-fb-close {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: rgba(245, 245, 247, 0.72);
+            background: #FFFFFF;
+            border: 1px solid #E9E5EE;
+            color: #4A4658;
             width: 32px; height: 32px; border-radius: 999px;
             display: inline-flex; align-items: center; justify-content: center;
             cursor: pointer;
             transition: background 0.18s, border-color 0.18s, color 0.18s;
         }
         .mz-fb-close:hover, .mz-fb-close:focus-visible {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
+            background: #FFFFFF;
+            color: #1A1726;
             border-color: rgba(167, 139, 250, 0.45);
             outline: none;
         }
@@ -133,7 +133,7 @@
             display: block;
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.16em; text-transform: uppercase;
-            color: rgba(245, 245, 247, 0.62);
+            color: #4A4658;
             margin-bottom: 8px;
         }
         .mz-fb-types, .mz-fb-severities {
@@ -143,26 +143,26 @@
             font: inherit;
             padding: 9px 14px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: rgba(245, 245, 247, 0.78);
+            background: #FFFFFF;
+            border: 1px solid #E9E5EE;
+            color: #4A4658;
             font-size: 13px; font-weight: 500;
             cursor: pointer;
             transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
         }
-        .mz-fb-chip:hover { transform: translateY(-1px); color: #fff; border-color: rgba(167, 139, 250, 0.42); }
+        .mz-fb-chip:hover { transform: translateY(-1px); color: #1A1726; border-color: rgba(167, 139, 250, 0.42); }
         .mz-fb-chip.active {
             background: rgba(167, 139, 250, 0.20);
             border-color: rgba(167, 139, 250, 0.6);
-            color: #fff;
+            color: #1A1726;
         }
         .mz-fb-textarea {
             width: 100%;
             padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: #FFFFFF;
+            border: 1px solid #E9E5EE;
             border-radius: 12px;
-            color: #fff;
+            color: #1A1726;
             font: inherit; font-size: 14px; line-height: 1.5;
             min-height: 100px;
             resize: vertical;
@@ -171,11 +171,11 @@
         .mz-fb-textarea:focus {
             outline: none;
             border-color: rgba(167, 139, 250, 0.55);
-            background: rgba(255, 255, 255, 0.06);
+            background: #FFFFFF;
         }
         .mz-fb-screenshot {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255, 255, 255, 0.04);
+            background: #FFFFFF;
             border: 1px dashed rgba(167, 139, 250, 0.4);
             color: rgba(167, 139, 250, 0.95);
             padding: 9px 13px;
@@ -183,7 +183,7 @@
             font-size: 12.5px; cursor: pointer;
             transition: background 0.18s, color 0.18s, border-color 0.18s;
         }
-        .mz-fb-screenshot:hover { background: rgba(167, 139, 250, 0.08); color: #fff; border-style: solid; }
+        .mz-fb-screenshot:hover { background: rgba(167, 139, 250, 0.08); color: #1A1726; border-style: solid; }
         .mz-fb-screenshot.has-image {
             border-style: solid; border-color: rgba(74, 222, 128, 0.45);
             color: rgba(74, 222, 128, 0.95);
@@ -193,11 +193,11 @@
             max-width: 100%;
             margin-top: 8px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #E9E5EE;
             display: block;
         }
         .mz-fb-context {
-            font-size: 11px; color: rgba(245, 245, 247, 0.45);
+            font-size: 11px; color: #6E6A7C;
             margin-top: 4px; line-height: 1.55;
             font-family: 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
             word-break: break-all;
@@ -213,7 +213,7 @@
             font: inherit;
             padding: 11px 22px;
             font-size: 14px; font-weight: 500;
-            color: #fff;
+            color: #1A1726;
             background: linear-gradient(180deg, rgba(167, 139, 250, 1), rgba(109, 40, 217, 1));
             border: 1px solid rgba(167, 139, 250, 0.55);
             border-radius: 10px;
@@ -223,7 +223,7 @@
         .mz-fb-submit:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -8px rgba(109, 40, 217, 0.5); }
         .mz-fb-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .mz-fb-status {
-            font-size: 12.5px; color: rgba(245, 245, 247, 0.55);
+            font-size: 12.5px; color: #6E6A7C;
             flex: 1;
         }
         .mz-fb-status.ok { color: rgba(74, 222, 128, 0.92); }

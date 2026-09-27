@@ -219,7 +219,44 @@ export async function onRequestPost(ctx) {
         const totals = body.totals || {};
         const total_wrvu               = num(totals.total_wrvu, 0);
         const total_charge_cents       = int(totals.total_charge_cents, 0);
-        const expected_collection_cents = int(totals.expected_collection_cents, 0);
+        // The app sends the code and the wRVU but not always a dollar
+        // figure, which left real claims sitting at $0 and every billing
+        // KPI understating the practice. If it did not send one, price the
+        // E/M code from the practice's OWN service catalog. Never invented:
+        // absent a catalog entry it stays 0, which is visibly missing
+        // rather than quietly wrong.
+        let expected_collection_cents = int(totals.expected_collection_cents, 0);
+        let expected_from_catalog = false;
+        if (!expected_collection_cents) {
+            // The catalog is keyed by the practice's own visit types
+            // (`visit_type_key` — 'aub_evaluation', 'postop_early', …), NOT
+            // by CPT, so the E/M code alone cannot price a visit. Match the
+            // visit type the app sent. Absent a match the figure stays 0,
+            // which reads as missing rather than as a wrong number — a
+            // silently invented price on a real claim is worse than none.
+            const vt = s(body.visit_type || body.visit_type_actual, 64);
+            try {
+                const alias = await import("../../../../_lib/visit_type_alias.js");
+                const cat = await env.DB.prepare(
+                    `SELECT visit_type_key, default_unit_price_cents FROM billing_service_catalog
+                      WHERE is_active = 1 AND visit_type_key IS NOT NULL`).all();
+                const rows = cat?.results || [];
+                const keys = rows.map((r) => r.visit_type_key);
+                // The app speaks in labels ("Problem Visit"); the catalog is
+                // keyed by slug. Try the label, then its alias, then the E/M
+                // code as a coarse floor — and record WHICH, so a fallback
+                // price is never mistaken for the app's own figure.
+                let hit = alias.toCatalogKey(vt, keys);
+                if (!hit.key) hit = alias.fromEmCode(em_code, keys);
+                if (hit.key) {
+                    const row = rows.find((r) => r.visit_type_key === hit.key);
+                    if (row && row.default_unit_price_cents > 0) {
+                        expected_collection_cents = Number(row.default_unit_price_cents);
+                        expected_from_catalog = hit.via;
+                    }
+                }
+            } catch { /* leave it at 0 */ }
+        }
 
         // ---- Compliance ----
         const compliance = body.compliance || {};
@@ -322,9 +359,13 @@ export async function onRequestPost(ctx) {
         // ---- Diagnoses ----
         const diagnoses = Array.isArray(body.diagnoses) ? body.diagnoses.slice(0, MAX_DIAGNOSES) : [];
         const dxInserts = [];
+        let droppedDx = 0;
         diagnoses.forEach((dx, idx) => {
-            const icd10 = s(dx.icd10_code || dx.code, 12);
-            if (!icd10) return;
+            // Three field spellings the app has plausibly used across
+            // versions. A diagnosis dropped over a field name is a claim
+            // every payer rejects.
+            const icd10 = s(dx.icd10_code || dx.code || dx.icd10, 12);
+            if (!icd10) { droppedDx++; return; }
             dxInserts.push(env.DB.prepare(`
                 INSERT INTO billing_claim_diagnoses
                     (id, claim_id, diagnosis_index, icd10_code, icd10_description,
@@ -455,6 +496,22 @@ export async function onRequestPost(ctx) {
             replaced_prior_pending,
             lines_inserted: lineInserts.length,
             diagnoses_inserted: dxInserts.length,
+            expected_collection_cents,
+            // 'exact' | 'alias' | 'em_code' | false. These are the practice's
+            // CASH prices: sound while every patient is self-pay, and to be
+            // superseded by a contracted rate the moment a payer contract
+            // exists. Never presented as a payer expectation.
+            expected_priced_from: expected_from_catalog || null,
+            expected_price_basis: expected_from_catalog ? "practice_cash_catalog" : null,
+            pricing_note: expected_collection_cents ? undefined
+                : "No expected collection: send totals.expected_collection_cents, or a visit_type matching the practice service catalog.",
+            // Never let a drop be silent: a claim whose diagnoses were all
+            // discarded still returned ok:true and looked synced. The app
+            // must be able to SEE that its payload lost something.
+            diagnoses_dropped: droppedDx,
+            warning: droppedDx > 0
+                ? `${droppedDx} diagnosis row(s) carried no recognizable code field (icd10_code/code/icd10) and were NOT stored`
+                : undefined,
             flags_inserted: flagInserts.length,
             upcoding_inserted: upInserts.length,
             doc_suggestions_inserted: docInserts.length,

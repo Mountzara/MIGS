@@ -19,6 +19,7 @@
 // =====================================================================
 
 import { callClaude, AnthropicError } from "./anthropic.js";
+import { groundClinical, groundingInstruction, verifyGrounding } from "./clinical_grounding.js";
 
 export const PROM_RECOMMENDER_PROMPT_VERSION = "prom-rec-v1.0-2026-05-18";
 
@@ -261,13 +262,23 @@ export async function recommendPROMsForIntake({ env, deid }) {
     }
     try {
         const userMessage = buildUserMessage(deid);
+        // Instrument selection is already constrained to PROM_CATALOG, so a
+        // weak KB match degrades to the catalogue rather than to invention —
+        // which is why this path grounds the RATIONALE without blocking on
+        // it. The rationale is what he reads to decide whether the
+        // selection makes sense, so its clinical reasoning should still be
+        // his references rather than the model's training.
+        const kb = await groundClinical(env, {
+            kind: "prom_recommender",
+            query: String(userMessage).slice(0, 2500),
+        });
         const raw = await callClaude({
             env,
             model: "claude-sonnet-4-6",
             max_tokens: 600,
             temperature: 0,
             system: SYSTEM_PROMPT,
-            messages: [{ role: "user", content: userMessage }]
+            messages: [{ role: "user", content: kb.grounded ? `${groundingInstruction(kb)}\n\n---\n\n${userMessage}` : userMessage }]
         });
         const parsed = extractJson(raw);
         if (!isJsonObject(parsed) || !Array.isArray(parsed.recommended_slugs)) {
@@ -278,9 +289,17 @@ export async function recommendPROMsForIntake({ env, deid }) {
         const slugs = parsed.recommended_slugs.filter(s => allowed.has(s));
         // Always force Tier 1 universal in case Claude omits them
         for (const t of ["phq-2", "gad-2"]) if (!slugs.includes(t)) slugs.push(t);
+        const rationale = typeof parsed.rationale === "string" ? parsed.rationale.slice(0, 600) : "";
+        const gv = kb.grounded ? verifyGrounding(rationale, kb) : null;
         return {
             recommended_slugs: slugs,
-            rationale: typeof parsed.rationale === "string" ? parsed.rationale.slice(0, 600) : "",
+            rationale,
+            grounding: {
+                grounded: Boolean(kb.grounded),
+                citations: kb.citations || [],
+                verified: gv ? gv.ok : false,
+                summary: gv ? gv.summary : "Selected without support from the practice library.",
+            },
             ai_used: true,
             prompt_version: PROM_RECOMMENDER_PROMPT_VERSION
         };

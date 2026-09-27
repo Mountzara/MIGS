@@ -22,14 +22,14 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-<style>
+<style data-mz-keep>
   :root {
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
-    --bg-base: #120b22;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --bg-base: #FBFAF8;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --hairline: rgba(255, 255, 255, 0.08);
   }
   * { box-sizing: border-box; }
@@ -53,10 +53,12 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
     display: inline-block; margin-bottom: 18px;
     background: rgba(var(--glow-purple), 0.07);
   }
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
+<script src="/assets/js/post-light.js"></script>
 </head>
 <body>
-<div class="preview-shell">
+<div class="preview-shell" data-mz-post-scope>
 <div class="preview-banner">Admin preview · not the public render</div>
 `;
 

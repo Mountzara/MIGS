@@ -33,10 +33,18 @@ export function jsonError(message, status = 400, extra = {}) {
 }
 
 export function unauthorizedAdminJson() {
-    return new Response(JSON.stringify({ error: "admin_authentication_required" }), {
+    // NO WWW-Authenticate header. Sending one makes the browser throw its
+    // native grey credential dialog at the operator the moment any admin
+    // fetch 401s — which is exactly the experience the branded sign-in page
+    // replaced. API clients are unaffected: they send Basic preemptively,
+    // and readAdminIdentity still accepts it. The SPA sees `login_url` and
+    // sends the person somewhere that looks like the practice.
+    return new Response(JSON.stringify({
+        error: "admin_authentication_required",
+        login_url: "/admin/_login",
+    }), {
         status: 401,
         headers: {
-            "WWW-Authenticate": `Basic realm="${ADMIN_REALM}", charset="UTF-8"`,
             "content-type": "application/json",
             "cache-control": "no-store",
         },
@@ -49,6 +57,19 @@ export function unauthorizedAdminJson() {
  */
 export async function readAdminIdentity(request, env) {
     if (!env.ADMIN_PASS_HASH) return null;
+
+    // A signed admin session cookie is accepted first. It is minted by
+    // functions/admin/_middleware.js after a real password check, and it is
+    // what lets the admin SPA call this API without collecting credentials
+    // a second time — the second prompt was the bug, not the solution.
+    // Basic auth still works for API clients (the transcription app,
+    // scripts, curl), which have no cookie jar.
+    try {
+        const sess = await import("./admin_session.js");
+        const viaCookie = await sess.verifyAdminSession(request, env);
+        if (viaCookie) return viaCookie;
+    } catch { /* fall through to Basic */ }
+
     const auth = request.headers.get("Authorization") || "";
     if (!auth.startsWith("Basic ")) return null;
     let decoded;

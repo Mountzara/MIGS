@@ -32,6 +32,17 @@ const ADMIN_REALM = 'Mount Zara Admin';
  */
 export async function isAdminAuthed(request, env) {
     if (!env.ADMIN_PASS_HASH) return false;
+
+    // The admin session cookie counts. Since 2026-08-19 the backend signs
+    // in through /admin/_login and the browser no longer sends Basic on
+    // its own — without this branch, signing into the admin would leave
+    // the operator staring at the pre-launch page on /portal/, unable to
+    // preview the patient experience they are trying to test.
+    try {
+        const sess = await import("./admin_session.js");
+        if (await sess.verifyAdminSession(request, env)) return true;
+    } catch { /* fall through to Basic */ }
+
     const auth = request.headers.get("Authorization") || "";
     if (!auth.startsWith("Basic ")) return false;
     let decoded;

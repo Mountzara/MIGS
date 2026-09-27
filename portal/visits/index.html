@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Visit summaries · Member Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- =================================================================
+         WHY THIS PAGE EXISTS — 2026-08-14
+         =================================================================
+         The public portal page promises: "After each appointment, an
+         AI-generated summary of what was discussed, the plan, the
+         medications, and the next steps — reviewed and signed off by
+         Dr. Mabini."
+
+         Every part of that was built except the part the patient uses.
+         /api/v1/patient/visits worked, R2 decryption worked, and
+         /admin/visits/ generated and approved. But nothing under portal/
+         called the endpoint, there was no portal/visits/ directory, and
+         /portal/visits/ fell through to the marketing homepage. On
+         approval the admin API even said "the patient can now see it in
+         their portal", which was false.
+
+         A patient only ever sees an APPROVED summary — the endpoint has
+         status = 'approved' in its WHERE clause, and this page has no way
+         to ask for anything else.
+         ================================================================= -->
+    <style>
+        :root {
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg: #1A1726; --accent-soft: #7c3aed; --glow: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow), .08), transparent 62%),
+                var(--bg-base);
+            color: var(--fg);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased; line-height: 1.6;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color .2s; }
+        a:hover { color: #fff; }
+        .wrap { max-width: 860px; margin: 0 auto; padding: clamp(28px, 5vw, 48px) clamp(20px, 5vw, 36px) 80px; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: 13px; opacity: .75; }
+        .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(var(--glow), .95); margin-bottom: 14px; }
+        h1 { font-weight: 200; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.022em; line-height: 1.1; margin: 0 0 10px; }
+        .lede { font-size: 15px; opacity: .78; margin: 0 0 32px; max-width: 64ch; }
+
+        .visit {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 18px 20px; margin-bottom: 14px;
+        }
+        .visit-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+        .visit-date { font-size: 17px; font-weight: 500; }
+        .visit-type { font-size: 12.5px; opacity: .6; margin-top: 2px; }
+        .new {
+            font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+            background: rgba(var(--glow), .16); color: var(--accent-soft);
+            border: 1px solid rgba(var(--glow), .45);
+        }
+        .snip { font-size: 13.5px; opacity: .76; margin: 10px 0 0; line-height: 1.55; }
+        .snip b { opacity: .9; font-weight: 600; }
+        .meds { margin: 9px 0 0; padding-left: 18px; }
+        .meds li { font-size: 13px; opacity: .78; margin-bottom: 3px; }
+        button.open {
+            margin-top: 13px; font: inherit; font-size: 13.5px; cursor: pointer;
+            background: rgba(255,255,255,0.72); color: #fff;
+            border: 1px solid var(--border); border-radius: 9px; padding: 8px 15px;
+            transition: border-color .2s, background .2s;
+        }
+        button.open:hover { border-color: rgba(var(--glow), .6); background: rgba(var(--glow), .12); }
+
+        .full {
+            display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+            white-space: pre-wrap; font-size: 14.5px; line-height: 1.7; opacity: .92;
+        }
+        .full.open { display: block; }
+        .note {
+            margin-top: 16px; font-size: 12.8px; line-height: 1.6; opacity: .68;
+            background: rgba(var(--glow), .07); border: 1px solid rgba(var(--glow), .22);
+            border-radius: 10px; padding: 12px 15px;
+        }
+        .empty { opacity: .62; font-size: 14.5px; line-height: 1.6; max-width: 60ch; }
+        .err {
+            background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3);
+            border-radius: 11px; padding: 14px 17px; font-size: 14px; color: #B91C1C;
+        }
+        .panic {
+            margin-top: 36px; background: rgba(239,68,68,.05); border: 1px solid rgba(239,68,68,.25);
+            border-radius: 12px; padding: 14px 18px; font-size: 13px;
+            color: #B91C1C; line-height: 1.55;
+        }
+        .panic strong { color: #92400E; font-weight: 600; }
+            .reading { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E9E5EE; }
+        .reading-h { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+                     color: rgba(167,139,250,.95); margin-bottom: 10px; }
+        .reading-item { display: block; text-decoration: none; padding: 11px 13px; margin-bottom: 8px;
+                        border: 1px solid #E9E5EE; border-radius: 10px;
+                        background: rgba(255,255,255,0.72); }
+        .reading-item:hover { border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.07); }
+        .reading-t { display: block; font-size: 14.5px; color: #4A4658; }
+        .reading-why { display: block; font-size: 12.5px; margin-top: 3px; color: rgba(255,255,255,.62); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="top-row">
+        <a href="/portal/">&larr; Member portal</a>
+        <span style="opacity:.6">/portal/visits</span>
+    </div>
+
+    <p class="eyebrow">Member portal &middot; After your visits</p>
+    <h1>Visit summaries</h1>
+    <p class="lede">A plain-language recap of each appointment &mdash; what was discussed, the plan,
+    your medicines and what happens next. Dr.&nbsp;Mabini reviews and approves every one before it
+    appears here.</p>
+
+    <div id="list"><p class="empty">Loading&hellip;</p></div>
+
+    <div class="panic">
+        <strong>If you have an emergency</strong> &mdash; heavy bleeding, severe abdominal pain, chest
+        pain or signs of stroke &mdash; call <strong>911</strong>. These summaries are a record of past
+        visits, not a way to reach the practice urgently.
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+    function esc(v) {
+        return String(v == null ? "" : v)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function $(id) { return document.getElementById(id); }
+
+    // Practice time, with the zone shown — a visit date must not shift for a
+    // patient reading it in another state. Same rule as the booking page.
+    function fmtDate(iso) {
+        if (!iso) return "";
+        var d = new Date(iso.length <= 10 ? iso + "T12:00:00Z" : iso);
+        if (isNaN(d)) return esc(iso);
+        return d.toLocaleDateString("en-US", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
+            timeZone: "America/Chicago",
+        });
+    }
+
+    async function api(url) {
+        var r = await fetch(url, { headers: { Accept: "application/json" } });
+        if (r.status === 401 || r.status === 403) {
+            window.location.href = "/portal/login?next=" + encodeURIComponent("/portal/visits/");
+            return null;
+        }
+        var t = await r.text();
+        var j; try { j = JSON.parse(t); } catch (e) { throw new Error("Unexpected response from the server."); }
+        if (!j.ok) throw new Error(j.error || "Could not load your summaries.");
+        return j;
+    }
+
+    function card(v) {
+        var h = '<div class="visit" id="v-' + esc(v.id) + '">';
+        h += '<div class="visit-head"><div>';
+        h += '<div class="visit-date">' + fmtDate(v.visit_date) + "</div>";
+        if (v.visit_type) h += '<div class="visit-type">' + esc(String(v.visit_type).replace(/_/g, " ")) + "</div>";
+        h += "</div>";
+        if (v.new_for_you) h += '<span class="new">New</span>';
+        h += "</div>";
+        if (v.plan) h += '<p class="snip"><b>The plan:</b> ' + esc(v.plan) + "</p>";
+        if (v.next_step) h += '<p class="snip"><b>What happens next:</b> ' + esc(v.next_step) + "</p>";
+        if (v.medications && v.medications.length) {
+            h += '<p class="snip"><b>Your medicines:</b></p><ul class="meds">' +
+                 v.medications.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul>";
+        }
+        h += '<button class="open" data-id="' + esc(v.id) + '">Read the full summary</button>';
+        h += '<div class="full" id="f-' + esc(v.id) + '"></div>';
+        h += "</div>";
+        return h;
+    }
+
+    async function openFull(id, btn) {
+        var box = $("f-" + id);
+        if (box.classList.contains("open")) {
+            box.classList.remove("open");
+            btn.textContent = "Read the full summary";
+            return;
+        }
+        btn.disabled = true; btn.textContent = "Opening…";
+        try {
+            var d = await api("/api/v1/patient/visits?id=" + encodeURIComponent(id) + "&cb=" + Date.now());
+            if (!d) return;
+            box.textContent = d.visit.text || "";
+            // The reading Dr. Mabini attached to THIS visit. It was being
+            // returned by the API and rendered nowhere, so the education
+            // selected for her was invisible — the whole point of tying it
+            // to the visit is that she meets it here, next to the plan.
+            var reading = (d.visit && d.visit.reading) || [];
+            if (reading.length) {
+                var rw = document.createElement("div");
+                rw.className = "reading";
+                var rh = document.createElement("div");
+                rh.className = "reading-h";
+                rh.textContent = reading.length === 1 ? "Reading for you" : "Reading for you";
+                rw.appendChild(rh);
+                reading.forEach(function (r) {
+                    var a = document.createElement("a");
+                    a.className = "reading-item";
+                    a.href = r.href;
+                    var t = document.createElement("span");
+                    t.className = "reading-t";
+                    t.textContent = r.title;
+                    a.appendChild(t);
+                    if (r.reason) {
+                        var why = document.createElement("span");
+                        why.className = "reading-why";
+                        why.textContent = r.reason;
+                        a.appendChild(why);
+                    }
+                    rw.appendChild(a);
+                });
+                box.appendChild(rw);
+            }
+            if (d.note) {
+                var n = document.createElement("div");
+                n.className = "note";
+                n.textContent = d.note;
+                box.appendChild(n);
+            }
+            box.classList.add("open");
+            btn.textContent = "Hide";
+            // Opening marks it read on the server; drop the badge to match.
+            var badge = document.querySelector("#v-" + CSS.escape(id) + " .new");
+            if (badge) badge.remove();
+        } catch (e) {
+            box.innerHTML = '<div class="err">' + esc(e.message) + "</div>";
+            box.classList.add("open");
+            btn.textContent = "Read the full summary";
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    (async function load() {
+        try {
+            var d = await api("/api/v1/patient/visits?cb=" + Date.now());
+            if (!d) return;
+            var visits = d.visits || [];
+            if (!visits.length) {
+                $("list").innerHTML = '<p class="empty">No summaries yet. After your next appointment, ' +
+                    'Dr.&nbsp;Mabini writes one up and it appears here once he has reviewed it. ' +
+                    'You will get an email when the first one is ready.</p>';
+                return;
+            }
+            $("list").innerHTML = visits.map(card).join("");
+            Array.prototype.forEach.call(document.querySelectorAll("button.open"), function (b) {
+                b.addEventListener("click", function () { openFull(b.dataset.id, b); });
+            });
+        } catch (e) {
+            $("list").innerHTML = '<div class="err">' + esc(e.message) +
+                ' If this keeps happening, message the practice from your portal.</div>';
+        }
+    })();
+})();
+</script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+</body>
+</html>

@@ -181,12 +181,24 @@ export async function onRequestGet(ctx) {
         // ============================================================
         const today = isoToday();
         const from = addDaysISO(today, -(symptomDays - 1));
+        // BOTH ends. This had only a lower bound while the response declares
+        // `window: { from, to: today }` further down, so any entry dated
+        // after today came back inside a window that says it does not
+        // contain them. The dense trend series is then built by walking
+        // from->today, so those rows landed in the payload without
+        // appearing on the chart — present in the data, absent from the
+        // picture, with nothing to indicate the disagreement.
+        //
+        // Future-dated entries are no longer accepted at write time
+        // (_lib/iso_date.js::isLoggableDate), but rows written before that
+        // still exist, and a read path should not depend on a write path
+        // having always been correct.
         const diaryRes = await env.DB.prepare(`
             SELECT entry_date, values_json, note, updated_at
             FROM symptom_diary_entries
-            WHERE patient_id = ? AND entry_date >= ?
+            WHERE patient_id = ? AND entry_date >= ? AND entry_date <= ?
             ORDER BY entry_date ASC
-        `).bind(patient_id, from).all();
+        `).bind(patient_id, from, today).all();
         const diary = (diaryRes?.results || []).map(r => ({
             entry_date: r.entry_date,
             values: safeJson(r.values_json) || {},

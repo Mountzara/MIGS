@@ -254,6 +254,7 @@ CITE_TITLE = re.compile(r'class="mz-cite-title">(.*?)<', re.IGNORECASE | re.DOTA
 
 # §3.8 — section structure markers
 VERDICT_GAUGE = re.compile(r"mz-verdict-gauge|verdict-gauge", re.IGNORECASE)
+GAUGE_ELEMENT = re.compile(r'<(?:div|figure|section)\b[^>]*\bclass="[^"]*\bmz-verdict-gauge\b', re.IGNORECASE)
 EVIDENCE_PYRAMID = re.compile(r"mz-evidence-pyramid|evidence-pyramid", re.IGNORECASE)
 CITE_GRID = re.compile(r'class="[^"]*mz-cite-grid[^"]*"', re.IGNORECASE)
 
@@ -809,10 +810,14 @@ def audit_post(post: dict, relevance_advisory: bool = False) -> PostAudit:
             cite_grid_count >= 1,
             f"found {cite_grid_count}",
         )
+        # S13: a trend brief carries NO verdict gauge. The check used to require
+        # one and passed on a leftover CSS rule (.mz-verdict-gauge) after the
+        # element was retired; it now refuses the ELEMENT and ignores styling.
+        gauge_el = GAUGE_ELEMENT.search(body)
         audit.add(
-            "§3.8 verdict gauge present (trend brief)",
-            bool(VERDICT_GAUGE.search(body)),
-            "" if VERDICT_GAUGE.search(body) else "absent",
+            "S13 no verdict gauge element (trend brief)",
+            not gauge_el,
+            "" if not gauge_el else "a verdict gauge element is on the page",
         )
         audit.add(
             "§3.8 evidence pyramid present (trend brief)",

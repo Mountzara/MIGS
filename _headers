@@ -30,6 +30,35 @@
   Cross-Origin-Resource-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
 
+# ---------------------------------------------------------------------
+# DO NOT try to override Permissions-Policy or CSP for a /portal/ subpath
+# in this file. It does not work, and it looks like it does.
+# ---------------------------------------------------------------------
+# This file APPENDS. A path-specific rule does not replace the `/*` rule
+# for the same header — Pages emits BOTH lines, and the browser then
+# applies its own duplicate-handling rules, which are not "most specific
+# wins":
+#
+#   * Permissions-Policy — the FIRST occurrence of a feature wins. The
+#     site-wide `camera=()` is emitted first, so a later `camera=(self)`
+#     on /portal/tech-check/ is ignored entirely. It shows up in curl and
+#     changes nothing.
+#   * Content-Security-Policy — every policy is enforced, so the effect is
+#     their INTERSECTION. A second, more permissive CSP naming
+#     js.stripe.com cannot unblock anything.
+#
+# Both were attempted here on 2026-08-13 and were inert. Only `!` (unset)
+# genuinely removes an inherited header.
+#
+# Separately, this file is applied by the static-asset layer only: any
+# response a Pages Function CONSTRUCTS — the pre-launch Coming Soon page,
+# /portal/visit/<id>/launch, /portal/nps/<token> — never sees it.
+#
+# Portal headers are therefore set in code, in functions/portal/
+# _middleware.js via functions/_lib/portal_headers.js, which sits in front
+# of every /portal/* response and uses Headers.set() so exactly one policy
+# per header reaches the browser. Change them there.
+
 # All API endpoints — JSON, never cached, never embedded.
 /api/*
   X-Robots-Tag: noindex, nofollow, noai, noimageai, nosnippet, noarchive

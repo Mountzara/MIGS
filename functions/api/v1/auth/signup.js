@@ -20,6 +20,7 @@
 
 import { previewAccess, preLaunchNotFound } from "../../../_lib/preview_gate.js";
 import { hashPassword, createSession, buildSessionCookie, normalizeEmail, nowMs } from "../../../_lib/auth.js";
+import { recordAcknowledgment } from "../../../_lib/acknowledgments.js";
 import { logAudit } from "../../../_lib/audit.js";
 import { newId } from "../../../_lib/db.js";
 import { recordTrace } from "../../../_lib/session_trace.js";
@@ -118,6 +119,22 @@ export async function onRequestPost(ctx) {
         });
     }
 
+    // -----------------------------------------------------------------
+    // LEGAL ACKNOWLEDGMENT IS PART OF SIGNUP. 45 CFR 164.520(c) requires
+    // a good-faith effort to obtain written acknowledgment of the Notice
+    // of Privacy Practices at first service, documented. The checkbox on
+    // the form is the effort; the rows written below are the document.
+    // Refusing signup without it is permissible because the portal IS the
+    // service being requested — a patient who declines can still receive
+    // care by contacting the practice directly, which the form says.
+    // -----------------------------------------------------------------
+    if (body.acknowledge_legal !== true) {
+        return new Response(JSON.stringify({
+            error: "acknowledgment_required",
+            message: "Please confirm you have had the chance to review the Notice of Privacy Practices and the Terms of Use.",
+        }), { status: 400, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+    }
+
     let password_hash;
     try {
         password_hash = await hashPassword(password);
@@ -154,6 +171,12 @@ export async function onRequestPost(ctx) {
         });
         return serverError("could not create account");
     }
+
+    // The acknowledgment rows. Failure here is logged loudly by the lib
+    // but does not roll back the account — the checkbox state is also in
+    // the audit row below, so the good-faith effort remains documented.
+    await recordAcknowledgment(env, { patient_id, doc_key: "npp", request });
+    await recordAcknowledgment(env, { patient_id, doc_key: "terms", request });
 
     await logAudit(env, {
         user_id: patient_id,

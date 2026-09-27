@@ -20,11 +20,19 @@
 //   - if block.allowed_visit_types is set, the visit_type must be in it
 //   - if patient.in_person_required, block.location must NOT be
 //     'telehealth_only'
-//   - if visit type is 'omt_treatment' or 'office_procedure', block
-//     location must be 'clinic' or 'procedure_room' (no telehealth)
+//   - if the visit type is hands-on ('omt_treatment', 'office_procedure',
+//     'annual_exam'), block location must be 'clinic' or 'procedure_room'
+//     (no telehealth)
+//   - while the practice is telehealth-only, hands-on visit types return
+//     no slots at all and every slot returned is a video slot
 // =====================================================================
 
-import { getVisitType } from "./visit_types.js";
+import {
+    getVisitType,
+    isTelehealthOnly,
+    isBookableVisitTypeKey,
+    requiresHandsOn,
+} from "./visit_types.js";
 
 /**
  * @param {object} args
@@ -53,8 +61,25 @@ export function computeAvailableSlots(args) {
 
     if (!visit_type || !duration_min || duration_min < 5) return [];
     const vt = getVisitType(visit_type);
-    // visit-type-implied modality restrictions
-    const procedureOrOmt = vt && (vt.category === "procedure" || visit_type === "omt_treatment");
+
+    // -----------------------------------------------------------------
+    // TELEHEALTH-ONLY PRACTICE. While PRACTICE_MODALITY is telehealth
+    // only, three things are true regardless of what the triage row says:
+    // a hands-on visit type has no slots at all, in_person_required is
+    // moot, and every slot returned is a video slot. Resolving that here
+    // — rather than in each caller — is deliberate: `available` and
+    // `book` disagreeing about modality is precisely the class of bug
+    // that let the in-person checkbox do nothing for months.
+    // -----------------------------------------------------------------
+    const telehealthOnly = isTelehealthOnly();
+    if (telehealthOnly && !isBookableVisitTypeKey(visit_type)) return [];
+    // A hands-on visit type (OMT, office procedure, annual exam) can
+    // never be a video slot. `category === "procedure"` used to stand in
+    // for this and was wrong about `pre_op`, a counselling visit with
+    // nothing to examine, which it forced in-person.
+    const handsOn = requiresHandsOn(visit_type);
+    const inPersonRequired = telehealthOnly ? false : in_person_required;
+    const effModality = telehealthOnly ? "telehealth" : modality;
 
     const buffer_min = duration_min >= 45 ? 5 : 0;
     const totalMin = duration_min + buffer_min;
@@ -85,11 +110,11 @@ export function computeAvailableSlots(args) {
         }
         // modality vs location compatibility
         const loc = blk.location;
-        if (procedureOrOmt) {
+        if (handsOn) {
             if (loc === "telehealth_only") continue;
         }
-        if (in_person_required && loc === "telehealth_only") continue;
-        if (modality === "telehealth" && loc === "procedure_room") continue;
+        if (inPersonRequired && loc === "telehealth_only") continue;
+        if (effModality === "telehealth" && loc === "procedure_room") continue;
 
         // Walk 15-min steps within the block.
         for (let mod = blk.start_minute_of_day; mod + totalMin <= blk.end_minute_of_day; mod += STEP) {
@@ -123,9 +148,9 @@ export function computeAvailableSlots(args) {
             // Otherwise infer from patient preference + visit_type:
             let slotModality = "in_person";
             if (loc === "telehealth_only") slotModality = "telehealth";
-            else if (procedureOrOmt) slotModality = "in_person";
-            else if (in_person_required) slotModality = "in_person";
-            else if (modality === "telehealth") slotModality = "telehealth";
+            else if (handsOn) slotModality = "in_person";
+            else if (inPersonRequired) slotModality = "in_person";
+            else if (effModality === "telehealth") slotModality = "telehealth";
             else slotModality = "in_person";
 
             out.push({
@@ -154,38 +179,67 @@ export function timeOfDayBucket(minuteOfDay) {
     return "evening";
 }
 
+export const PRACTICE_TZ = "America/Chicago";
+
 /**
- * Convert "YYYY-MM-DD" + minute-of-day into an ms-epoch using the
- * America/Chicago practice timezone. Workers don't have IANA TZ APIs;
- * we approximate using a fixed offset that's correct for the
- * MountZara practice timezone year-round once DST is accounted for —
- * but since the clinician_availability stores a wall-clock minute_of_day
- * intended in the practice's local timezone, we anchor against the
- * configured timezone offset on the day in question.
+ * The practice's UTC offset ON A GIVEN DATE, in minutes.
  *
- * For Phase 2.5 this implementation uses a *configurable* offset via
- * env.PRACTICE_TZ_OFFSET_MINUTES if set; otherwise defaults to America/
- * Chicago's offset on the given date (CST=-360, CDT=-300).
+ * Per-date, not a constant. A fixed -300 is correct from March to
+ * November and wrong for the rest of the year, so a constant silently
+ * moves every appointment by an hour on 1 November. Workers ship full
+ * ICU, so Intl resolves the real rule including the DST transition.
  *
- * The practice's actual TZ is set in /admin/scheduling (practice_settings
- * key='practice_timezone_offset_minutes'); callers that need precise
- * boundary days pass an explicit offset.
+ * Returns the value in the sense `dateStringToMs` needs: the number of
+ * minutes to ADD to a wall-clock time to reach UTC. Chicago in summer is
+ * UTC-5, so this returns +300.
+ */
+export function practiceOffsetMinutes(dateStr, tz = PRACTICE_TZ) {
+    try {
+        const probe = new Date(`${dateStr}T12:00:00Z`);
+        if (Number.isNaN(probe.getTime())) return 0;
+        const name = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" })
+            .formatToParts(probe).find((p) => p.type === "timeZoneName")?.value || "";
+        // "GMT-5", "GMT-5:30", or bare "GMT" at UTC.
+        const m = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(name);
+        if (!m) return 0;
+        const sign = m[1] === "-" ? -1 : 1;
+        const utcOffset = sign * (parseInt(m[2], 10) * 60 + parseInt(m[3] || "0", 10));
+        return -utcOffset;          // wall-clock + this = UTC
+    } catch {
+        return 0;
+    }
+}
+
+/**
+ * Convert "YYYY-MM-DD" + minute-of-day (WALL CLOCK, practice timezone)
+ * into an ms-epoch.
+ *
+ * ---------------------------------------------------------------------
+ * THIS WAS OFF BY FIVE HOURS FOR EVERY SLOT EVER OFFERED. Fixed 2026-08-14.
+ * ---------------------------------------------------------------------
+ * `offsetMinutesUTC` defaulted to null, which became a zero offset, and
+ * NEITHER caller passed it. So a 9:00 a.m. availability block was stored
+ * and offered as 09:00 UTC — 4:00 a.m. in Chicago. A live probe of
+ * /api/v1/patient/appointments/available returned 197 slots whose first
+ * `starts_at` was 2026-08-14T09:45:00Z, i.e. 4:45 a.m. practice time, and
+ * the one booked appointment sat at 4:00 a.m.
+ *
+ * It stayed invisible because the two surfaces disagree BY CONSTRUCTION:
+ * the admin scheduling page formats minute-of-day arithmetically, so it
+ * read a correct "09:00", while the patient's page formats the epoch and
+ * read "4:45 AM". Neither could see the other's number.
+ *
+ * The offset now defaults to the practice timezone resolved for THAT
+ * DATE, so callers get the right answer without having to know to ask.
+ * The old comment here advertised an `env.PRACTICE_TZ_OFFSET_MINUTES`
+ * override that no code has ever read; it is gone rather than left to
+ * mislead the next reader.
  */
 export function dateStringToMs(dateStr, minuteOfDay, offsetMinutesUTC = null) {
-    const [y, m, d] = dateStr.split("-").map(s => parseInt(s, 10));
-    // If caller didn't supply, assume the date+minute is in UTC; the
-    // patient UI displays slots in the patient's *local* time via JS
-    // Date formatting on the client. Storing UTC-aligned starts_at on
-    // the row means an availability block at 09:00 wall-clock would
-    // be stored as 09:00 UTC unless the operator-side admin UI
-    // adjusts. The admin scheduling page sends start_minute_of_day
-    // verbatim per §11.7.3; both client and server share the same
-    // interpretation: minute-of-day is interpreted relative to UTC
-    // for the slot computation, and the client renders in local time.
-    // Practice timezone normalization is a Phase 5 task.
-    const offsetMs = offsetMinutesUTC == null ? 0 : offsetMinutesUTC * 60 * 1000;
+    const [y, m, d] = dateStr.split("-").map((x) => parseInt(x, 10));
+    const offset = offsetMinutesUTC == null ? practiceOffsetMinutes(dateStr) : offsetMinutesUTC;
     const utc = Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
-    return utc + (minuteOfDay * 60 * 1000) + offsetMs;
+    return utc + (minuteOfDay * 60 * 1000) + (offset * 60 * 1000);
 }
 
 export function msToDateString(ms) {

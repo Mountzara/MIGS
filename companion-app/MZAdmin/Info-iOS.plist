@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Merged into the GENERATED Info.plist (GENERATE_INFOPLIST_FILE stays
+	     YES). This file exists ONLY because INFOPLIST_KEY_UIBackgroundModes
+	     cannot express array values — Xcode silently drops it (proven on
+	     ABOGVoicePrep 2026-08-12). Gate every build on the BUILT plist:
+	     PlistBuddy -c "Print :UIBackgroundModes" <built app>/Info.plist -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+</dict>
+</plist>

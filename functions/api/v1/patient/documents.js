@@ -182,12 +182,12 @@ export async function onRequestPost(ctx) {
             INSERT INTO documents
                 (id, patient_id, kind, r2_key, r2_bucket, filename, mime_type, size_bytes,
                  sha256, encrypted, envelope_dek_wrapped, uploaded_by_role, uploaded_by_id,
-                 source_app, description, uploaded_at)
-            VALUES (?, ?, ?, ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'patient', ?, 'web', ?, ?)
+                 source_app, description, phi_aad, uploaded_at)
+            VALUES (?, ?, ?, ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'patient', ?, 'web', ?, ?, ?)
         `).bind(
             doc_id, session.patient_id, kind, r2_key,
             filename, mime, sizeBytes, sha256, putRes.wrapped_dek,
-            session.patient_id, description, now
+            session.patient_id, description, aad, now
         ).run();
     } catch (e) {
         console.error("documents POST DB.insert threw — orphaned R2 object", { error: String(e), r2_key });

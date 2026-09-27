@@ -73,6 +73,8 @@ export async function onRequestGet(ctx) {
                 t.ai_in_person_required, t.ai_preferred_time_of_day,
                 t.ai_rationale, t.ai_prompt_version, t.ai_secondary_concerns_json,
                 t.clinician_override_visit_type, t.clinician_override_duration_min,
+                t.clinician_override_urgency, t.clinician_override_in_person_required,
+                t.clinician_override_preferred_time_of_day,
                 t.clinician_override_reason, t.clinician_reviewed_at,
                 t.clinician_reviewer_id, t.final_visit_type, t.final_duration_min,
                 t.created_at AS triage_created_at,
@@ -136,6 +138,14 @@ export async function onRequestGet(ctx) {
                 ai_secondary_concerns: Array.isArray(secondary) ? secondary : [],
                 clinician_override_visit_type: r.clinician_override_visit_type,
                 clinician_override_duration_min: r.clinician_override_duration_min,
+                // NULL means "he did not touch it" — the form must render
+                // override ?? ai, or a saved override visibly snaps back to
+                // the AI value on reload and reads as a save that failed.
+                clinician_override_urgency: r.clinician_override_urgency,
+                clinician_override_in_person_required:
+                    r.clinician_override_in_person_required == null
+                        ? null : !!r.clinician_override_in_person_required,
+                clinician_override_preferred_time_of_day: r.clinician_override_preferred_time_of_day,
                 clinician_override_reason: r.clinician_override_reason,
                 clinician_reviewed_at: r.clinician_reviewed_at,
                 clinician_reviewer_id: r.clinician_reviewer_id,

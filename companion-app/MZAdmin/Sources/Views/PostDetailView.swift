@@ -62,6 +62,8 @@ struct PostDetailView: View {
         #endif
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                Button { listenToThisPost() } label: { Label("Listen", systemImage: "headphones") }
+                    .help("Read this brief aloud")
                 Button { showEdit = true } label: { Label("Edit", systemImage: "pencil") }
                 Menu {
                     Button(role: .destructive) { confirmDelete = true } label: {
@@ -102,6 +104,21 @@ struct PostDetailView: View {
                 Text("\(p.count) references").font(.caption).foregroundStyle(.secondary)
             }
         }
+    }
+
+    /// Read this brief aloud and jump to the Listen tab (player + controls).
+    private func listenToThisPost() {
+        let p = current
+        var paras: [String] = ["\(p.displayTitle)."]
+        if let body = p.bodyHTML, !body.isEmpty {
+            paras += SpokenText.paragraphs(fromHTML: body)
+        } else if let s = p.summary, !s.isEmpty {
+            paras.append(s)
+        }
+        let kindLabel = PostKind(rawValue: p.kind)?.title ?? p.kind.capitalized
+        BriefNarrator.shared.play([ListenItem(
+            id: p.id, title: p.displayTitle, kindLabel: kindLabel, paragraphs: paras)])
+        NotificationRouter.shared.selectedTab = .listen
     }
 
     private func label(_ title: String, _ body: String) -> some View {

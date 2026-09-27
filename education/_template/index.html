@@ -3,187 +3,374 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{{TOPIC_LABEL}} &mdash; what it is, why it matters, and what we can actually do.</title>
+    <title>{{TOPIC_LABEL}} &mdash; {{THESIS_SENTENCE}} &middot; Mount Zara</title>
     <!--
-        SKELETON TEMPLATE for new /education/<slug>/ patient-education pages.
-        Copy this directory to /education/<slug>/, then:
-          1) Replace every {{...}} placeholder with topic-specific content
-          2) Add fact cards, sections, modals, references
-          3) Run scripts/regression_audit.py --file education/<slug>/index.html
-          4) Fix any flagged violations BEFORE first commit
-          5) Mirror to portal/education/<slug>/ via `cp` after audit passes
-        Per CLAUDE.md §0.4.1: a new page is not shippable until comprehensive
-        audit passes. §3.7 / §1.2 / §3.10 / §3.12 are all enforced here at
-        the template level — DO NOT REMOVE the scaffolding lines marked
-        "[required: §X.Y]".
+        SKELETON for a new /education/<slug>/ patient guide, on the shared shell.
 
-        Per §3.7 — DO NOT add the following phrases anywhere in this file:
-          - "KB-anchored, peer-reviewed"  (in meta description or body)
-          - "retrieved via NCBI E-Utilities"  (in ref-intro)
-          - "MountZara KB" / "clinical knowledge base" / "§0.8" / "RAG"
-          - "in this session"
-        Use plain replacements: "Evidence-based, peer-reviewed.";
-        "Click any abstract to expand the verbatim PubMed record."
-
-        Per §1.2 — Use "CBG/MIGS" not bare "MIGS" everywhere in user-facing prose.
+        Copy this directory to /education/<slug>/ and:
+          1. Replace every {{...}} slot. Keep the section order below; it is the
+             order every guide follows (endometriosis is the reference).
+          2. Every clinical claim and every figure carries an inline citation
+             (the <sup class="mz-ref"> block shown once below, numbered in first-
+             appearance order), pointing at a reference whose <li id="ref-N"> sits
+             in the rendered list at the bottom, never inside a <template>.
+          3. Every figure you state must appear in the cited paper's PubMed
+             abstract, and the reference carries that abstract verbatim inside
+             <details class="abstract-toggle">.
+          4. No dosing anywhere on the page: no amount of any drug or supplement
+             to take, in prose, cards, modals, popovers or reference summaries.
+             The verbatim abstract is the one place a study's own methods may
+             mention one.
+          5. Write "CBG/MIGS", never the bare acronym. Second person. Plain-language
+             gloss (in <em>) on every clinical term. Honest about uncertainty.
+          6. No byline, no authorship line, no wording about how the page was
+             produced, no build notes, nothing internal. The two disclosure blocks
+             near the end are the only disclosures and their wording is fixed.
+          7. Every [data-modal="KEY"] opener has exactly one <template id="modal-KEY">
+             and every template has exactly one opener.
+          8. Finish with: cp education/<slug>/index.html portal/education/<slug>/index.html
+             (the two copies must be byte-identical), then run
+               node scripts/check_citation_integrity.mjs
+               python3 scripts/check_patient_pages_dosing.py
+               python3 scripts/audit_no_internal_leakage.py
+             and a browser render before deploying.
     -->
-    <!-- [required: §3.7] meta description — Evidence-based, peer-reviewed (NEVER 'KB-anchored, peer-reviewed') -->
-    <meta name="description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}. Evidence-based, peer-reviewed.">
+    <meta name="description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}. Every clinical claim is cited inline to peer-reviewed evidence, with the abstracts included.">
     <meta name="robots" content="index, follow">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#FBFAF8">
+    <link rel="canonical" href="https://mountzara.com/education/{{SLUG}}/">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Mount Zara">
+    <meta property="og:title" content="{{TOPIC_LABEL}} &mdash; {{THESIS_SENTENCE}}">
+    <meta property="og:description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}.">
+    <meta property="og:url" content="https://mountzara.com/education/{{SLUG}}/">
+    <meta property="og:image" content="https://mountzara.com/assets/images/og-default.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{TOPIC_LABEL}} patient guide &mdash; Mount Zara">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{TOPIC_LABEL}} &mdash; {{THESIS_SENTENCE}}">
+    <meta name="twitter:description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}.">
+    <meta name="twitter:image" content="https://mountzara.com/assets/images/og-default.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,530;9..144,600&display=swap">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/css/mz-shell.css">
+    <script>document.documentElement.classList.add('mz-js');</script>
+    <script src="/assets/js/mz-education.js" defer></script>
     <style>
-        :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255,255,255,0.04);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
-            --border: rgba(255, 255, 255, 0.10);
-            --accent: #6d28d9;
-            --accent-soft: #a78bfa;
-            --glow-purple: 167, 139, 250;
-        }
-        * { box-sizing: border-box; }
-        html, body {
-            margin: 0; padding: 0;
-            background:
-                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 90% 110%, rgba(109, 40, 217, 0.12), transparent 60%),
-                var(--bg-base);
-            color: var(--fg-mid);
-            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-            line-height: 1.55;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
-        a:hover { color: var(--fg-strong); }
-        .wrap { max-width: 920px; margin: 0 auto; padding: clamp(36px, 6vw, 72px) clamp(20px, 5vw, 40px); }
-        .hero { margin-bottom: 56px; }
-        /* [required: §1.2 + pub-date] eyebrow includes "Patient Education · <Topic> · Published <Date>" */
-        .hero .eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 22px; }
-        .hero h1 { font-family: inherit; font-weight: 200; font-size: clamp(30px, 4.6vw, 50px); letter-spacing: -0.022em; line-height: 1.1; color: var(--fg-strong); margin: 0 0 18px 0; }
-        .hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
-        .hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
-        .hero .byline strong { color: var(--fg-strong); font-weight: 500; }
-        /* @media (prefers-reduced-motion) — [required: §3.10] */
-        @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
-        }
-
-        /* [required: §3.12] Medicolegal AI disclaimer — canonical CSS (do not modify wording) */
-        .mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid rgba(255,255,255,0.07); font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #ffffff; text-align: center; }
-        .mz-page-note p { margin: 0; }
-        .mz-page-note a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-        .mz-page-note a:hover, .mz-page-note a:focus-visible { color: rgba(201,119,89,0.95); }
-    
-        /* magazine-justify-2026-06-29 */
-        section.panel p, details.qa .qa-answer p, .rung p, .mz-modal p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
-    
-        /* 2026-07-22 polish: no grey text in glass modals */
-        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #ffffff !important; }
-
-/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
-   Audit found: contrast failures concentrated on translucent "light" panels,
-   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
-   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
-   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
-nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
-.nav-back, .nav-brand, .brand, .crumb a {
-    min-height: 24px;
-    display: inline-flex;
-    align-items: center;
-}
-/* Pips keep their small dot but get a real 24px hit area via padding. */
-.mz-grid-pip, .carousel-pip, [class*="-pip"] {
-    min-width: 24px;
-    min-height: 24px;
-    padding: 8px;
-    background-clip: content-box;
-    box-sizing: border-box;
-}
-.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
-    min-width: 44px;
-    min-height: 44px;
-}
-/* Focus must be visible on every interactive element, on any background. */
-a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
-summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
-    outline-offset: 2px;
-    border-radius: 6px;
-}
-/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
-.skip-link {
-    background: #2e1065 !important;
-    color: #ffffff !important;
-    border: 1px solid #c4b5fd;
-}
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-        scroll-behavior: auto !important;
+    /* Page-specific rules only. The shared shell stylesheet carries the chrome and the whole content kit;
+       keep at least one literal #6d28d9 in this block. */
+    .hero h1 { max-width: 24ch; }
+    .symptom .or, .fact .stat .unit { color: #6d28d9; }
+    </style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalWebPage",
+      "name": "{{TOPIC_LABEL}} — {{THESIS_SENTENCE}}",
+      "url": "https://mountzara.com/education/{{SLUG}}/",
+      "description": "A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}.",
+      "inLanguage": "en",
+      "audience": {"@type": "MedicalAudience", "audienceType": "Patient"},
+      "about": {"@type": "MedicalCondition", "name": "{{TOPIC_LABEL}}"},
+      "isPartOf": {"@type": "CollectionPage", "name": "Patient guides", "url": "https://mountzara.com/education/"},
+      "publisher": {"@type": "Organization", "name": "Mount Zara", "url": "https://mountzara.com/"}
     }
-}
-</style>
+    </script>
 </head>
 <body>
-    <div class="wrap">
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt="" decoding="async"></div>
+
+    <nav class="main-nav" aria-label="Site navigation">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara">
+                <span class="nav-brand-text">MOUNT ZARA</span>
+            </a>
+            <button type="button" class="mobile-toggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#surgical">Surgery</a></li>
+                <li><a href="/#osteopathic">Osteopathic</a></li>
+                <li><a href="/education/">Patient guides</a></li>
+                <li><a href="/evidence/">Evidence</a></li>
+                <li class="nav-more">
+                    <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More<span class="nav-more-caret" aria-hidden="true">&#9662;</span></button>
+                    <ul class="nav-more-menu">
+                        <li><a href="/#ai">AI</a></li>
+                        <li><a href="/#apps">Apps</a></li>
+                        <li><a href="/#research">Research</a></li>
+                        <li><a href="/#awards">Awards</a></li>
+                        <li><a href="/curriculum/">Curriculum</a></li>
+                        <li><a href="/trending/">Trending</a></li>
+                        <li><a href="/about/">Bio</a></li>
+                    </ul>
+                </li>
+                <li class="nav-cta-li"><a class="nav-cta" href="/portal/">Member portal</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
+
+<main id="main" class="wrap">
 
     <header class="hero">
-        <!-- [required: §1.2 + pub-date] keep "Patient Education · <Topic> · Published <Month Day, Year>" pattern -->
-        <div class="eyebrow">Patient Education &middot; {{TOPIC_LABEL}} &middot; Published {{PUBLICATION_DATE}}</div>
-        <h1>{{HEADLINE_SENTENCE}}</h1>
+        <div class="section-eyebrow">Patient Education &middot; {{TOPIC_LABEL}} &middot; Published {{PUBLICATION_DATE}}</div>
+        <h1>{{TOPIC_LABEL}} &mdash; {{THESIS_SENTENCE}}</h1>
         <p class="lede">
-            {{LEDE_TEXT}}
+            {{LEDE_TEXT — one paragraph: what the condition is (cited), who this guide is for, what it covers, and
+            that every clinical claim on this page is cited inline to peer-reviewed published evidence with the full
+            bibliography and abstracts at the bottom.}}
         </p>
-        <div class="byline">Reviewed by <strong>Christopher Z. Mabini, DO, MSAEd</strong> &middot; AAGL Fellow, Minimally Invasive Gynecologic Surgery</div>
     </header>
 
-    <!-- ============================================================
-         CONTENT SECTIONS START HERE
-         Add fact cards, narrative sections, modals, references.
-         Source every clinical claim from the §0.8 KB (do NOT use
-         training memory). Cite inline as <sup class="mz-ref">[N]</sup>.
-
-         For the references section's intro paragraph, use exactly:
-            "<p class="ref-intro">Every clinical claim above ties to
-            one of these peer-reviewed sources. Click any abstract to
-            expand the verbatim PubMed record.</p>"
-         (NEVER add "retrieved via NCBI E-Utilities" — §3.7 violation)
-         ============================================================ -->
-    {{CONTENT}}
-
+    <!-- Four fact tiles. Each figure carries its own citation and appears in that paper's abstract. -->
+    <div class="facts">
+        <div class="fact" data-reveal data-stagger="1">
+            <div class="stat">{{FIGURE_1}}<span class="unit">{{UNIT_1}}</span></div>
+            <div class="label">{{WHAT_FIGURE_1_MEANS}}<sup class="mz-ref" data-r="ref-{{N}}" tabindex="0"><a href="#ref-{{N}}">[{{N}}]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">{{PUBMED_TITLE}}</span><span class="mz-ref-pop-meta">{{JOURNAL}} {{YEAR}} &middot; PMID {{PMID}}</span><span class="mz-ref-pop-finding">{{PLAIN_LANGUAGE_FINDING — the same text as the reference's ref-what line; dose-free; 250-600 characters}}</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{{PMID}}/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</div>
+        </div>
+        <div class="fact" data-reveal data-stagger="2">
+            <div class="stat">{{FIGURE_2}}<span class="unit">{{UNIT_2}}</span></div>
+            <div class="label">{{WHAT_FIGURE_2_MEANS}} {{CITATION}}.</div>
+        </div>
+        <div class="fact" data-reveal data-stagger="3">
+            <div class="stat">{{FIGURE_3}}<span class="unit">{{UNIT_3}}</span></div>
+            <div class="label">{{WHAT_FIGURE_3_MEANS}} {{CITATION}}.</div>
+        </div>
+        <div class="fact" data-reveal data-stagger="4">
+            <div class="stat">{{FIGURE_4}}<span class="unit">{{UNIT_4}}</span></div>
+            <div class="label">{{WHAT_FIGURE_4_MEANS}} {{CITATION}}.</div>
+        </div>
     </div>
 
-    <!-- [required: §3.12] Medicolegal disclosure — canonical text (verbatim — do not reword).
-         2026-08-11: the AI-provenance sentence was REMOVED at the owner's
-         instruction ("remove those AI indicators"), as was any authorship
-         line ("No do not put my authorship on there. remove it. just leave
-         the footer disclosures"). Do not reinstate either. -->
-    <aside class="mz-page-note" aria-label="Disclosure">
-        <p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
-    </aside>
+    <!-- 1. What it actually is: eyebrow, one-sentence h2, prose, then a card grid whose cards open modals. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">What it actually is</div>
+        <h2>{{ONE_SENTENCE_THESIS_FOR_THIS_SECTION.}}</h2>
+        <p>{{PROSE — second person, glosses in em, every claim cited.}}</p>
+        <p class="section-intro">{{WHAT_THE_CARDS_BELOW_ARE.}} <em>Click any card to read more.</em></p>
+        <div class="card-grid card-grid--3">
+            <article class="card" role="button" tabindex="0" data-modal="{{MODAL_KEY}}" aria-label="Open more about {{CARD_TITLE}}">
+                <svg class="card-svg" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="24" fill="none" stroke="rgba(109,40,217,0.35)" stroke-width="1.5"/></svg>
+                <h3>{{CARD_TITLE}}</h3>
+                <p>{{CARD_BLURB_WITH_CITATION}}</p>
+                <span class="open-hint">read more &rarr;</span>
+            </article>
+        </div>
+    </section>
 
+    <!-- 2. Why it happens / hurts: numbered 4-card grid (.card-corner "01" ... "04"), each opening a modal. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">Why it happens</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{INTRO}} <em>Click any card to read the deeper dive.</em></p>
+        <div class="card-grid card-grid--4">
+            {{FOUR_NUMBERED_CARDS}}
+        </div>
+    </section>
+
+    <!-- 3. Signs: eight .symptom items; an odds-ratio chip is <span class="or">OR&nbsp;x.x</span> with its citation. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">Signs</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{INTRO}}</p>
+        <div class="symptoms">
+            <div class="symptom"><strong>{{SYMPTOM}}</strong>{{PLAIN_LANGUAGE_DESCRIPTION_WITH_CITATION}}</div>
+            {{SEVEN_MORE}}
+        </div>
+    </section>
+
+    <!-- 4. How the evaluation is built: five timeline steps, each opening a modal. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">How an evaluation is built</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{INTRO}} <em>Click any step to read the deep dive.</em></p>
+        <div class="timeline">
+            <div class="timeline-item" role="button" tabindex="0" data-modal="{{STEP_KEY}}" aria-label="Open step 1 in detail">
+                <span class="open-hint">read more &rarr;</span>
+                <h3>{{STEP_TITLE}}</h3>
+                <p>{{STEP_BLURB}}</p>
+            </div>
+            {{FOUR_MORE_STEPS}}
+        </div>
+    </section>
+
+    <!-- 5. The treatment ladder: four rungs; .meds names options only (never amounts); each opens a modal that
+            carries "Risks reviewed:" and "What this step does NOT do:". -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">The treatment ladder</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{INTRO}} <em>Click any rung to read what that step involves in detail.</em></p>
+        <div class="ladder">
+            <article class="rung" role="button" tabindex="0" data-modal="{{RUNG_KEY}}" aria-label="Open step 1 in detail">
+                <div class="step-num">01</div>
+                <div>
+                    <h3>{{RUNG_TITLE}}</h3>
+                    <p>{{RUNG_BLURB_WITH_CITATION}}</p>
+                    <p class="meds">{{OPTION_NAMES_ONLY}}</p>
+                </div>
+                <span class="rung-tag">First line</span>
+            </article>
+            {{THREE_MORE_RUNGS}}
+        </div>
+    </section>
+
+    <!-- 6. The DO / CBG-MIGS layer: .omt-block with a .quote-frame counselling passage and trial cards. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">The osteopathic layer</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{HOW_THE_CBG_MIGS_AND_OSTEOPATHIC_LAYER_FITS}}</p>
+        <div class="omt-block">
+            <div class="quote-frame">{{COUNSELLING_PASSAGE}}</div>
+            <p>{{PROSE_WITH_CITATIONS}}</p>
+        </div>
+    </section>
+
+    <!-- 7. Common questions: at least twelve details.qa; every answer cited. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">Common questions, answered honestly</div>
+        <h2>{{ONE_SENTENCE_THESIS.}}</h2>
+        <p class="section-intro">{{INTRO}}</p>
+        <div class="qa-list">
+            <details class="qa">
+                <summary>{{QUESTION}}</summary>
+                <div class="qa-answer">
+                    <p>{{ANSWER_WITH_CITATIONS}}</p>
+                </div>
+            </details>
+            {{ELEVEN_MORE}}
+        </div>
+    </section>
+
+    <!-- 8. When to call urgently: at least six red flags. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">When to call urgently</div>
+        <h2>Symptoms that should not wait for your next visit.</h2>
+        <div class="red-flags">
+            <div class="red-eyebrow">Call the office or seek care now if you have:</div>
+            <ul>
+                <li>{{RED_FLAG}}</li>
+                {{FIVE_MORE}}
+            </ul>
+        </div>
+    </section>
+
+    <section class="cta-strip" data-reveal>
+        <h2>Take the next step.</h2>
+        <p>{{CTA_SENTENCE}}</p>
+        <a class="btn btn-primary" href="/portal/">Open the member portal<span class="arrow" aria-hidden="true"></span></a>
+        <a class="btn btn-secondary" href="/about/">More about the practice</a>
+    </section>
+
+    <!-- 9. References: ol.refs-list with li#ref-N in citation order. The abstract is PubMed's text verbatim. -->
+    <section class="panel" data-reveal>
+        <div class="section-eyebrow">References</div>
+        <h2>The evidence underneath every claim on this page.</h2>
+        <p class="section-intro">
+            Each reference is numbered and linked from the inline citations above. Click <strong>Read the abstract</strong>
+            on any entry to read the paper&rsquo;s verbatim PubMed abstract.
+        </p>
+        <ol class="refs-list">
+<li id="ref-{{N}}">
+<div class="ref-label"><strong>{{FIRST_AUTHOR}} et al., {{PUBMED_TITLE}}, <em>{{JOURNAL}}</em> {{YEAR}}</strong></div>
+<div class="ref-what">{{PLAIN_LANGUAGE_FINDING — 250-600 characters, dose-free, the same text the popover carries}}</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/{{PMID}}/" target="_blank" rel="noopener">{{PMID}}</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">{{VERBATIM_PUBMED_ABSTRACT}}</div></details>
+</li>
+        </ol>
+    </section>
+
+    <div class="footer-note">
+        <strong>About this page.</strong> The content above is for general patient education. It is not personal
+        medical advice and is not a substitute for an evaluation by a qualified clinician who has examined you, reviewed
+        your imaging, and discussed your goals. {{TOPIC_LABEL}} presents differently in every patient; the right
+        plan for you depends on your specific symptoms, exam findings, imaging, goals, and personal preferences &mdash;
+        which is exactly the conversation a clinic visit is for.
+    </div>
+
+</main>
+
+    <div class="mz-disclosures">
+<aside class="mz-page-note" aria-label="Disclosure">
+<p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
+</aside>
+
+<div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara" class="footer-mark">
+                <p class="footer-tag">Minimally invasive gynecologic surgery with whole-person osteopathic care.</p>
+            </div>
+            <nav class="footer-col" aria-label="For patients">
+                <h4>Patients</h4>
+                <a href="/education/">What we treat</a>
+                <a href="/portal/">Member portal</a>
+                <a href="/#contact">Request an appointment (Coming Soon)</a>
+            </nav>
+            <nav class="footer-col" aria-label="About the practice">
+                <h4>The practice</h4>
+                <a href="/about/">About Dr. Mabini</a>
+                <a href="/evidence/">Published evidence</a>
+                <a href="/curriculum/">Teaching &amp; curricula</a>
+                <a href="/cv/">CV (on request)</a>
+            </nav>
+            <div class="footer-col">
+                <h4>Reach me</h4>
+                <a href="mailto:info@mountzara.com">info@mountzara.com</a>
+                <span class="footer-note">Telehealth &middot; Illinois &amp; California (Coming Soon)</span>
+            </div>
+        </div>
+        <div class="footer-content">
+            <div class="copyright">&copy; 2026 Mount Zara, LLC
+                <span style="opacity:.75"> &middot; <a href="/privacy/">Privacy</a>
+                &middot; <a href="/privacy-practices/">Privacy Practices</a>
+                &middot; <a href="/terms/">Terms</a>
+                &middot; <a href="/accessibility/">Accessibility</a></span></div>
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" aria-label="Connect on LinkedIn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.99 0 1.78-.77 1.78-1.72V1.72C24 .77 23.21 0 22.22 0z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+<!-- Modal frame (single, content swapped at click time) -->
+    <div class="mz-modal-bg" id="mz-modal-bg" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="mz-modal" id="mz-modal" role="document">
+            <button type="button" class="mz-modal-close" id="mz-modal-close" aria-label="Close">&times;</button>
+            <div id="mz-modal-host"></div>
+        </div>
+    </div>
+
+<!-- Hidden modal templates — one per [data-modal] opener, cloned into the modal on click. At least two paragraphs each;
+     treatment modals carry "Risks reviewed:" and "What this step does NOT do:". Citations inside work like anywhere else. -->
+<template id="modal-{{MODAL_KEY}}"><div class="modal-content-inner"><h2>{{CARD_TITLE}}</h2>
+    <p>{{PARAGRAPH_WITH_CITATIONS}}</p>
+    <p>{{PARAGRAPH_WITH_CITATIONS}}</p>
+</div></template>
+<template id="modal-{{STEP_KEY}}"><div class="modal-content-inner"><h2>{{STEP_TITLE}}</h2>
+    <p>{{PARAGRAPH_WITH_CITATIONS}}</p>
+    <p>{{PARAGRAPH_WITH_CITATIONS}}</p>
+</div></template>
+<template id="modal-{{RUNG_KEY}}"><div class="modal-content-inner"><h2>{{RUNG_TITLE}}</h2>
+    <p>{{WHAT_THIS_STEP_INVOLVES_WITH_CITATIONS}}</p>
+    <p><strong>Risks reviewed:</strong> {{RISKS}}</p>
+    <p><strong>What this step does NOT do:</strong> {{LIMITS}}</p>
+</div></template>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>
-
-<!-- §0.8 KB-anchor manifest — [required: §0.8.1] fill in after authoring content. Format:
-{
-  "spec": "§0.8.1 KB-anchor manifest (CLAUDE.md)",
-  "surface": "/education/{{SLUG}}/index.html",
-  "topic": "{{TOPIC_LABEL}}",
-  "topic_synthesis_id": "<UUID from kb_chunks/02_topicSyntheses.json>",
-  "kb_documents_loaded": ["<uuid1>", "<uuid2>"],
-  "kb_documents_quoted": [...],
-  "pmids_efetched_in_session": [],
-  "user_docx_sources": [],
-  "not_in_kb_claims": [],
-  "generated_at_utc": "{{ISO_DATETIME_UTC}}"
-}
--->

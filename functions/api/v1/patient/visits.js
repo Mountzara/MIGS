@@ -77,14 +77,48 @@ export async function onRequestGet(ctx) {
     const one = list.find((r) => r.id === wantId);
     if (!one) return json({ ok: false, error: "not found" }, 404);
 
+    // TWO sealing conventions exist for the same column, because two
+    // writers were built a phase apart:
+    //   * the admin generate/edit path seals with visit_summary_patient:<id>
+    //   * the transcription-app sync path seals with
+    //     encounter/<encounter_id>/summary_patient
+    // The reader knew only the first, so every summary the app pushed was
+    // approved, marked visible — and permanently unopenable, with a 500
+    // presented to the patient. AAD is authenticated data: the wrong string
+    // simply fails decryption, so trying the second convention on failure
+    // is safe and cannot open anything that was not legitimately written.
     let text = "";
-    try {
-        const got = await getPhiObject(env, one.patient_visible_r2_key,
-            one.patient_visible_wrapped_dek, `visit_summary_patient:${one.id}`);
-        text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
-    } catch {
+    const aads = [`visit_summary_patient:${one.id}`, `encounter/${one.encounter_id}/summary_patient`];
+    for (const aad of aads) {
+        try {
+            const got = await getPhiObject(env, one.patient_visible_r2_key,
+                one.patient_visible_wrapped_dek, aad);
+            text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+            if (text) break;
+        } catch { /* try the next convention */ }
+    }
+    if (!text) {
         return json({ ok: false, error: "that summary could not be opened" }, 500);
     }
+
+    // The reading Dr. Mabini attached to THIS visit, with the reason in
+    // her words. Assignments are written at approval time; this only
+    // reads them, so a patient can never see material for a summary that
+    // was never approved.
+    let reading = [];
+    try {
+        const rs = await env.DB.prepare(`
+            SELECT m.slug, m.title, m.summary, a.reason
+              FROM patient_education_assignments a
+              JOIN education_materials m ON m.id = a.material_id
+             WHERE a.patient_id = ? AND m.status = 'published'
+             ORDER BY a.assigned_at DESC LIMIT 3
+        `).bind(patientId).all();
+        reading = (rs?.results || []).map((r) => ({
+            slug: r.slug, title: r.title, summary: r.summary, reason: r.reason,
+            href: `/portal/education/${r.slug}/`,
+        }));
+    } catch { reading = []; }
 
     // First view is recorded once, so the portal can mark what is new and
     // the practice can see whether summaries are actually being read.
@@ -102,6 +136,7 @@ export async function onRequestGet(ctx) {
             id: one.id, visit_date: one.visit_date, visit_type: one.visit_type_actual,
             text,
             medications: (() => { try { return JSON.parse(one.medications_list_json || "[]"); } catch { return []; } })(),
+            reading,
         },
         note: "This summary was written by Dr. Mabini's system and reviewed and approved by him before you saw it. If anything here does not match what you remember, message the practice — that is worth knowing about.",
     });

@@ -68,6 +68,7 @@ export const VISIT_TYPES = [
     },
     {
         key: "omt_treatment",
+        hands_on_required: true,
         label: "OMT Treatment",
         duration_min: 30,
         modality_preferred: "in_person",
@@ -140,6 +141,7 @@ export const VISIT_TYPES = [
     },
     {
         key: "office_procedure",
+        hands_on_required: true,
         label: "Procedure — Office (EMB / Colpo / IUD)",
         duration_min: 30,
         modality_preferred: "in_person",
@@ -164,6 +166,7 @@ export const VISIT_TYPES = [
     },
     {
         key: "annual_exam",
+        hands_on_required: true,
         label: "Annual Exam",
         duration_min: 30,
         modality_preferred: "in_person",
@@ -190,6 +193,78 @@ export const VISIT_TYPES = [
 
 const KEY_INDEX = new Map(VISIT_TYPES.map((v) => [v.key, v]));
 
+// ---------------------------------------------------------------------
+// PRACTICE MODALITY — telehealth only (2026-09-15, owner directive)
+// ---------------------------------------------------------------------
+// "I will only be doing telehealth services ... I will NOT be seeing
+// patients in person at this time."
+//
+// The catalog above is NOT deleted, because "at this time" is the
+// operative phrase — if in-person care resumes, flip PRACTICE_MODALITY
+// back to "hybrid" and every visit type returns with its original
+// chaperone and duration rules intact. Until then, nothing that needs
+// hands may be offered: a patient must never be able to book a visit
+// this practice cannot deliver.
+//
+// `hands_on_required: true` marks the three that are physically
+// impossible over video — osteopathic manipulation, an office procedure
+// (endometrial biopsy, colposcopy, IUD), and the annual examination.
+// Those are withheld from booking entirely. Everything else is offered
+// as telehealth regardless of its historical modality_preferred.
+export const PRACTICE_MODALITY = "telehealth_only";
+
+export function isTelehealthOnly() {
+    return PRACTICE_MODALITY === "telehealth_only";
+}
+
+/**
+ * The visit types a patient may actually book right now, with modality
+ * forced to what the practice can deliver. Booking surfaces MUST use
+ * this rather than VISIT_TYPES directly.
+ */
+export function bookableVisitTypes() {
+    if (!isTelehealthOnly()) return VISIT_TYPES.slice();
+    return VISIT_TYPES
+        .filter((v) => !v.hands_on_required)
+        .map((v) => ({ ...v, modality_preferred: "telehealth", in_person_available: false }));
+}
+
+const BOOKABLE_INDEX = new Map(bookableVisitTypes().map((v) => [v.key, v]));
+
+/**
+ * True when the visit type physically cannot be delivered over video.
+ *
+ * This replaces the old `category === "procedure"` heuristic used by the
+ * scheduler and the booking endpoint. That heuristic was wrong in both
+ * directions: it swept in `pre_op`, which is a counselling visit with
+ * nothing to examine, and it relied on a category label rather than on
+ * the fact that actually matters — whether the clinician has to put
+ * hands on the patient.
+ */
+export function requiresHandsOn(key) {
+    const v = KEY_INDEX.get(key);
+    return !!(v && v.hands_on_required);
+}
+
+/**
+ * Catalog lookup for BOOKING surfaces. Returns the visit type shaped the
+ * way the practice can actually deliver it today, or null if the practice
+ * cannot deliver it at all right now.
+ *
+ * Booking code must use this, not `getVisitType()`. `getVisitType()`
+ * returns the historical record — including `modality_preferred:
+ * "in_person"` on eleven types that are telehealth today — and any
+ * booking path that reads that field off the raw catalog will silently
+ * force the patient back to a visit that does not exist.
+ */
+export function getBookableVisitType(key) {
+    return BOOKABLE_INDEX.get(key) || null;
+}
+
+export function isBookableVisitTypeKey(key) {
+    return BOOKABLE_INDEX.has(key);
+}
+
 export function getVisitType(key) {
     return KEY_INDEX.get(key) || null;
 }
@@ -204,6 +279,14 @@ export function isValidVisitTypeKey(key) {
  * fields so the patient-booking flow can present the chaperone-required
  * confirmation step at the right moment.
  */
+export function bookableVisitTypeOptions() {
+    return bookableVisitTypes().map(({ key, label, duration_min, modality_preferred, category, time_of_day, description, requires_chaperone, chaperone_rationale }) => ({
+        key, label, duration_min, modality_preferred, category, time_of_day, description,
+        requires_chaperone: !!requires_chaperone,
+        chaperone_rationale: chaperone_rationale || "",
+    }));
+}
+
 export function visitTypeOptions() {
     return VISIT_TYPES.map(({ key, label, duration_min, modality_preferred, category, time_of_day, description, requires_chaperone, chaperone_rationale }) => ({
         key, label, duration_min, modality_preferred, category, time_of_day, description,
@@ -221,3 +304,15 @@ export function requiresChaperone(key) {
     const v = KEY_INDEX.get(key);
     return !!(v && v.requires_chaperone);
 }
+
+/**
+ * What AI triage writes when it cannot decide. It is deliberately NOT a
+ * member of VISIT_TYPES, so `isValidVisitTypeKey()` rejects it — that is
+ * the property every guard depends on.
+ *
+ * It lives here rather than in a cron endpoint because three unrelated
+ * places need it: the triage writer, the auto-release hold, and the
+ * release validator. Reaching across the tree for it is how one of them
+ * ends up with a stale copy.
+ */
+export const MANUAL_REVIEW_PLACEHOLDER = "manual_review_required";

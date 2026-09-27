@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981;
             --amber: #f59e0b;
@@ -52,7 +52,7 @@
         }
         .lede {
             font-size: 14.5px; line-height: 1.55;
-            color: var(--fg-mid); max-width: 80ch;
+            color: var(--fg-mid); max-width: 96ch;
             margin: 0 0 20px 0;
         }
         button {
@@ -66,15 +66,15 @@
         }
         button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
         button.ghost {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             color: var(--fg-soft);
         }
-        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.ghost:hover { color: var(--fg-strong); border-color: #6d28d9; }
         button.danger {
             background: rgba(239, 68, 68, 0.10);
             border: 1px solid rgba(239, 68, 68, 0.45);
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
         }
         button.danger:hover { background: rgba(239, 68, 68, 0.18); color: var(--fg-strong); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -82,7 +82,7 @@
         .top-actions { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
         .filter-bar { display: flex; gap: 6px; margin: 0 0 18px 0; flex-wrap: wrap; }
         .filter-chip {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 6px 13px;
@@ -92,10 +92,10 @@
             cursor: pointer;
             transition: all 0.18s;
         }
-        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
 
@@ -115,7 +115,7 @@
         }
         .row:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.04);
         }
         .row h3 { margin: 0 0 4px 0; font-size: 15.5px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
@@ -127,9 +127,9 @@
             letter-spacing: 0.14em; text-transform: uppercase;
             padding: 3px 8px; border-radius: 999px; white-space: nowrap;
         }
-        .badge-draft     { background: rgba(255,255,255,0.05); color: var(--fg-soft); border: 1px solid var(--border); }
-        .badge-published { background: rgba(16,185,129,0.12); color: rgba(110,231,183,0.95); border: 1px solid rgba(16,185,129,0.45); }
-        .badge-archived  { background: rgba(245,158,11,0.12); color: rgba(252,211,77,0.95); border: 1px solid rgba(245,158,11,0.45); }
+        .badge-draft     { background: rgba(255,255,255,0.72); color: var(--fg-soft); border: 1px solid var(--border); }
+        .badge-published { background: rgba(16,185,129,0.12); color: #047857; border: 1px solid rgba(16,185,129,0.45); }
+        .badge-archived  { background: rgba(245,158,11,0.12); color: #92400E; border: 1px solid rgba(245,158,11,0.45); }
 
         .empty-state {
             background: var(--bg-card);
@@ -144,7 +144,7 @@
         .modal-backdrop {
             display: none;
             position: fixed; inset: 0; z-index: 90;
-            background: rgba(7, 7, 10, 0.75);
+            background: rgba(26,23,38,0.45);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             align-items: flex-start; justify-content: center;
             padding: 24px;
@@ -178,7 +178,7 @@
         input[type=text], textarea, select {
             font: inherit; width: 100%;
             padding: 9px 11px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 9px;
             color: var(--fg-strong);
@@ -187,7 +187,7 @@
             outline: none;
         }
         input[type=text]:focus, textarea:focus, select:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
         }
         textarea {
@@ -199,7 +199,7 @@
         }
         .preview-toggle { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
         .preview {
-            background: rgba(0, 0, 0, 0.20);
+            background: #FFFFFF;
             border: 1px solid var(--border);
             border-radius: 9px;
             padding: 14px 16px;
@@ -224,7 +224,7 @@
             padding: 12px 18px; border-radius: 10px;
             background: rgba(16, 185, 129, 0.18);
             border: 1px solid rgba(16, 185, 129, 0.55);
-            color: rgba(167, 243, 208, 0.98);
+            color: #047857;
             font-size: 13px;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -232,7 +232,7 @@
             transition: opacity 0.22s, transform 0.22s;
             pointer-events: none; z-index: 1000;
         }
-        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: #B91C1C; }
         .toast.show { opacity: 1; transform: translateY(0); }
 
         @media (prefers-reduced-motion: reduce) {
@@ -249,9 +249,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -282,7 +282,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -290,7 +290,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -329,8 +329,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </div>
 
         <div class="filter-bar" id="status-filter">
-            <button class="filter-chip" data-status="all">All</button>
-            <button class="filter-chip active" data-status="draft">Drafts</button>
+            <button class="filter-chip active" data-status="all">All</button>
+            <button class="filter-chip" data-status="draft">Drafts</button>
             <button class="filter-chip" data-status="published">Published</button>
             <button class="filter-chip" data-status="archived">Archived</button>
         </div>
@@ -347,10 +347,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 </div>
 
                 <div class="row-form two">
-                    <div>
-                        <label class="label" for="f-slug">Slug</label>
-                        <input id="f-slug" type="text" maxlength="80" placeholder="endometriosis-101">
-                    </div>
                     <div>
                         <label class="label" for="f-audience">Target audience</label>
                         <select id="f-audience">
@@ -391,6 +387,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="preview" id="preview"></div>
                 </div>
 
+                <div style="margin-top: 12px;">
+                    <label class="label" for="f-slug">Web address (slug) — filled in from the title; edit if you like</label>
+                    <input id="f-slug" type="text" maxlength="80" placeholder="endometriosis-101">
+                </div>
+
                 <div class="row-actions">
                     <div class="left">
                         <button class="danger" id="btn-archive" style="display:none;">Archive</button>
@@ -410,7 +411,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const $ = (id) => document.getElementById(id);
         const state = {
             materials: [],
-            filter: 'draft',
+            filter: 'all',
             editing: null, // null = creating new
         };
 
@@ -504,7 +505,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
         function render() {
             if (state.materials.length === 0) {
-                $('list').innerHTML = `<div class="empty-state">No materials in this view. Click "+ New material" to author one.</div>`;
+                $('list').innerHTML = `<div class="empty-state">Nothing here yet — click + New material to write the first guide your patients will read in their portal.</div>`;
                 return;
             }
             $('list').innerHTML = state.materials.map(m => `
@@ -522,7 +523,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </div>
                     </div>
                     <div style="text-align:right; color: var(--fg-dim); font-size: 11px;">
-                        ${m.has_inline_body ? 'inline' : (m.has_r2_body ? 'R2' : 'empty')}
+                        ${m.has_inline_body ? 'written here' : (m.has_r2_body ? 'full site page' : 'no content yet')}
                     </div>
                 </div>
             `).join('');
@@ -541,11 +542,27 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('btn-refresh').addEventListener('click', loadList);
 
         // ---- modal ----
+        // ---- slug is derived from the title, editable if wanted ----
+        function slugify(s) {
+            return String(s || '').toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 80);
+        }
+        let slugTouched = false;
+        $('f-slug').addEventListener('input', () => { slugTouched = true; });
+        $('f-title').addEventListener('input', () => {
+            if (state.editing || slugTouched) return;
+            $('f-slug').value = slugify($('f-title').value);
+        });
+
         function openCreate() {
             state.editing = null;
+            slugTouched = false;
             $('modal-title').textContent = 'New material';
             $('f-slug').value = '';
             $('f-slug').disabled = false;
+            $('f-slug').title = '';
             $('f-audience').value = 'all';
             $('f-title').value = '';
             $('f-summary').value = '';
@@ -554,7 +571,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('preview').classList.remove('open');
             $('btn-archive').style.display = 'none';
             $('modal').classList.add('open');
-            setTimeout(() => $('f-slug').focus(), 50);
+            setTimeout(() => $('f-title').focus(), 50);
         }
         async function openEdit(slug) {
             try {
@@ -563,11 +580,32 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('modal-title').textContent = `Edit · ${data.material.title}`;
                 $('f-slug').value = data.material.slug;
                 $('f-slug').disabled = true;     // slug immutable post-create
+                $('f-slug').title = 'The web address is fixed once created so patient links keep working';
                 $('f-audience').value = data.material.target_audience || 'all';
                 $('f-title').value = data.material.title;
                 $('f-summary').value = data.material.summary || '';
                 $('f-tags').value = (data.material.topic_tags || []).join(', ');
                 $('f-body').value = data.material.body_md || '';
+                // -----------------------------------------------------------
+                // STATIC GUIDES ARE NOT EDITABLE HERE. 2026-08-14.
+                // -----------------------------------------------------------
+                // 12 of the 14 guides are full static HTML pages (r2_key ends
+                // .html); their body_md is empty BY DESIGN, and the patient
+                // reader redirects to the static page precisely because
+                // body_md is empty. This editor used to open them as a blank
+                // textarea — and typing anything into it saved a non-empty
+                // body_md, which SUPPRESSED the redirect and replaced the
+                // real, KB-anchored guide with whatever was typed. One
+                // keystroke and a save could quietly take a clinical page
+                // out of the patient reader.
+                const isStatic = /\.html$/i.test(data.material.r2_key || '')
+                    && !(data.material.body_md || '').trim();
+                state.editingIsStatic = isStatic;
+                $('f-body').readOnly = isStatic;
+                $('f-body').placeholder = isStatic
+                    ? 'This guide is a fully designed site page, so its text can\'t be edited in this box — ask for the page itself to be changed. Title, summary, tags and audience above are yours to edit here.'
+                    : '';
+                $('f-body').style.opacity = isStatic ? '0.55' : '';
                 $('preview').classList.remove('open');
                 $('btn-archive').style.display = data.material.status === 'archived' ? 'none' : 'inline-block';
                 $('modal').classList.add('open');
@@ -584,6 +622,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const isOpen = $('preview').classList.toggle('open');
             $('btn-preview').textContent = isOpen ? 'Edit' : 'Preview';
             if (isOpen) {
+                $('preview').innerHTML = renderMarkdown($('f-body').value);
+            }
+        });
+        // Keep the preview live while it is open.
+        $('f-body').addEventListener('input', () => {
+            if ($('preview').classList.contains('open')) {
                 $('preview').innerHTML = renderMarkdown($('f-body').value);
             }
         });
@@ -608,13 +652,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             data.status = status;
             try {
                 if (state.editing) {
+                    // body_md is omitted for a static guide, and for any
+                    // edit that did not change it. Sending it back
+                    // unconditionally is the second half of the blanking
+                    // bug: even an untouched save round-tripped the body,
+                    // and for a static guide the body it round-tripped was
+                    // the empty string it opened with.
+                    const patch = {
+                        title: data.title, summary: data.summary,
+                        topic_tags: data.topic_tags, target_audience: data.target_audience,
+                        status,
+                    };
+                    if (!state.editingIsStatic
+                            && data.body_md !== (state.editing.body_md || '')) {
+                        patch.body_md = data.body_md;
+                    }
                     await fetchJson(`/api/v1/admin/education/${encodeURIComponent(state.editing.slug)}`, {
                         method: 'PATCH',
-                        body: JSON.stringify({
-                            title: data.title, summary: data.summary,
-                            topic_tags: data.topic_tags, target_audience: data.target_audience,
-                            body_md: data.body_md, status,
-                        }),
+                        body: JSON.stringify(patch),
                     });
                     showToast(status === 'published' ? 'Published.' : 'Saved.');
                 } else {
@@ -647,5 +702,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         loadList();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

@@ -44,6 +44,8 @@ struct MainTabs: View {
         TabView(selection: $router.selectedTab) {
             PostListView(auth: auth).tag(AdminTab.posts)
                 .tabItem { Label("Posts", systemImage: "doc.text") }
+            ListenView(auth: auth).tag(AdminTab.listen)
+                .tabItem { Label("Listen", systemImage: "headphones") }
             AssistantView(auth: auth).tag(AdminTab.assistant)
                 .tabItem { Label("Assistant", systemImage: "sparkles") }
             TriageView(auth: auth).tag(AdminTab.triage)
@@ -80,7 +82,7 @@ struct MainTabs: View {
 /// The admin tabs — used both for the TabView selection and to route a tapped
 /// push notification to the right surface.
 enum AdminTab: Hashable {
-    case posts, assistant, triage, messages, schedule, patients, briefs, feedback
+    case posts, listen, assistant, triage, messages, schedule, patients, briefs, feedback
     case carousels, analytics, briefings, education, compliance, debug, billing
 
     /// Contract for the push-notification `type` field → tab. No backend
@@ -89,6 +91,7 @@ enum AdminTab: Hashable {
         switch notificationType?.lowercased() {
         case "assistant", "ask", "ai":        self = .assistant
         case "post", "evidence", "blog":      self = .posts
+        case "listen", "audio", "read":       self = .listen
         case "triage", "appointment_request": self = .triage
         case "message", "thread":             self = .messages
         case "appointment", "schedule":       self = .schedule

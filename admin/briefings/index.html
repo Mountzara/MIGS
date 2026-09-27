@@ -11,16 +11,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:           #120b22;
-            --bg-elev:      #14141a;
-            --ink:          #f5f5f7;
-            --ink-mute:     rgba(245, 245, 247, 0.74);
-            --ink-soft:     rgba(245, 245, 247, 0.46);
-            --ink-faint:    rgba(245, 245, 247, 0.22);
+            --bg:           #FBFAF8;
+            --bg-elev:      #F4F1EC;
+            --ink:          #1A1726;
+            --ink-mute:     #6E6A7C;
+            --ink-soft:     #4A4658;
+            --ink-faint:    #8B8698;
             --accent:       #6d28d9;
             --glow-purple:  167, 139, 250;
             --hairline:     rgba(255, 255, 255, 0.10);
-            --emerald:      #34d399;
+            --emerald:      #047857;
             --red:          #ef4444;
             --amber:        #fbbf24;
             --terra:        #b85a47;
@@ -52,13 +52,13 @@
             font-size: clamp(28px, 4vw, 42px);
         }
         .page-head .eyebrow {
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             text-transform: uppercase; letter-spacing: 0.22em;
             font-size: 11px; font-weight: 700; margin: 0 0 10px;
         }
         .page-head .lede {
             color: var(--ink-mute); font-size: 15px;
-            margin: 6px 0 0; max-width: 60ch;
+            margin: 6px 0 0; max-width: 76ch;
         }
         .toolbar {
             display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
@@ -66,7 +66,7 @@
         .toolbar label { color: var(--ink-soft); font-size: 12px; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.12em; }
         .toolbar input[type=date], .toolbar select, .toolbar button {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline); border-radius: 10px;
             padding: 8px 12px;
             color: var(--ink); font: inherit; font-size: 13px;
@@ -74,24 +74,24 @@
         }
         .toolbar button { cursor: pointer; }
         .toolbar input[type=date]:focus, .toolbar select:focus, .toolbar button:hover {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.10);
             outline: none;
         }
         .range-pills { display: flex; gap: 6px; }
         .range-pill {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline); border-radius: 999px;
             padding: 6px 14px;
             font-size: 12px; font-weight: 600; color: var(--ink-mute);
             cursor: pointer;
             transition: background 0.18s, color 0.18s, border-color 0.18s;
         }
-        .range-pill:hover { color: var(--ink); border-color: rgba(var(--glow-purple), 0.45); }
+        .range-pill:hover { color: var(--ink); border-color: #6d28d9; }
         .range-pill.active {
             background: rgba(var(--glow-purple), 0.12);
-            border-color: rgba(var(--glow-purple), 0.55);
-            color: rgba(var(--glow-purple), 0.98);
+            border-color: #6d28d9;
+            color: #6d28d9;
         }
 
         .layout {
@@ -106,7 +106,7 @@
 
         /* ============== APPLE-GLASS BASE for every card ============== */
         .card {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(180%);
@@ -115,7 +115,7 @@
         }
         .card.hover:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.06);
         }
 
@@ -126,7 +126,7 @@
             border-bottom: 1px solid var(--hairline);
             margin-bottom: 8px;
             font-size: 12px; font-weight: 700;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             text-transform: uppercase; letter-spacing: 0.18em;
         }
         .rail-empty {
@@ -142,12 +142,12 @@
             transition: background 0.18s, border-left-color 0.18s;
         }
         .rail-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-left-color: rgba(var(--glow-purple), 0.35);
+            background: rgba(255,255,255,0.72);
+            border-left-color: #6d28d9;
         }
         .rail-item.selected {
             background: rgba(var(--glow-purple), 0.10);
-            border-left-color: rgba(var(--glow-purple), 0.85);
+            border-left-color: #6d28d9;
         }
         .rail-time {
             font-size: 12px; font-weight: 700;
@@ -169,7 +169,7 @@
             display: inline-block; margin-top: 4px;
         }
         .rail-mod.in_person { background: rgba(52, 211, 153, 0.10); color: var(--emerald); }
-        .rail-mod.telehealth { background: rgba(var(--glow-purple), 0.14); color: rgba(var(--glow-purple), 0.98); }
+        .rail-mod.telehealth { background: rgba(var(--glow-purple), 0.14); color: #6d28d9; }
 
         /* ============== Main pane ============== */
         .main {
@@ -181,7 +181,7 @@
         .briefing-section h2 {
             margin: 0 0 12px;
             font-weight: 500; font-size: 15px;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             text-transform: uppercase; letter-spacing: 0.18em;
         }
         .briefing-section .empty-note {
@@ -197,7 +197,7 @@
             width: 72px; height: 72px; border-radius: 50%;
             background: rgba(var(--glow-purple), 0.18);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 300; color: rgba(var(--glow-purple), 0.95);
+            font-size: 28px; font-weight: 300; color: #6d28d9;
             overflow: hidden; flex-shrink: 0;
             border: 1px solid rgba(var(--glow-purple), 0.30);
         }
@@ -217,7 +217,7 @@
         .goal-chip {
             font-size: 11px; padding: 4px 10px; border-radius: 999px;
             background: rgba(var(--glow-purple), 0.10);
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             border: 1px solid rgba(var(--glow-purple), 0.30);
         }
         .goal-chip.avoid { background: rgba(239, 68, 68, 0.08); color: var(--red);
@@ -226,7 +226,7 @@
                                 border-color: rgba(251, 191, 36, 0.30); }
         .care-notes {
             margin-top: 10px; padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline); border-radius: 10px;
             font-size: 13px; color: var(--ink-mute); font-style: italic;
         }
@@ -235,7 +235,7 @@
         .lede-card {
             padding: 22px 26px;
             background: rgba(var(--glow-purple), 0.07);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
         }
         .lede-card .lede-text {
             font-size: 16px; line-height: 1.5; color: var(--ink);
@@ -248,7 +248,7 @@
         }
         .watch-chip {
             font-size: 12.5px; padding: 6px 12px; border-radius: 8px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             display: flex; gap: 8px; align-items: center;
         }
@@ -280,13 +280,13 @@
         .qlist li::before {
             content: "→";
             position: absolute; left: 0; top: 8px;
-            color: rgba(var(--glow-purple), 0.9); font-weight: 700;
+            color: #6d28d9; font-weight: 700;
         }
 
         /* Personal touchpoints */
         .ptouch {
             padding: 12px 14px; border-radius: 10px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             margin-bottom: 8px;
         }
@@ -294,7 +294,7 @@
             font-size: 11.5px; font-weight: 700; color: var(--ink-soft);
             text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 4px; }
         .ptouch .ptouch-pin {
-            font-size: 10px; color: rgba(var(--glow-purple), 0.95);
+            font-size: 10px; color: #6d28d9;
         }
         .ptouch .ptouch-summary {
             font-size: 14px; color: var(--ink); margin: 0 0 4px;
@@ -305,7 +305,7 @@
 
         /* Clinical bands */
         .band { padding: 12px 14px; border-radius: 10px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             margin-bottom: 8px; font-size: 13px;
         }
@@ -332,7 +332,7 @@
         /* Medication watch cards */
         .med-card {
             padding: 12px 14px; border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             margin-bottom: 10px;
         }
@@ -353,7 +353,7 @@
             border-left: 3px solid var(--red);
         }
         .med-match.moderate { background: rgba(251, 191, 36, 0.07); border-left-color: var(--amber); }
-        .med-match.low { background: rgba(255, 255, 255, 0.03); border-left-color: var(--ink-faint); }
+        .med-match.low { background: rgba(255,255,255,0.72); border-left-color: var(--ink-faint); }
         .med-match-head {
             font-size: 11px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.10em; color: var(--ink-soft); margin-bottom: 4px;
@@ -363,7 +363,7 @@
         }
         .tok-chip {
             font-size: 10.5px; padding: 1px 8px; border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.72);
             color: var(--ink); font-weight: 600;
         }
         .med-match-ae { color: var(--ink-mute); font-size: 12.5px; font-style: italic; }
@@ -389,7 +389,7 @@
         /* Documents */
         .doc-row {
             padding: 8px 12px; margin-bottom: 6px; border-radius: 8px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             display: flex; gap: 10px; align-items: center; font-size: 13px;
         }
@@ -397,7 +397,7 @@
             font-size: 10px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.10em; color: var(--ink-soft);
             padding: 2px 8px; border-radius: 999px;
-            background: rgba(255, 255, 255, 0.05); flex-shrink: 0;
+            background: rgba(255,255,255,0.72); flex-shrink: 0;
         }
         .doc-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .doc-meta { color: var(--ink-soft); font-size: 11px; flex-shrink: 0; }
@@ -425,9 +425,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -458,7 +458,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -466,7 +466,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -495,9 +495,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div class="titles">
                 <p class="eyebrow">Mount Zara · Admin</p>
                 <h1>Pre-visit briefings</h1>
-                <p class="lede">AI-synthesized day-of-clinic briefings — one per patient on the
-                    schedule. Pulls from intake, encounters, PROMs, snapshot, personal notes,
-                    medications + openFDA AE matches. Click a name on the left to load.</p>
+                <p class="lede">Everything you need before walking into the room — one page per
+                    patient on today's schedule. Click a name on the left to load.</p>
             </div>
             <div class="toolbar">
                 <label for="date">Date</label>
@@ -506,7 +505,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <button class="range-pill active" data-range="day" type="button">Day</button>
                     <button class="range-pill" data-range="week" type="button">Week</button>
                 </div>
-                <button id="refresh" type="button" title="Refresh">↻</button>
+                <button id="refresh" type="button" title="Refresh">↻ Refresh</button>
             </div>
         </header>
 
@@ -531,6 +530,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             window: null,
             briefings: [],     // raw briefing objects from the window API
             appointments: [],
+            anyAppointments: null,  // null = not checked yet, true/false = answered
             selectedPatientId: null,
             range: "day",
         };
@@ -539,18 +539,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
         function todayISO() {
-            const d = new Date();
-            return d.toISOString().slice(0, 10);
+            // Clinic-local "today", not UTC — toISOString() flips to the wrong
+            // day every evening for a viewer behind UTC. en-CA formats YYYY-MM-DD.
+            return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" })
+                .format(new Date());
         }
         function fmtTime(ms) {
             if (!ms) return "";
             const d = new Date(ms);
-            return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+            // Practice time. He may open this from anywhere; the schedule is
+            // always the clinic's clock.
+            return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit",
+                timeZone: "America/Chicago", timeZoneName: "short" });
         }
         function fmtDate(ms) {
             if (!ms) return "";
             const d = new Date(ms);
-            return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+            return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric",
+                timeZone: "America/Chicago" });
         }
         function esc(s) {
             if (s == null) return "";
@@ -594,9 +600,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (state.selectedPatientId) {
                     loadBriefingForPatient(state.selectedPatientId);
                 } else {
-                    $("#main").innerHTML = `<div class="card placeholder">
-                        No scheduled patients in this window. Try widening the range or
-                        loading a single patient by ID.</div>`;
+                    renderEmptyMain();
                 }
             } catch (e) {
                 rail.innerHTML = `<div class="rail-head">Schedule</div>
@@ -604,11 +608,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         }
 
+        // An empty window and an empty practice are different problems and the
+        // window API cannot tell them apart, so ask once for a wide range.
+        // Returns true / false, or null when the check itself failed.
+        async function hasAnyAppointments() {
+            if (state.anyAppointments !== null) return state.anyAppointments;
+            try {
+                const resp = await fetch("/api/v1/admin/appointments?from=2020-01-01&to=2099-12-31",
+                    { credentials: "include" });
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                state.anyAppointments = (data.appointments || []).length > 0;
+            } catch (e) {
+                return null;
+            }
+            return state.anyAppointments;
+        }
+
+        async function renderEmptyMain() {
+            const any = await hasAnyAppointments();
+            const msg = (any === false)
+                ? 'A briefing is the one page you read before walking into the room — history, prior visits, PROMs and medication flags, assembled per patient. Nothing is booked yet; publish open hours in <a href="/admin/scheduling/">Scheduling</a> so patients can book.'
+                : 'No visits in this window. Switch to Week, or pick another date.';
+            $("#main").innerHTML = `<div class="card placeholder">${msg}` +
+                `<div style="margin-top:12px;"><a href="/admin/patients/">Patient roster</a></div></div>`;
+        }
+
         function renderRail() {
             const rail = $("#rail");
             if (!state.briefings.length) {
                 rail.innerHTML = `<div class="rail-head">Schedule</div>
-                    <div class="rail-empty">No appointments in window.</div>`;
+                    <div class="rail-empty">Nothing booked in this window.</div>`;
                 return;
             }
             // Build rail items keyed by appointment_focus (the earliest appt per patient).
@@ -712,7 +742,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             · ${esc(ap.modality === "telehealth" ? "Telehealth" : "In-person")}
                             · ${esc(ap.duration_min || "")} min</div>
                         ${ap.chief_complaint_summary ? `<div style="margin-top:6px;">CC: ${esc(ap.chief_complaint_summary)}</div>` : ""}
-                        ${ap.doxy_room_url ? `<div style="margin-top:6px;"><a style="color: rgba(var(--glow-purple), 0.95);" href="${esc(ap.doxy_room_url)}" target="_blank">Open Doxy room ↗</a></div>` : ""}
+                        ${ap.doxy_room_url ? `<div style="margin-top:6px;"><a style="color: #6d28d9;" href="${esc(ap.doxy_room_url)}" target="_blank">Open Doxy room ↗</a></div>` : ""}
                     </div>
                 </div>`);
             }
@@ -883,7 +913,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     let status = "clear", statusLabel = "No symptom overlap";
                     if (m.not_found) { status = "notfound"; statusLabel = "Drug not found"; }
                     else if ((m.high_confidence_count || 0) > 0) { status = "match"; statusLabel = `${m.high_confidence_count} match${m.high_confidence_count === 1 ? "" : "es"}`; }
-                    else if (m.matches && m.matches.length) { statusLabel = `${m.matches.length} low-conf`; }
+                    else if (m.matches && m.matches.length) { statusLabel = `${m.matches.length} low-confidence`; }
                     const matches = (m.matches || []).slice(0, 4).map((mm) => {
                         const toks = (mm.matched_tokens || []).map((t) => `<span class="tok-chip">${esc(t)}</span>`).join("");
                         return `<div class="med-match ${esc(mm.confidence)}">
@@ -901,14 +931,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </div>
                         ${m.advisory ? `<div class="med-advisory">${esc(m.advisory)}</div>` : ""}
                         ${matches}
-                        ${m.set_id ? `<div class="med-card-source">openFDA · set ${esc(m.set_id)} · fetched ${esc(fetchedDate)} · matched on ${esc(m.matched_on || "")}</div>` : ""}
+                        ${m.set_id ? `<details class="med-card-source"><summary style="cursor: pointer;">Data source</summary>openFDA · set ${esc(m.set_id)} · fetched ${esc(fetchedDate)} · matched on ${esc(m.matched_on || "")}</details>` : ""}
                     </div>`;
                 }).join("");
 
                 out.push(`<div class="card briefing-section">
                     <h2>Current medications + AE watch</h2>
                     ${rawBands.join("")}
-                    ${watchCards || `<div class="empty-note">No openFDA results loaded. The engine runs on briefing render and writes to drug_label_cache (30-day TTL).</div>`}
+                    ${watchCards || `<div class="empty-note">Medication safety check hasn't finished for this patient yet — it runs automatically when the briefing loads.</div>`}
                 </div>`);
             }
 
@@ -986,8 +1016,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </div>`
                 ).join("");
                 out.push(`<div class="card briefing-section">
-                    <h2>openFDA call log (§3.6 provenance)</h2>
-                    ${calls}
+                    <details>
+                        <summary style="cursor: pointer;"><h2 style="display: inline; text-transform: none; letter-spacing: 0.04em;">Data sources</h2></summary>
+                        ${calls}
+                    </details>
                 </div>`);
             }
 
@@ -1010,5 +1042,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         loadSchedule();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

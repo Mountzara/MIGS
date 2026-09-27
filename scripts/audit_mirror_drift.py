@@ -115,27 +115,32 @@ def check_topic(slug: str) -> dict[str, Any]:
     pub = pub_file.read_text(errors="replace")
     por = por_file.read_text(errors="replace")
 
-    # §0.8.1 KB-anchor manifest present in BOTH
+    # Owner directive 2026-09-02: the build manifest must NOT be on a public
+    # page. It embedded his local filesystem paths, private .docx filenames and
+    # internal document UUIDs. This check used to REQUIRE the manifest; it now
+    # requires its absence on both mirrors, matching audit_no_internal_leakage.py.
     for label, html in (("public", pub), ("portal", por)):
-        has_manifest = "§0.8 KB-anchor manifest" in html or "kb_documents_loaded" in html
+        leaked = ("KB-anchor manifest" in html or "kb_documents_loaded" in html
+                  or "kb_chunks_path" in html or "user_docx_sources" in html)
         result["checks"].append({
-            "name": f"{label} carries §0.8.1 manifest",
-            "pass": has_manifest,
-            "detail": "found" if has_manifest else "MISSING",
+            "name": f"{label} free of build manifests",
+            "pass": not leaked,
+            "detail": "LEAKED build manifest" if leaked else "clean",
         })
-        if not has_manifest:
+        if leaked:
             result["drift"] = True
 
-    # §3.12 disclosure present in BOTH.
+    # Owner directive 2026-09-02: the AI-provenance aside is gone from every
+    # page. What must exist on BOTH mirrors is the medical-advice disclaimer.
     # 2026-08-11 — the aside was renamed mz-ai-disclaimer -> mz-page-note when
     # the owner had the AI-provenance sentence removed ("remove those AI
     # indicators"). Accept either class so the gate keeps enforcing that the
     # disclosure EXISTS on both mirrors, which is what §3.12 is actually for;
     # matching only the old name would have passed a page that quietly lost it.
     for label, html in (("public", pub), ("portal", por)):
-        has_disc = "mz-page-note" in html or "mz-ai-disclaimer" in html
+        has_disc = "mz-eddisclaimer" in html
         result["checks"].append({
-            "name": f"{label} carries §3.12 disclaimer",
+            "name": f"{label} carries the not-medical-advice disclaimer",
             "pass": has_disc,
             "detail": "found" if has_disc else "MISSING",
         })
