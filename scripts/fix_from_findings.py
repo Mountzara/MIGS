@@ -639,7 +639,12 @@ def grounding_pass(W: str, pid: str, h: str, man: dict) -> tuple:
     check. The standards review samples; this does not. (h, remaining)."""
     real = bp.real_from_work(W, sorted(set(bp._carded_pmids(h)) | {bp._pmid_of(m.group(0)) for m in bp.SUP_RE.finditer(h)} - {None}))
     g = bp.grounding_audit(W, h, man)
-    for _round in range(3):
+    # five rounds while each is still repairing: an element faulted a third
+    # time is removed by fix_attributed_text, and with three rounds that third
+    # fault was only ever seen by the final audit, which refused the brief for
+    # one sentence the next round would have taken out (mast-cell, 2026-09-27).
+    # Unchanged sentences replay from the grounding cache.
+    for _round in range(5):
         if not g:
             break
         att = [f for f in g if bp._ATTRIBUTED_FAULT_RE.match(f)]
