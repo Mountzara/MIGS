@@ -5153,6 +5153,18 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
                          "unless it attributes to this paper something its abstract does not say."
                          if pc.endswith(":kb") else "")
                       if card_pm else "")
+        # the site's own prose: a statement of clinical fact or practice is a
+        # claim whether or not it names a study. "Diagnostic venography is the
+        # gold-standard first step … the two are staged separately in
+        # practice" was judged the author's interpretation, so neither its
+        # missing citation nor its invented detail was ever tested — and the
+        # sampling review found it instead (PCS, 2026-09-27)
+        if not card_pm and pc != "headings":
+            attributed += ("\nTHIS IS THE SITE'S OWN PROSE. `claim` is true for ANY statement of clinical fact or practice —"
+                           " what a test, treatment or condition is, how it is done, what is standard, what the evidence"
+                           " shows — whether or not a study is named. `claim` is false only for a question, a transition,"
+                           " a statement about the brief itself, or an opinion explicitly framed as the author's own"
+                           " judgement (\"I read this as…\", \"to me this suggests…\"); a fact stated plainly is not an opinion.")
         _jobs.append((i, frag, card_pm, pc, sents, f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
 appear as ⟦PMID⟧ tokens inside the sentence they belong to.{attributed}
 SENTENCES:
