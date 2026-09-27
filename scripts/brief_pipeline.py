@@ -10206,6 +10206,12 @@ def writer_reject(new: str) -> str:
         return f"patient-directed advice ({m.group(0)[:40]!r})"
     if re.search(r"(?<!CBG/)\bMIGS\b", new):
         return "bare 'MIGS' — write CBG/MIGS"
+    m = SCORING_LANGUAGE_RE.search(new)
+    if m:
+        # S13's scoring words: a deep-dive repair on the GLP-1 brief wrote
+        # "not a settled verdict" after the trend conform step had run, and
+        # the gate refused the brief for a word no writer should produce
+        return f"scoring language ({m.group(0)!r})"
     return ""
 
 
