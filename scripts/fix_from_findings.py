@@ -124,6 +124,16 @@ def main():
     meta = {q: bp._paper_record(q, r)["meta_verified"] for q, r in real.items() if bp._paper_record(q, r)["meta_verified"]}
     h, _order = bp._number_final_page(W, h, meta)
     h = bp.tidy_prose_spacing(h)
+    # the final assembly's own hygiene, as finish_and_audit runs it: no build
+    # comment (W25 shipped a manifest comment with an internal path), no bare
+    # "<" in a popover, no duplicate popover or element id; and the fixed
+    # footer says what it means without "Always"
+    h = bp.strip_build_comments(h)
+    h = re.sub(r"<!--[\s\S]*?-->", "", h)
+    h = bp.escape_bare_angles(h)
+    h = bp.dedupe_popover_ids(h)
+    h = bp.dedupe_element_ids(h)
+    h = re.sub(r"\bAlways validate\s+findings against the primary source", "Validate findings against the primary source", h)
     print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_abs} never/always, {n_st} empty section(s)")
 
     # deterministic gates before the review is paid for
