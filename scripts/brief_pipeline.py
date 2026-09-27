@@ -10248,7 +10248,9 @@ def _looks_broken(t: str) -> bool:
     """A rewritten sentence that would read as damage: a stop after a function
     word ("developed in the. Department of…"), no terminal stop, a lowercase
     opening, a doubled space or an empty clause."""
-    if not t or len(t) < 15:
+    if not t or len(t) < 8:
+        # a rewrite of a short sentence is short ("It was never high." →
+        # "It stayed low.", refused at a floor of 15 as damaged prose — W34)
         return True
     if not re.search(r"[.!?][\"')\]\u201d\u2019]?$", t.strip()):
         return True
@@ -10305,6 +10307,12 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
     runs = []
     for part in parts:
         runs += [x.strip() for x in re.findall(r"[A-Za-z][A-Za-z0-9 ,'\u2019()%=.–-]{30,}", part)]
+    # a short quoted sentence ("It was never high.") has no 31-character run,
+    # so it was never a site and its repair did nothing, in silence (W34)
+    for part in parts:
+        short = re.sub(r"\s+", " ", part).strip().strip("\"'\u201c\u201d\u2018\u2019")
+        if 12 <= len(short) <= 30 and re.match(r"[A-Za-z]", short):
+            runs.append(short)
     runs = sorted(dict.fromkeys(runs), key=len, reverse=True)
     sites: list = []
     for run in runs[:14]:
@@ -10430,12 +10438,32 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
         # every figure the abstract states is "no source states" (W29)
         cited = [q for q in dict.fromkeys(
             _pmid_of(m.group(0)) for a, b, _ in sites for m in SUP_RE.finditer(h[a:_after_run(h, b)])) if q]
+        ctx_label = "THE PAPERS THESE SENTENCES CITE"
+        if not cited:
+            # a sentence with no marker of its own sits in a paragraph whose
+            # markers say what it is about ("It was never high." follows the
+            # TVUS-accuracy sentence and its marker); with no abstract in the
+            # prompt the writer refused to rewrite clinical text blind (W34)
+            near = []
+            for a, b, _ in sites:
+                opens = [m.start() for m in re.finditer(r"<(?:p|li|dd|td)\b", h[max(0, a - 8000):a])]
+                pa = max(0, a - 8000) + opens[-1] if opens else a
+                closes = [x for x in (h.find("</p>", b), h.find("</li>", b), h.find("</dd>", b), h.find("</td>", b)) if x > 0]
+                pb = min(closes) if closes else _after_run(h, b)
+                near += [_pmid_of(m.group(0)) for m in SUP_RE.finditer(h[pa:pb])]
+            if not near:
+                for ps in _prose_passages(h):
+                    if any(ps.start(1) <= a <= ps.end(1) for a, b, _ in sites):
+                        near += [_pmid_of(m.group(0)) for m in SUP_RE.finditer(ps.group(1))]
+            cited = [q for q in dict.fromkeys(near) if q][:6]
+            ctx_label = "THE PAPERS THE SURROUNDING PARAGRAPH CITES (the quoted sentences carry no marker of their own)"
         papers = real_from_work(W, cited)
         src = "\n".join(
             f"PAPER {q} — {papers[q].get('title', '')}\nAUTHORS: {papers[q].get('authors', '')}"
             f"\nABSTRACT: {(papers[q].get('abstract') or '')[:2600]}"
             for q in cited if q in papers)
-        ctx = f"\n\nTHE PAPERS THESE SENTENCES CITE:\n{src}" if src else ""
+        ctx = (f"\n\n{ctx_label}:\n{src}" if src else
+               "\n\n(No paper is cited near these sentences: change only the wording the defect concerns and state no new fact.)")
         if counts:
             ctx += ("\n\nWHAT THE PAGE ACTUALLY HOLDS (measured, not claimed): "
                     + json.dumps({k: counts[k] for k in (
