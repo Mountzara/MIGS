@@ -1737,12 +1737,15 @@ def _author_one_paper(args_t: tuple) -> tuple:
 READ (Read tool): {W}papers/{pmid}.json — "abstract" is the ground truth, "pending" lists the keys to write.
 {piece_objection(W, pmid)}
 {AUTHOR_RULES}
+NOTHING THE ABSTRACT DOES NOT STATE: no country, city, hospital or number of sites; no design detail (single-center, crossover type, statistical model) the abstract does not name; no background claim about the condition or its care beyond what the abstract says. Where a slot (population, setting, design, comparator, equity) is not answered by the abstract, write "Not stated in the abstract." A detail you infer is an invented fact to the reader.
 SECTION SPECS:{SECTION_SPECS}
 Return ONLY {{"sections": {{<key>: "<inner html>", …}}}} for exactly the keys in "pending".""")
     if not draft or not draft.get("sections"):
         return pmid, None, "author produced nothing"
     verdict = _claude(f"""You are the adversarial reviewer for a physician-authored journal-club analysis. Default to REFUTE.
 READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
+REFUSE any country, hospital, site count, design detail or background claim the abstract does not state (W25's
+sections said "Chinese hospitals", "single-center", "reference-scaled bioequivalence" — none in the abstracts).
 Check for: any number that is not stated in the abstract, including one the author computed from figures that are (a total, a percentage, a difference); anything addressed to a patient as advice, in any wording (the Monday, applicability and
 equity sections drift into it most); any number, population, comparator or outcome absent from that abstract; overstatement OR
 understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
@@ -2551,7 +2554,7 @@ _ATTRIBUTED_FAULT_RE = re.compile(r'^\[(card|dialog):(\d{5,9})(?::kb)?\] (.+?): 
 # epidemiologist's comparator group ("never-users" / "never users"), a term
 # of art and not an absolute (the Million Women Study's comparator was
 # reported as the clinician's "never")
-_ABSOLUTE_WORD_RE = re.compile(r"\b(?:never|always)\b(?![ -]?users?\b)", re.I)
+_ABSOLUTE_WORD_RE = re.compile(r"\b(?:never|always)\b(?!-\w)(?!\s+(?:users?|smokers?|married|deployed|pregnant|treated|exposed)\b)", re.I)
 
 
 def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
@@ -2615,7 +2618,9 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
               if len(needle) < 12:
                   continue
               found = False
-              for ordinal, em in enumerate(re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked)):
+              # innermost elements: an outer <li> holding a <p> used to be matched,
+              # skipped as nested, and its inner <p> never looked at (W21's Q&A)
+              for ordinal, em in enumerate(re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>((?:(?!<(?:p|li|dd|dt|td|blockquote|section)\b)[\s\S])*?)</\1>", blanked)):
                   if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
                       continue
                   inner = cont[em.start(2):em.end(2)]

@@ -150,6 +150,9 @@ def main():
     h, n_abs = bp.fix_absolute_words(W, h, real)
     h, n_st = bp.author_stub_sections(W, h, real)
     h, _b = bp.cite_uncited_cards(W, h, real)
+    # a removed sentence that was a whole bullet leaves an empty <li> (PCS: four)
+    h, n_li = bp.drop_empty_list_items(h)
+    n_li and print(f"  {n_li} emptied list item(s) removed")
     h = bp.recount_headings(h)
     h, n_tot = bp.fix_document_totals(W, h, real)      # prose totals ("72 papers across 9 topics")
     n_tot and print(f"  {n_tot} total(s) in the prose rebuilt from what the page holds")
@@ -221,9 +224,36 @@ def publish():
     post = bp.curl_json(f"{bp.BASE}/api/posts/{pid}"); post = post.get("post", post)
     fmt = "trend" if post.get("kind") == "blog" else "weekly"
     man = {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}
+    real = bp.real_from_work(W, sorted(set(bp._carded_pmids(h)) | {bp._pmid_of(m.group(0)) for m in bp.SUP_RE.finditer(h)} - {None}))
     g = bp.grounding_audit(W, h, man)
+    # the sentence-level audit's findings are repaired and re-audited — the
+    # same card/deep-dive, prose and hover-card repairs the pipeline uses
+    for _round in range(3):
+        if not g:
+            break
+        att = [f for f in g if bp._ATTRIBUTED_FAULT_RE.match(f)]
+        pro = [f for f in g if bp._PROSE_FAULT_RE.match(f)]
+        pop = [f for f in g if bp._POPOVER_FAULT_RE.match(f)]
+        n_a = n_p = n_o = 0
+        if att:
+            h, n_a = bp.fix_attributed_text(W, h, att, real)
+        if pro:
+            h, n_p = bp.repair_prose_findings(W, h, pro, real)
+        if pop:
+            h, n_o = bp.fix_popover_findings(W, h, pop, real)
+        print(f"  grounding round {_round + 1}: {len(g)} finding(s); repaired {n_a} card/deep-dive, {n_p} prose, {n_o} hover card(s)")
+        if not (n_a or n_p or n_o):
+            break
+        h, _li = bp.drop_empty_list_items(h)
+        meta = {q: bp._paper_record(q, r)["meta_verified"] for q, r in real.items() if bp._paper_record(q, r)["meta_verified"]}
+        h, _o = bp._number_final_page(W, h, meta)
+        faults = bp.reader_prose_faults(h)
+        if faults:
+            sys.exit(f"{pid}: a grounding repair broke a gate: {faults[:3]}")
+        open(W + "fixed.html", "w", encoding="utf-8").write(h)
+        g = bp.grounding_audit(W, h, man)
     if g:
-        print(f"  GROUNDING: {len(g)} sentence(s) failed — not publishing")
+        print(f"  GROUNDING: {len(g)} sentence(s) still failing — not publishing")
         for x in g[:15]:
             print("   ", x[:220])
         sys.exit(3)
