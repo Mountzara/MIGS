@@ -2585,7 +2585,10 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
         if not conts:
             continue
         missing: set = set()
-        for cm in conts:
+        # last card first: each splice below rewrites h, and a card earlier in
+        # the page keeps valid offsets only if everything after it is done
+        # (splicing first-to-last nested a card inside another's opening tag)
+        for cm in sorted(conts, key=lambda x: -x.start()):
           cont = cm.group(0)
           blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
           edits, taken = [], set()
@@ -2639,7 +2642,7 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                       break
                   shape = ("THIS IS A DATA CELL of a summary table (Design, Sample, Comparator, Outcome…): return a short value — a phrase "
                            "or one plain sentence, no first person, no commentary — stating exactly what the abstract gives. If the abstract "
-                         "does not state it (no design named, no sample size, no comparator), answer exactly: Not stated in the abstract."
+                         "says nothing at all about it — read it all first; a treatment it discusses IS its intervention — answer exactly: Not stated in the abstract."
                            if is_cell else
                            "THIS IS A PARAGRAPH: keep its point and its length (1-4 sentences), first person, Dr. Mabini's DO + CBG/MIGS voice.")
                   new_plain, feedback = None, ""
