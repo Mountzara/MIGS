@@ -3162,7 +3162,11 @@ def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
         if q not in repairs:
             pf = W + f"papers/{q}.json"
             if os.path.exists(pf):
-                a = json.load(open(pf)).get("abstract") or ""
+                # PubMed's record first: a papers file an older writer left with
+                # pubmed_abstract alone had an empty "abstract", so the page's
+                # legacy, double-escaped abstract was never rewritten (W29)
+                _pj = json.load(open(pf))
+                a = _pj.get("pubmed_abstract") or _pj.get("abstract") or ""
                 if len(a) > 120 and not re.search(r"pending\s+review", a, re.I):
                     repairs[q] = a
     repaired_n = 0
@@ -3586,7 +3590,10 @@ def _vis_text(h: str) -> str:
 # abstract body nests <div>s and a popover title can hold a <span>.
 _PAPER_TEXT_RE = re.compile(
     r"<!--[\s\S]*?-->"
-    r"|<(?P<raw>script|style)\b[^>]*>[\s\S]*?</(?P=raw)\s*>"
+    # the page's fixed footer ("…Always validate findings against the primary
+    # source…") is template chrome, not the clinician's prose (W29: S10's word
+    # ban refused the brief for it)
+    r"|<(?P<raw>script|style|footer)\b[^>]*>[\s\S]*?</(?P=raw)\s*>"
     r"|<(?P<tag>details|div|section|h2|h3|p|span|ol)\b(?P<attrs>[^>]*)>", re.I)
 
 # Which (tag, class) pairs are the paper's; every <details> is a card's
