@@ -185,6 +185,8 @@ def main():
     h, n_li = bp.drop_empty_list_items(h)
     n_li and print(f"  {n_li} emptied list item(s) removed")
     h = bp.recount_headings(h)
+    h, n_rc = bp.recount_section_headings(h)
+    n_rc and print(f"  {n_rc} section heading count(s) recounted from their cards")
     h, n_tot = bp.fix_document_totals(W, h, real)      # prose totals ("72 papers across 9 topics")
     n_tot and print(f"  {n_tot} total(s) in the prose rebuilt from what the page holds")
     h, n_cnt = bp.refresh_page_counts(h)

@@ -2899,6 +2899,15 @@ THE PAPERS (pmid, title, abstract): {json.dumps(papers, ensure_ascii=False)[:300
 Return ONLY {{"text": "<rewritten>"}}""")
             new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
             new_toks = re.findall(r"⟦(\d+)⟧", new)
+            if not marks and new and not new_toks and "claim without a citation" in m.group(2):
+                # the model found no paper the brief holds that supports it: an
+                # uncited claim with no possible citation goes (GLP-1: "No major
+                # society recommends…", a guideline the brief does not hold)
+                if _usable_span(h, a, b):
+                    h = _replace_span(h, a, b, "")
+                    done += 1
+                    print(f"  placement: removed a claim no paper in the brief supports: {plain[:90]!r}")
+                continue
             ok = bool(new) and (sorted("⟦%s⟧" % t for t in new_toks) == sorted(re.findall(r"⟦\d+⟧", plain)) if marks
                                 else (bool(new_toks) and all(t in allowed for t in new_toks)))
             if not ok:
@@ -3148,6 +3157,21 @@ Reply with ONLY {{"sentences": [<number>, ...]}}""", timeout_s=600)
         except (ValueError, IndexError, TypeError):
             continue
     return out
+
+
+def recount_section_headings(h: str) -> tuple:
+    """A section heading that states a count — "Foundational papers on … (3)" —
+    says how many cite cards its own section holds (GLP-1: 3 in the heading,
+    1 card under it, after curation). (h, changed)."""
+    n = 0
+    for m in list(re.finditer(r'(<h2 class="mz-section-title">)([\s\S]*?)\((\d+)\)(\s*</h2>)', h))[::-1]:
+        end = h.find("</section>", m.end())
+        sec = h[m.end():end if end > 0 else len(h)]
+        cards = len({(_pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]) for c in CARD_RE.findall(sec)} - {None})
+        if cards and str(cards) != m.group(3):
+            h = h[:m.start(3)] + str(cards) + h[m.end(3):]
+            n += 1
+    return h, n
 
 
 def fix_invented_experience(W: str, h: str) -> tuple:
