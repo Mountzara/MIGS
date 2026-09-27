@@ -2575,117 +2575,121 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
         if not abstract:
             continue
         if kind == "card":
-            cm = (re.search(r'<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-%s"[\s\S]*?</article>' % pm, h)
-                  or next((x for x in CARD_RE.finditer(h) if f"openDeepDive('dd-{pm}')" in x.group(0)), None))
+            # every card of the paper: a paper carded twice has ids mz-cite-N
+            # and mz-cite-N-2, and the faulted text sat in the second (PCS)
+            conts = [x for x in CARD_RE.finditer(h)
+                     if re.search(r'id="mz-cite-%s(?:-\d+)?"' % pm, x.group(0)) or f"openDeepDive('dd-{pm}')" in x.group(0)]
         else:
-            cm = re.search(r'<dialog[^>]*\bid="dd-%s"[\s\S]*?</dialog>' % pm, h)
-        if not cm:
+            dm = re.search(r'<dialog[^>]*\bid="dd-%s"[\s\S]*?</dialog>' % pm, h)
+            conts = [dm] if dm else []
+        if not conts:
             continue
-        cont = cm.group(0)
-        blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
-        edits, taken = [], set()
-        for what, shown, note in items:
-            needle = _norm(shown)[:40]
-            if len(needle) < 12:
-                continue
-            found = False
-            for ordinal, em in enumerate(re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked)):
-                if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
-                    continue
-                inner = cont[em.start(2):em.end(2)]
-                marks = list(SUP_RE.finditer(inner))
-                tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", inner)
-                plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
-                hay = _norm(re.sub(r"⟦\d+⟧", "", plain))
-                if em.group(1) == "dd":
-                    # the auditor reads a definition list's label and value as one
-                    # sentence ("Design Editorial commentary."); the value alone
-                    # never held that text and the cell was skipped in silence
-                    # (SKYLIGHT 1, a phase-3 trial, stayed "Editorial commentary")
-                    dt = re.search(r"<dt\b[^>]*>([\s\S]*?)</dt>\s*$", cont[:em.start()])
-                    if dt:
-                        hay = _norm(re.sub(r"<[^>]+>", " ", dt.group(1)) + " " + hay)
-                if needle not in hay:
-                    continue
-                found = True
-                is_cell = em.group(1) in ("dd", "dt", "td")
-                # the tally is per ELEMENT, not per wording: a sentence the
-                # model keeps rewording is faulted under new words each round
-                tkey = f"{kind}:{pm}:{em.group(1)}#{ordinal}"
-                tally[tkey] = tally.get(tkey, 0) + 1
-                remove_it = tally[tkey] >= 3
-                if remove_it:
-                    # faulted three times: the text goes. A cell says so plainly;
-                    # a paragraph loses the faulted sentence and keeps the rest
-                    # (and its markers, which travel with the sentences kept)
-                    if is_cell:
-                        rebuilt = "Not stated in the abstract."
-                    else:
-                        keep_s = [x for x in re.split(r"(?<=[.!?])\s+", plain) if _norm(x)[:40] != needle and needle not in _norm(x)]
-                        pieces = re.split(r"(⟦\d+⟧)", " ".join(keep_s))
-                        marks_iter = iter(marks)
-                        by_pm2: dict = {}
-                        for x in marks:
-                            by_pm2.setdefault(_pmid_of(x.group(0)), []).append(x.group(0))
-                        rebuilt = "".join(by_pm2[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm2.get(x[1:-1]) else H.escape(x, quote=False) for x in pieces).strip()
-                    print(f"  {kind} {pm}: faulted a third time — removed: {needle!r}")
-                    edits.append((em.start(2), em.end(2), rebuilt))
-                    taken.add(em.start(2))
-                    break
-                shape = ("THIS IS A DATA CELL of a summary table (Sample, Comparator, Outcome…): return a short value — a phrase "
-                         "or one plain sentence, no first person, no commentary — stating the figure exactly as the abstract gives it."
-                         if is_cell else
-                         "THIS IS A PARAGRAPH: keep its point and its length (1-4 sentences), first person, Dr. Mabini's DO + CBG/MIGS voice.")
-                new_plain, feedback = None, ""
-                for attempt in range(2):
-                    v = _ask_cached(W, "attributed_fix", f"""Rewrite ONE piece of a clinician's journal-club analysis of a paper so that it says only what the
-paper's abstract supports. It sits in the {'cite card' if kind == 'card' else 'deep-dive analysis'} for this paper and is attributed
-to it by its container, so it needs no citation of its own.
-{shape}
-THE PAPER: {paper.get('title', '')} — {paper.get('authors', '')} · {paper.get('journal', '')} · {paper.get('year', '')}
-THE ABSTRACT (the ONLY source of any figure, population, comparator or finding):
-{abstract[:9000]}
-THE TEXT: {json.dumps(plain, ensure_ascii=False)}
-WHAT AN AUDITOR FOUND WRONG WITH IT: {what} — {note}
-RULES: state only figures the abstract gives, exactly as it gives them — drop or make qualitative any
-figure it does not state. No "never"/"always" as clinical absolutes. Address no patient ("you should…",
-"take…"). Write "CBG/MIGS", never bare "MIGS". Plain text, no markup, no PMID, no author-year bracket.
-Every ⟦token⟧ in the text is a citation marker: keep each one exactly where its claim is, verbatim, and
-add none.{feedback}
-Return ONLY {{"text": "<rewritten text>"}}""")
-                    cand = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
-                    if not cand:
-                        feedback = "\nA PREVIOUS ATTEMPT RETURNED NOTHING."
-                        continue
-                    if sorted(re.findall(r"⟦\d+⟧", cand)) != sorted(re.findall(r"⟦\d+⟧", plain)):
-                        feedback = "\nA PREVIOUS ATTEMPT changed the citation tokens; keep exactly the tokens the text has."
-                        continue
-                    cb = re.sub(r"\s+([.,;:])", r"\1", re.sub(r"\s+", " ", re.sub(r"⟦\d+⟧", " ", cand))).strip()
-                    judged = cb if not is_cell else (cb.rstrip(".") + ".")[:1].upper() + (cb.rstrip(".") + ".")[1:]
-                    bad = writer_reject(judged)
-                    if not bad and is_cell and re.search(r"\b(?:I|my|we|our)\b", cb):
-                        bad = "first person in a data cell"
-                    if bad:
-                        feedback = f"\nA PREVIOUS ATTEMPT WAS REFUSED for: {bad}. Write one free of it."
-                        continue
-                    new_plain = cand
-                    break
-                if new_plain is None:
-                    print(f"  {kind} {pm}: the text could not be rewritten from the abstract — left for the gate: {needle!r}")
-                    break
-                pieces = re.split(r"(⟦\d+⟧)", new_plain)
-                marks_iter = iter(marks)
-                rebuilt = "".join(next(marks_iter).group(0) if re.fullmatch(r"⟦\d+⟧", x) else H.escape(x, quote=False) for x in pieces)
-                edits.append((em.start(2), em.end(2), rebuilt))
-                taken.add(em.start(2))
-                break
-            if not found:
-                print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
-        for a, b, new in sorted(edits, reverse=True):
-            cont = cont[:a] + new + cont[b:]
-            done += 1
-        if edits:
-            h = h[:cm.start()] + cont + h[cm.end():]
+        for cm in conts:
+          cont = cm.group(0)
+          blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
+          edits, taken = [], set()
+          for what, shown, note in items:
+              needle = _norm(shown)[:40]
+              if len(needle) < 12:
+                  continue
+              found = False
+              for ordinal, em in enumerate(re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked)):
+                  if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
+                      continue
+                  inner = cont[em.start(2):em.end(2)]
+                  marks = list(SUP_RE.finditer(inner))
+                  tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", inner)
+                  plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
+                  hay = _norm(re.sub(r"⟦\d+⟧", "", plain))
+                  if em.group(1) == "dd":
+                      # the auditor reads a definition list's label and value as one
+                      # sentence ("Design Editorial commentary."); the value alone
+                      # never held that text and the cell was skipped in silence
+                      # (SKYLIGHT 1, a phase-3 trial, stayed "Editorial commentary")
+                      dt = re.search(r"<dt\b[^>]*>([\s\S]*?)</dt>\s*$", cont[:em.start()])
+                      if dt:
+                          hay = _norm(re.sub(r"<[^>]+>", " ", dt.group(1)) + " " + hay)
+                  if needle not in hay:
+                      continue
+                  found = True
+                  is_cell = em.group(1) in ("dd", "dt", "td")
+                  # the tally is per ELEMENT, not per wording: a sentence the
+                  # model keeps rewording is faulted under new words each round
+                  tkey = f"{kind}:{pm}:{em.group(1)}#{ordinal}"
+                  tally[tkey] = tally.get(tkey, 0) + 1
+                  remove_it = tally[tkey] >= 3
+                  if remove_it:
+                      # faulted three times: the text goes. A cell says so plainly;
+                      # a paragraph loses the faulted sentence and keeps the rest
+                      # (and its markers, which travel with the sentences kept)
+                      if is_cell:
+                          rebuilt = "Not stated in the abstract."
+                      else:
+                          keep_s = [x for x in re.split(r"(?<=[.!?])\s+", plain) if _norm(x)[:40] != needle and needle not in _norm(x)]
+                          pieces = re.split(r"(⟦\d+⟧)", " ".join(keep_s))
+                          marks_iter = iter(marks)
+                          by_pm2: dict = {}
+                          for x in marks:
+                              by_pm2.setdefault(_pmid_of(x.group(0)), []).append(x.group(0))
+                          rebuilt = "".join(by_pm2[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm2.get(x[1:-1]) else H.escape(x, quote=False) for x in pieces).strip()
+                      print(f"  {kind} {pm}: faulted a third time — removed: {needle!r}")
+                      edits.append((em.start(2), em.end(2), rebuilt))
+                      taken.add(em.start(2))
+                      break
+                  shape = ("THIS IS A DATA CELL of a summary table (Sample, Comparator, Outcome…): return a short value — a phrase "
+                           "or one plain sentence, no first person, no commentary — stating the figure exactly as the abstract gives it."
+                           if is_cell else
+                           "THIS IS A PARAGRAPH: keep its point and its length (1-4 sentences), first person, Dr. Mabini's DO + CBG/MIGS voice.")
+                  new_plain, feedback = None, ""
+                  for attempt in range(2):
+                      v = _ask_cached(W, "attributed_fix", f"""Rewrite ONE piece of a clinician's journal-club analysis of a paper so that it says only what the
+  paper's abstract supports. It sits in the {'cite card' if kind == 'card' else 'deep-dive analysis'} for this paper and is attributed
+  to it by its container, so it needs no citation of its own.
+  {shape}
+  THE PAPER: {paper.get('title', '')} — {paper.get('authors', '')} · {paper.get('journal', '')} · {paper.get('year', '')}
+  THE ABSTRACT (the ONLY source of any figure, population, comparator or finding):
+  {abstract[:9000]}
+  THE TEXT: {json.dumps(plain, ensure_ascii=False)}
+  WHAT AN AUDITOR FOUND WRONG WITH IT: {what} — {note}
+  RULES: state only figures the abstract gives, exactly as it gives them — drop or make qualitative any
+  figure it does not state. No "never"/"always" as clinical absolutes. Address no patient ("you should…",
+  "take…"). Write "CBG/MIGS", never bare "MIGS". Plain text, no markup, no PMID, no author-year bracket.
+  Every ⟦token⟧ in the text is a citation marker: keep each one exactly where its claim is, verbatim, and
+  add none.{feedback}
+  Return ONLY {{"text": "<rewritten text>"}}""")
+                      cand = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
+                      if not cand:
+                          feedback = "\nA PREVIOUS ATTEMPT RETURNED NOTHING."
+                          continue
+                      if sorted(re.findall(r"⟦\d+⟧", cand)) != sorted(re.findall(r"⟦\d+⟧", plain)):
+                          feedback = "\nA PREVIOUS ATTEMPT changed the citation tokens; keep exactly the tokens the text has."
+                          continue
+                      cb = re.sub(r"\s+([.,;:])", r"\1", re.sub(r"\s+", " ", re.sub(r"⟦\d+⟧", " ", cand))).strip()
+                      judged = cb if not is_cell else (cb.rstrip(".") + ".")[:1].upper() + (cb.rstrip(".") + ".")[1:]
+                      bad = writer_reject(judged)
+                      if not bad and is_cell and re.search(r"\b(?:I|my|we|our)\b", cb):
+                          bad = "first person in a data cell"
+                      if bad:
+                          feedback = f"\nA PREVIOUS ATTEMPT WAS REFUSED for: {bad}. Write one free of it."
+                          continue
+                      new_plain = cand
+                      break
+                  if new_plain is None:
+                      print(f"  {kind} {pm}: the text could not be rewritten from the abstract — left for the gate: {needle!r}")
+                      break
+                  pieces = re.split(r"(⟦\d+⟧)", new_plain)
+                  marks_iter = iter(marks)
+                  rebuilt = "".join(next(marks_iter).group(0) if re.fullmatch(r"⟦\d+⟧", x) else H.escape(x, quote=False) for x in pieces)
+                  edits.append((em.start(2), em.end(2), rebuilt))
+                  taken.add(em.start(2))
+                  break
+              if not found:
+                  print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
+          for a, b, new in sorted(edits, reverse=True):
+              cont = cont[:a] + new + cont[b:]
+              done += 1
+          if edits:
+              h = h[:cm.start()] + cont + h[cm.end():]
     json.dump(tally, open(tally_path, "w"))
     return h, done
 
