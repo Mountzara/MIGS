@@ -2584,6 +2584,7 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
             conts = [dm] if dm else []
         if not conts:
             continue
+        missing: set = set()
         for cm in conts:
           cont = cm.group(0)
           blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
@@ -2684,12 +2685,16 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                   taken.add(em.start(2))
                   break
               if not found:
-                  print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
+                  missing.add(needle)
+              else:
+                  missing.discard(needle)
           for a, b, new in sorted(edits, reverse=True):
               cont = cont[:a] + new + cont[b:]
               done += 1
           if edits:
               h = h[:cm.start()] + cont + h[cm.end():]
+        for needle in sorted(missing):
+            print(f"  {kind} {pm}: the audited text was not found in any paragraph or cell — not repaired: {needle!r}")
     json.dump(tally, open(tally_path, "w"))
     return h, done
 
