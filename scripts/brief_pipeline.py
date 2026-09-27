@@ -3005,6 +3005,11 @@ THE PAPERS (pmid, title, abstract): {json.dumps(papers, ensure_ascii=False)[:300
 Return ONLY {{"text": "<rewritten>"}}""")
             new = re.sub(r"\s+", " ", str((v or {}).get("text") or "")).strip()
             new_toks = re.findall(r"⟦(\d+)⟧", new)
+            if new and marks and new == re.sub(r"\s+", " ", plain).strip():
+                # the model finds the citations already placed: not a repair,
+                # and said so (five silent rounds on W25)
+                print(f"  placement: citations already placed, left as they are: {plain[:70]!r}")
+                continue
             if not marks and not new_toks and "claim without a citation" in m.group(2) and v is not None:
                 # an empty text is the model dropping the claim, as the rule
                 # tells it to when no listed paper supports it (mast-cell:
@@ -3044,6 +3049,7 @@ Return ONLY {{"text": "<rewritten>"}}""")
                               for x in pieces)
             h = _replace_span(h, a, b, rebuilt, raw=True)
             done += 1
+            print(f"  placement: citations placed after their claims: {plain[:70]!r}")
     return h, done
 
 
@@ -3096,9 +3102,18 @@ def repair_prose_findings(W: str, h: str, faults: list, real: dict, strict: bool
     defects = []
     for f in faults:
         m = _PROSE_FAULT_RE.match(f)
-        if not m or "citation does not follow each claim" in m.group(2) or "claim without a citation" in m.group(2):
+        if not m:
             continue
-        what = f"{m.group(2)} — {m.group(4)}"
+        flags = m.group(2)
+        # a placement-only fault is fix_placement's; a fault that ALSO says
+        # the sentence is unsupported (or preclinical-as-human, or advice)
+        # needs the content repair too — W25's "Non-bladder gynecologic
+        # disorders are frequently misdiagnosed…" carried both flags and
+        # only ever had its marker re-placed
+        if ("citation does not follow each claim" in flags or "claim without a citation" in flags) \
+                and not re.search(r"not supported|preclinical|advice|provenance|internal", flags):
+            continue
+        what = f"{flags} — {m.group(4)}"
         if remove and "not supported" in m.group(2):
             # the wording that sends repair_from_defects down its remove-without-
             # rewrite branch: after two rewrites the claim is still not in any
@@ -3551,6 +3566,7 @@ def final_assembly(W: str, h: str, real: dict, fmt: str) -> str:
     h = renumber_list_labels(h)
     h, _ = canonical_practice_name(h)
     h, _ = drop_bracket_pseudo_citations(h)
+    h, _ = dedupe_run_markers(h)         # "…this week⁵ ⁵." was faulted every round (W25)
     if fmt == "trend":
         h, _ = retire_verdict_gauge(h)
         h, _ = rebuild_pyramid_from_papers(h)
@@ -5281,7 +5297,13 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             # the one number that matters.
             if r.get("claim") and r.get("supported") is False and (r.get("cited") or card_pm):
                 bad.append("not supported by the paper this text is attributed to")
-            if r.get("placement") is False and not card_pm and pc != "headings":
+            n_distinct = len(set(re.findall(r"\u27e6(\d+)\u27e7", sn)))
+            if r.get("placement") is False and not card_pm and pc != "headings" and n_distinct != 1:
+                # one paper's marker on a sentence about that one paper is
+                # placed by construction: the auditor faulted "the final
+                # clause" of such sentences every round on W25, the placement
+                # rewrite rightly returned them unchanged, and the cached
+                # verdict replayed the fault five times
                 bad.append("a citation does not follow each claim in the sentence")
             # A dose is NEVER a grounding fault on a brief. S7: "These briefs are
             # CLINICIAN-facing journal club material, so a study's doses are
