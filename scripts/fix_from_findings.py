@@ -236,6 +236,15 @@ def main():
             print("   ", x[:200])
         sys.exit(1)
 
+    # the exhaustive sentence-level pass before the sampling review
+    h, g = grounding_pass(W, pid, h, {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []})
+    open(W + "fixed.html", "w", encoding="utf-8").write(h)
+    if g:
+        print(f"  GROUNDING: {len(g)} sentence(s) still failing after repair — not reviewed")
+        for x in g[:12]:
+            print("   ", x[:220])
+        sys.exit(3)
+    print("  grounding: every sentence supported by its cited abstract")
     # the review: one reader, THE STANDARDS, the fixed page
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
@@ -252,25 +261,12 @@ def main():
     print("  REVIEW: every applicable standard met — ready to publish")
 
 
-def publish():
-    """Publish the reviewed page. The server accepts a body only with a receipt
-    recording BOTH a passed standards audit and a passed sentence-level
-    grounding audit for that exact body — so the grounding audit runs here on
-    the fixed page, and the receipt records only what actually ran."""
-    import datetime, hashlib, subprocess
-    pid = sys.argv[1]
-    W = os.path.join(bp.SCRATCH, "renumber", pid) + "/"
-    review = json.load(open(W + "fixed.review.json")) if os.path.exists(W + "fixed.review.json") else {"unmet": ["no review on record"]}
-    if review.get("unmet"):
-        sys.exit(f"{pid}: the review has unmet standards — not publishing: {review['unmet'][:2]}")
-    h = open(W + "fixed.html", encoding="utf-8").read()
-    post = bp.curl_json(f"{bp.BASE}/api/posts/{pid}"); post = post.get("post", post)
-    fmt = "trend" if post.get("kind") == "blog" else "weekly"
-    man = {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}
+def grounding_pass(W: str, pid: str, h: str, man: dict) -> tuple:
+    """Every sentence of every card, deep dive and paragraph judged against its
+    cited abstract, and every finding repaired and re-judged: the exhaustive
+    check. The standards review samples; this does not. (h, remaining)."""
     real = bp.real_from_work(W, sorted(set(bp._carded_pmids(h)) | {bp._pmid_of(m.group(0)) for m in bp.SUP_RE.finditer(h)} - {None}))
     g = bp.grounding_audit(W, h, man)
-    # the sentence-level audit's findings are repaired and re-audited — the
-    # same card/deep-dive, prose and hover-card repairs the pipeline uses
     for _round in range(3):
         if not g:
             break
@@ -292,9 +288,28 @@ def publish():
         h, _o = bp._number_final_page(W, h, meta)
         faults = bp.reader_prose_faults(h)
         if faults:
-            sys.exit(f"{pid}: a grounding repair broke a gate: {faults[:3]}")
+            return h, [f"a grounding repair broke a gate: {x}" for x in faults[:3]]
         open(W + "fixed.html", "w", encoding="utf-8").write(h)
         g = bp.grounding_audit(W, h, man)
+    return h, g
+
+
+def publish():
+    """Publish the reviewed page. The server accepts a body only with a receipt
+    recording BOTH a passed standards audit and a passed sentence-level
+    grounding audit for that exact body — so the grounding audit runs here on
+    the fixed page, and the receipt records only what actually ran."""
+    import datetime, hashlib, subprocess
+    pid = sys.argv[1]
+    W = os.path.join(bp.SCRATCH, "renumber", pid) + "/"
+    review = json.load(open(W + "fixed.review.json")) if os.path.exists(W + "fixed.review.json") else {"unmet": ["no review on record"]}
+    if review.get("unmet"):
+        sys.exit(f"{pid}: the review has unmet standards — not publishing: {review['unmet'][:2]}")
+    h = open(W + "fixed.html", encoding="utf-8").read()
+    post = bp.curl_json(f"{bp.BASE}/api/posts/{pid}"); post = post.get("post", post)
+    fmt = "trend" if post.get("kind") == "blog" else "weekly"
+    man = {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}
+    h, g = grounding_pass(W, pid, h, man)
     if g:
         print(f"  GROUNDING: {len(g)} sentence(s) still failing — not publishing")
         for x in g[:15]:
