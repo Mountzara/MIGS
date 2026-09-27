@@ -172,5 +172,55 @@ def main():
     print("  REVIEW: every applicable standard met — ready to publish")
 
 
+def publish():
+    """Publish the reviewed page. The server accepts a body only with a receipt
+    recording BOTH a passed standards audit and a passed sentence-level
+    grounding audit for that exact body — so the grounding audit runs here on
+    the fixed page, and the receipt records only what actually ran."""
+    import datetime, hashlib, subprocess
+    pid = sys.argv[1]
+    W = os.path.join(bp.SCRATCH, "renumber", pid) + "/"
+    review = json.load(open(W + "fixed.review.json")) if os.path.exists(W + "fixed.review.json") else {"unmet": ["no review on record"]}
+    if review.get("unmet"):
+        sys.exit(f"{pid}: the review has unmet standards — not publishing: {review['unmet'][:2]}")
+    h = open(W + "fixed.html", encoding="utf-8").read()
+    post = bp.curl_json(f"{bp.BASE}/api/posts/{pid}"); post = post.get("post", post)
+    fmt = "trend" if post.get("kind") == "blog" else "weekly"
+    man = {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}
+    g = bp.grounding_audit(W, h, man)
+    if g:
+        print(f"  GROUNDING: {len(g)} sentence(s) failed — not publishing")
+        for x in g[:15]:
+            print("   ", x[:220])
+        sys.exit(3)
+    print("  grounding audit: every sentence supported by its cited abstract")
+    post["body_html"] = h
+    fields, _n = bp.canonical_post_fields(post)
+    post.update(fields)
+    if bp.post_field_faults(post):
+        sys.exit(f"{pid}: {bp.post_field_faults(post)}")
+    json.dump(post, open(W + f"{pid}.applied.json", "w"), ensure_ascii=False)
+    aud = subprocess.run(["node", "-e",
+        "import('%s/functions/_lib/post_format.js').then(m=>{const p=JSON.parse(require('fs').readFileSync('%s','utf8'));"
+        "const a=m.auditPublishable(p);console.log(JSON.stringify({publishable:a.publishable,problems:a.problems}))})"
+        % (bp.ROOT, W + f"{pid}.applied.json")], capture_output=True, text=True, cwd=bp.ROOT)
+    verdict = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
+    if not verdict.get("publishable"):
+        sys.exit(f"{pid}: the site's publish audit refused it: {json.dumps(verdict.get('problems'))[:400]}")
+    receipt = {"body_sha256": hashlib.sha256(h.encode("utf-8")).hexdigest(),
+               "standards_passed": True, "grounding_passed": True,
+               "pipeline_digest": bp._sha_file(bp.__file__),
+               "scope": ("published brief fixed from the confirmed findings of two independent readers; every finding "
+                         "repaired from its paper's PubMed abstract; reviewed against THE STANDARDS and audited sentence "
+                         "by sentence against the cited abstracts before publishing"),
+               "checked_at": datetime.datetime.utcnow().isoformat() + "Z"}
+    json.dump({"body_html": h, "pipeline_receipt": receipt, **fields}, open(W + "_put.json", "w"), ensure_ascii=False)
+    print("PUT:", json.dumps(bp.curl_json(f"{bp.BASE}/api/posts/{pid}", "PUT", auth=True, data_file=W + "_put.json"))[:200])
+    json.dump({}, open(W + "_approve.json", "w"))
+    print("APPROVE:", json.dumps(bp.curl_json(f"{bp.BASE}/api/posts/{pid}/approve", "POST", auth=True, data_file=W + "_approve.json"))[:200])
+    bp.verify_rendered(bp._route_for(pid, post.get("kind")), pid)
+    print(f"{pid}: published and verified on its live route")
+
+
 if __name__ == "__main__":
-    main()
+    publish() if "--publish" in sys.argv else main()
