@@ -2750,7 +2750,7 @@ def fix_absolute_words(W: str, h: str, real: dict) -> tuple:
     return h, done
 
 
-def author_stub_sections(W: str, h: str, real: dict) -> tuple:
+def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> tuple:
     """A deep dive's empty section is written, on the republish path, by the
     same author and adversarial reviewer the authoring path uses
     (_author_one_paper), from the paper's abstract, and set into the dialog
@@ -2767,7 +2767,10 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
                 continue
             sm = re.search(r'id="dd-%s-%s"[^>]*>([\s\S]*?)</section>' % (re.escape(pm), re.escape(key)), inner_d)
             inner_t = H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", strip_template(sm.group(1))))) if sm else ""
-            if len(inner_t.strip()) < 120:
+            if len(inner_t.strip()) < 120 or key in force_keys:
+                # force_keys: a section a reader found templated, truncated or
+                # a pipeline dump in EVERY deep dive of the brief is written
+                # again for all of them, not patched in one
                 stubs.append(key)
         if not stubs or not (real.get(pm) or {}).get("abstract"):
             continue
