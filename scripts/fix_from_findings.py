@@ -57,11 +57,17 @@ def main():
         real = bp.real_from_work(W, pmids)
     print(f"{pid}: {len(findings)} confirmed finding(s), {len(real)} paper(s) with abstracts")
 
+    resume = "--resume" in sys.argv and os.path.exists(W + "fixed.html")
+    if resume:
+        # the fixes already made (and paid for) are on disk: continue from them
+        h = open(W + "fixed.html", encoding="utf-8").read()
+        print("  resuming from the saved fixed page")
+        findings = []
     # the mechanical fixes, in code
     h = bp.normalize_legacy_markup(h)
     h, n = bp.canonical_practice_name(h); n and print(f"  {n} practice name(s) written as CBG/MIGS")
     h, n = bp.drop_bracket_pseudo_citations(h); n and print(f"  {n} bracketed pseudo-citation(s) removed")
-    if fmt == "trend":
+    if fmt == "trend" and not resume:
         h, n = bp.retire_verdict_gauge(h); n and print("  verdict gauge retired")
         h, n = bp.rebuild_pyramid_from_papers(h); n and print("  evidence pyramid rebuilt from the brief's papers")
         h, notes = bp.conform_trend_brief(W, h, real)
@@ -105,6 +111,8 @@ def main():
         h, n_att = bp.fix_attributed_text(W, h, attributed, real)
     if prose:
         h, n_pro = bp.repair_from_defects(W, h, prose, drop_unsupported=True)
+    h, n_exp = bp.fix_invented_experience(W, h)
+    n_exp and print(f"  {n_exp} sentence(s) claiming the clinician's own experience rewritten from the paper")
     h, n_abs = bp.fix_absolute_words(W, h, real)
     h, n_st = bp.author_stub_sections(W, h, real)
     h, _b = bp.cite_uncited_cards(W, h, real)
