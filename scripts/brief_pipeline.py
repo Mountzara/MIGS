@@ -4649,6 +4649,7 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
         secs_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", secs_d)
         if re.sub(r"<[^>]+>", "", secs_d).strip():
             frags.append((secs_d, pm, f"dialog:{pm}"))
+    _jobs = []
     for i, (frag, card_pm, pc) in enumerate(frags):
         sents = _sentences(frag)
         if not sents:
@@ -4677,7 +4678,7 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
                          "unless it attributes to this paper something its abstract does not say."
                          if pc.endswith(":kb") else "")
                       if card_pm else "")
-        v = _ask_cached(W, "grounding", f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
+        _jobs.append((i, frag, card_pm, pc, sents, f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
 appear as ⟦PMID⟧ tokens inside the sentence they belong to.{attributed}
 SENTENCES:
 {listing}
@@ -4711,7 +4712,12 @@ For EVERY sentence return one object:
         literature — a file, a path, a spec or section number, a style guide, a pipeline or tool
  note: one clause of evidence when any flag is true
 Be adversarial: default to supported=false when you cannot trace an element.
-Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects.""", timeout_s=900)
+Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects."""))
+    # the containers are independent: asked six at a time, judged in order
+    from concurrent.futures import ThreadPoolExecutor as _TPE
+    with _TPE(max_workers=6) as _pool:
+        _answers = list(_pool.map(lambda j: _ask_cached(W, "grounding", j[5], timeout_s=900), _jobs))
+    for (i, frag, card_pm, pc, sents, _prompt), v in zip(_jobs, _answers):
         if not v or not isinstance(v.get("sentences"), list):
             die(f"grounding audit returned no verdict for prose container {i + 1}")
         # An audit that judged only some of the units has not audited. Accepting
@@ -5399,6 +5405,7 @@ def cmd_publish(post_id: str, dry: bool = False) -> None:
         return
     body = open(W + "body.applied.html", encoding="utf-8").read()
     receipt = json.load(open(W + ".ledger/receipt.json"))
+    post = json.load(open(W + f"{post_id}.applied.json"))   # the post's own fields, as apply wrote them
     fields, n_fields = canonical_post_fields(post)
     if n_fields:
         print(f"  {n_fields} correction(s) to the practice's name in the post's {sorted(fields)}")
@@ -9226,17 +9233,26 @@ def _cache_get(W: str, kind: str, key: str):
         return None
 
 
+_CACHE_LOCK = __import__("threading").Lock()
+
+
 def _cache_put(W: str, kind: str, key: str, value) -> None:
+    """Locked, and written to a temporary file then renamed: model calls run
+    in parallel now, and a reader that caught a half-written file used to
+    treat it as empty and rewrite the cache with one entry."""
     path = W + f"cache.{kind}.json"
-    d = {}
-    if os.path.exists(path):
-        try:
-            d = json.load(open(path))
-        except Exception:
-            d = {}
-    d[key] = value
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    json.dump(d, open(path, "w"), ensure_ascii=False)
+    with _CACHE_LOCK:
+        d = {}
+        if os.path.exists(path):
+            try:
+                d = json.load(open(path))
+            except Exception:
+                return          # never replace a cache we could not read
+        d[key] = value
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        tmp = path + ".tmp"
+        json.dump(d, open(tmp, "w"), ensure_ascii=False)
+        os.replace(tmp, path)
 
 
 def _ask_cached(W: str, kind: str, prompt: str, timeout_s: int = 900):
@@ -11433,9 +11449,8 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, exp0 = fix_invented_experience(W, h)
         if exp0:
             print(f"  {exp0} sentence(s) claiming the clinician's own experience rewritten from the paper")
-        h, abs_n = fix_absolute_words(W, h, real)
-        if abs_n:
-            print(f"  {abs_n} sentence(s) using \"never\"/\"always\" rewritten (S10)")
+        # (never/always is rewritten later, once the papers are in hand: at
+        # stage 0 `real` does not exist yet and the call crashed a full run)
         before_html = h
         # S10 and S13 on the page as published, before any pass reads it. The
         # deploy's live audit refused W34, W33 and W28 for the practice name
