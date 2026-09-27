@@ -9687,7 +9687,10 @@ _COSMETIC_OK_RE = re.compile(
     r"(?:marker\s+(?:order|sequence)\s+(?:within|inside|at\s+the\s+end|of\s+the\s+stack)"
     r"|stack(?:ed)?\s+(?:marker\s+)?order|order\s+of\s+(?:the\s+)?stacked"
     r"|carded\s+under|placement|would\s+have\s+(?:placed|carded|made)"
-    r"|reference\s+title|title\s+(?:naming|disagrees|and\s+the\s+abstract))", re.I)
+    r"|reference\s+title|title\s+(?:naming|disagrees|and\s+the\s+abstract)"
+    # the sample's own measured marker sequence versus its truncated HTML
+    # excerpt is not a defect of the page (MHT: called blocking)
+    r"|marker[_ ]sequence|markers?_in_order|document[_ ]order\s+entry)", re.I)
 
 
 def _escalate_numeric_contradictions(defects: list) -> list:
@@ -10095,6 +10098,9 @@ removed paper (a dangling "and", a doubled full stop, an empty parenthesis, a to
 cards under it); a popover missing its title, journal line, finding or link; markup that will not
 render (unclosed tag, stray attribute); and anything a reader would notice as damage.
 
+NOTE ON THE SAMPLE: each section's "markers_in_order" / "marker_sequence_in_document_order" is MEASURED BY CODE
+over the WHOLE section; the HTML excerpts beside it are TRUNCATED. A difference between the measured
+sequence and the markers visible in an excerpt is the truncation, never a defect — do not report it.
 OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:260000]}
 
 Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evidence": "<quote it>",
