@@ -2844,7 +2844,7 @@ def author_stub_sections(W: str, h: str, real: dict, force_keys: tuple = ()) -> 
             inner = secs.get(key)
             if not isinstance(inner, str) or not inner.strip():
                 continue
-            pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)' % (re.escape(pm), re.escape(key)), re.S)
+            pat = re.compile(r'(<section\b[^>]*\bid="dd-%s-%s"[^>]*>)(.*?)(</section>)' % (re.escape(pm), re.escape(key)), re.S)
             m = pat.search(h)
             if not m:
                 continue
@@ -3171,6 +3171,39 @@ def recount_section_headings(h: str) -> tuple:
         if cards and str(cards) != m.group(3):
             h = h[:m.start(3)] + str(cards) + h[m.end(3):]
             n += 1
+    return h, n
+
+
+def add_dialog_references(h: str, real: dict) -> tuple:
+    """A deep dive whose table of contents promises References and has none
+    (W21: 54 of 72) gets the section, in the form the others use: the paper
+    itself from its PubMed record, then every paper the dialog's own text
+    links to on PubMed. Built from records, not written. (h, added)."""
+    n = 0
+    for m in list(re.finditer(r'<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h))[::-1]:
+        pm, inner = m.group(1), m.group(2)
+        if f'id="dd-{pm}-refs"' in inner or not (real.get(pm) or {}).get("title"):
+            continue
+        linked = [q for q in dict.fromkeys(re.findall(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", inner)) if q != pm]
+        items = []
+        for i, q in enumerate([pm] + linked, 1):
+            r = real.get(q) or {}
+            if not r.get("title"):
+                continue
+            items.append(f'<li id="dd-{pm}-ref-{i}">{H.escape(r.get("authors", ""), quote=False)}. <em>{H.escape(r["title"], quote=False)}</em> '
+                         f'<strong>{H.escape(r.get("journal", ""), quote=False)}</strong>. {H.escape(str(r.get("year", "")), quote=False)}. '
+                         f'<a href="https://pubmed.ncbi.nlm.nih.gov/{q}/" target="_blank" rel="noopener noreferrer">PubMed</a>.</li>')
+        if not items:
+            continue
+        sec = (f'<section class="mz-jc-section mz-jc-references-section" id="dd-{pm}-refs"><h3>References</h3>'
+               f'<p class="mz-jc-section-intro">Sources cited in this analysis &mdash; the paper itself, and each paper the '
+               f'analysis names. Each entry links to PubMed.</p><ol class="mz-jc-references-ol">{"".join(items)}</ol></section>')
+        cut = inner.rfind("</section>")
+        if cut < 0:
+            continue
+        cut += len("</section>")
+        h = h[:m.start(2)] + inner[:cut] + sec + inner[cut:] + h[m.end(2):]
+        n += 1
     return h, n
 
 
@@ -3535,7 +3568,7 @@ def write_abstracts(W: str, man: dict, h: str, dropped: list, strict: bool = Tru
             # placeholder directly. Write into the section body in that case
             # rather than refusing a brief for being the other shape.
             fallback = re.search(
-                r'(<section class="mz-jc-section" id="dd-%s-abstract">)(.*?)(</section>)' % re.escape(pmid),
+                r'(<section\b[^>]*\bid="dd-%s-abstract"[^>]*>)(.*?)(</section>)' % re.escape(pmid),
                 dm.group(2), re.S)
             if not fallback:
                 if not strict:
@@ -3583,7 +3616,7 @@ def apply_sections(W: str, man: dict, h: str) -> tuple:
         for key, inner in secs.items():
             if key in NOT_AUTHORABLE or key == "card" or key.startswith("_") or not isinstance(inner, str):
                 continue
-            pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)'
+            pat = re.compile(r'(<section\b[^>]*\bid="dd-%s-%s"[^>]*>)(.*?)(</section>)'
                              % (re.escape(pmid), re.escape(key)), re.S)
             m = pat.search(h)
             if not m:

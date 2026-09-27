@@ -134,8 +134,16 @@ def main():
     systemic, rest = set(), []
     for f in findings:
         t = f"{f.get('what', '')} {f.get('where', '')}"
-        if re.search(r"\b(?:every|all|each)\b[^.]{0,40}(?:deep[- ]?dive|dialog)|(?:six|five|four|three|seven|eight|\d+) deep dives|every dialog", t, re.I):
+        if re.search(r"\b(?:every|all|each|most|majority|many)\b[^.]{0,40}(?:deep[- ]?dives?|dialogs?)|(?:six|five|four|three|seven|eight|\d+) (?:of \d+ )?deep[- ]dives?|every dialog|across (?:the )?(?:\w+ )?(?:of )?(?:the )?deep[- ]dives", t, re.I):
             keys = {k for k, nm in names.items() if nm and nm in t.lower() and k not in bp.NOT_AUTHORABLE}
+            if not keys:
+                # the finding quotes phrases, not a section: the sections that
+                # hold those phrases are the ones to re-author
+                for q in quotes_of(f.get("evidence", "") + " " + f.get("what", "")):
+                    qn = re.sub(r"\s+", " ", q).strip().lower()[:30]
+                    for key, body in re.findall(r'<section\b[^>]*\bid="dd-\d+-([a-z_]+)"[^>]*>([\s\S]*?)</section>', h):
+                        if key not in bp.NOT_AUTHORABLE and qn and qn in re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", body))).lower():
+                            keys.add(key)
             if keys:
                 systemic |= keys
                 continue
@@ -180,6 +188,8 @@ def main():
     n_exp and print(f"  {n_exp} sentence(s) claiming the clinician's own experience rewritten from the paper")
     h, n_abs = bp.fix_absolute_words(W, h, real)
     h, n_st = bp.author_stub_sections(W, h, real)
+    h, n_rf = bp.add_dialog_references(h, real)
+    n_rf and print(f"  {n_rf} deep-dive References section(s) built from the papers' records")
     h, _b = bp.cite_uncited_cards(W, h, real)
     # a removed sentence that was a whole bullet leaves an empty <li> (PCS: four)
     h, n_li = bp.drop_empty_list_items(h)
