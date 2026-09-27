@@ -9742,7 +9742,9 @@ def _looks_broken(t: str) -> bool:
     # the. Department of…"); a stop after a preposition is often English
     # ("…in ways a viral post has no room for."), and refusing it threw a
     # bridge draft away as damaged prose
-    if re.search(r"\b(?:the|a|an|and|or|but|nor|than)\.(?:\s|$)", t, re.I):
+    # after another word only: a Q&A answer's own "A." label opens the text
+    # (W21: every rewrite of a Q&A answer was refused as damaged prose)
+    if re.search(r"(?<=\w\s)\b(?:the|a|an|and|or|but|nor|than)\.(?:\s|$)", t, re.I):
         return True
     if re.search(r"\s{2,}|\(\s*\)|,\s*[,.]|\b(?:and|but|with)\s*[.,]", t):
         return True
