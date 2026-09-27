@@ -3111,6 +3111,40 @@ def refresh_page_counts(h: str) -> tuple:
     return h, changed
 
 
+def all_instances(W: str, h: str, finding: str) -> list:
+    """A reviewer quotes EXAMPLES ("e.g. …"); a fix that repairs only those
+    leaves the rest for the next review (PCS: payer-coverage claims removed
+    where quoted and found again elsewhere, three rounds). One model call
+    lists every sentence of the site's prose that carries the same defect;
+    each is returned as page text for the repair."""
+    sents = []
+    for ps in _prose_passages(h):
+        masked = _mask_noprose(ps.group(1))
+        masked = re.sub(r"<h[1-6]\b[^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
+        for t, _e in _sentences_of(masked):
+            plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
+            if len(plain) > 25 and plain not in sents:
+                sents.append(plain)
+    if not sents:
+        return []
+    listing = "\n".join(f"[{i}] {x}" for i, x in enumerate(sents))
+    v = _ask_cached(W, "instances", f"""A reviewer of a clinician-facing evidence brief reported this defect, quoting EXAMPLES:
+DEFECT: {json.dumps(finding[:1500], ensure_ascii=False)}
+Below is every sentence of the brief's own prose, numbered. List EVERY sentence that carries this same
+defect — the quoted examples and every other sentence making the same unsupported claim or the same
+error — and no sentence that does not.
+SENTENCES:
+{listing[:120000]}
+Reply with ONLY {{"sentences": [<number>, ...]}}""", timeout_s=600)
+    out = []
+    for n in ((v or {}).get("sentences") or []):
+        try:
+            out.append(sents[int(n)])
+        except (ValueError, IndexError, TypeError):
+            continue
+    return out
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -3477,11 +3511,11 @@ def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
             if not fallback:
                 die(f"cannot write the repaired abstract for {pmid}: no abstract container or section")
         blocks = []
-        for part in re.split(r"\n(?=[A-Z][A-Z /&-]{2,40}:)", "\n" + abstract.strip()):
+        for part in re.split(r"\n(?=[A-Z][A-Z ,/&-]{2,60}:)", "\n" + abstract.strip()):
             part = part.strip()
             if not part:
                 continue
-            lm = re.match(r"([A-Z][A-Z /&-]{2,40}):\s*([\s\S]*)", part)
+            lm = re.match(r"([A-Z][A-Z ,/&-]{2,60}):\s*([\s\S]*)", part)
             if lm:
                 blocks.append(f'<h5 class="mz-jc-abstract-label">{H.escape(lm.group(1).title(), quote=False)}</h5>'
                               f"<p>{H.escape(lm.group(2).strip(), quote=False)}</p>")
@@ -9751,6 +9785,9 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
         needle = re.sub(r"\s+", " ", run)[:60]
         for ps in _prose_passages(h):
             masked = _mask_noprose(ps.group(1))
+            # a heading is not a sentence: the repair removed "The shape of the
+            # evidence on pelvic congestion syndrome" and left an empty <h2>
+            masked = re.sub(r"<h[1-6]\b[^>]*>[\s\S]*?</h[1-6]>", lambda x: " " * len(x.group(0)), masked)
             flat = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", masked)))
             if needle[:40] not in flat:
                 continue

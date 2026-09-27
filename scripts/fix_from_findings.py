@@ -67,8 +67,24 @@ def main():
         findings = [{"standard": (re.match(r"(S\d+|OWNER)", str(x)) or [None, ""])[1], "what": str(x), "evidence": str(x), "where": ""}
                     for x in (rv.get("unmet") or [])]
         findings and print(f"  {len(findings)} review finding(s) to fix")
+    # a section heading an earlier repair emptied comes back from the live page
+    # (the repair once took an <h2> for a sentence and removed its text)
+    live_heads = re.findall(r'<h2 class="mz-section-title">([\s\S]*?)</h2>', post["body_html"])
+    mine = list(re.finditer(r'<h2 class="mz-section-title">([\s\S]*?)</h2>', h))
+    if len(mine) == len(live_heads):
+        for m, old in sorted(zip(mine, live_heads), key=lambda x: -x[0].start()):
+            if not re.sub(r"<[^>]+>|\s", "", m.group(1)) and re.sub(r"<[^>]+>|\s", "", old):
+                h = h[:m.start(1)] + old + h[m.end(1):]
+                print("  an emptied section heading restored from the live page")
     # the mechanical fixes, in code
     h = bp.normalize_legacy_markup(h)
+    # a card's design badge is the design alone, on every card ("[2] · RCT ·
+    # ELITE" on five of eight cards read as an artifact beside the other three)
+    h = re.sub(r'(<span class="mz-cite-design">)\s*\[\d+\]\s*·\s*', r"\1", h)
+    # every deep dive's abstract rebuilt from PubMed's record, labels whole
+    # ("METHODS AND RESULTS" had been torn into a section holding "AND")
+    h, _reps, n_ab = bp.write_abstracts(W, {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}, h, [])
+    n_ab and print(f"  {n_ab} deep-dive abstract(s) rebuilt from PubMed's record")
     h, n = bp.canonical_practice_name(h); n and print(f"  {n} practice name(s) written as CBG/MIGS")
     h, n = bp.drop_bracket_pseudo_citations(h); n and print(f"  {n} bracketed pseudo-citation(s) removed")
     if fmt == "trend" and not resume:
@@ -118,6 +134,15 @@ def main():
         faults_u = [f'[prose] claim without a citation: "{q}" ({x["what"][:160]})' for x in uncited for q in quotes_of(x["evidence"])[:2]]
         h, n_cite = bp.fix_placement(W, h, faults_u, real)
         prose = [x for x in prose if x not in uncited]
+    expanded = []
+    for x in prose:
+        expanded.append(x)
+        if re.search(r"\be\.g\.|for example|such as|none of (?:the|those|these)|not grounded in any|no cited abstract|repeated", x["what"], re.I):
+            more = bp.all_instances(W, h, x["what"])
+            if more:
+                print(f"  {len(more)} instance(s) of one finding located across the page")
+            expanded += [{"what": x["what"], "evidence": f'"{q}"'} for q in more]
+    prose = expanded
     if prose:
         h, n_pro = bp.repair_from_defects(W, h, prose, drop_unsupported=True)
     h, n_exp = bp.fix_invented_experience(W, h)
