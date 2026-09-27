@@ -478,7 +478,7 @@ def _sha_file(path: str) -> str:
     return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
 
 
-def standards_audit(W: str, post_id: str) -> None:
+def standards_audit(W: str, post_id: str, fatal: bool = True) -> list:
     """A reader's audit of the assembled body against THE STANDARDS alone.
 
     Separate from the apply review on purpose: that review carries the
@@ -520,8 +520,11 @@ Reply with ONLY a JSON object:
     for b in blocking:
         print(f"    STANDARD NOT MET: {b}")
     if not out["passed"]:
+        if not fatal:
+            return blocking or [f"{k}: unmet" for k in unmet]
         die(f"standards audit refused the body ({len(blocking) or len(unmet)} standard(s) unmet)")
     print("  standards audit: every applicable standard met")
+    return []
 
 
 def require_standards(W: str) -> None:
@@ -2936,6 +2939,69 @@ def fix_popover_findings(W: str, h: str, faults: list, real: dict) -> tuple:
     return h, done
 
 
+_BRACKET_CITE_RE = re.compile(r"\s*\[(?=[A-Z])[^\[\]<>]{6,90}\]")
+
+
+def drop_bracket_pseudo_citations(h: str) -> tuple:
+    """A bracketed source name in the site's own text — "[ACOG Practice
+    Bulletin on Chronic Pelvic Pain]", "[SIR Reporting Standards]" — is a
+    citation to nothing the reader can open: not a marker, not in the
+    references. It goes; a claim it was propping up is then uncited, and the
+    citation supply or the sentence repair decides it from the abstracts."""
+    mk = _blank_paper_text(h)
+    edits = []
+    for node in re.finditer(r"<[^>]*>|[^<]+", mk):
+        if node.group(0)[0] == "<":
+            continue
+        for m in _BRACKET_CITE_RE.finditer(mk, node.start(), node.end()):
+            edits.append((m.start(), m.end()))
+    for a, b in sorted(edits, reverse=True):
+        h = h[:a] + h[b:]
+    return h, len(edits)
+
+
+_DESIGN_RANK = ["randomized", "randomised", "rct", "systematic review", "meta-analysis", "cohort", "case-control",
+                "cross-sectional", "case series", "narrative review", "review", "guideline", "statement", "case report"]
+
+
+def rebuild_pyramid_from_papers(h: str) -> tuple:
+    """A trend brief's evidence pyramid counted "the literature" in figures no
+    source on the page states (14 case series, 4 reviews — PCS brief). It is
+    rebuilt from what is true by construction: the study designs of the
+    papers this brief cards, one row per design, with a note that says so."""
+    m = re.search(r'<div class="mz-evidence-pyramid"[^>]*>', h)
+    if not m:
+        return h, 0
+    end = _element_end(h, "div", m.end())
+    designs = {}
+    for card in CARD_RE.findall(h):
+        pm = _pmid_of(card) or (re.search(r"openDeepDive\('dd-(\d+)'", card) or [None, None])[1]
+        badge = re.search(r'<span class="mz-cite-design">([^<]+)</span>', card)
+        if not pm or not badge:
+            continue
+        parts = [x.strip() for x in H.unescape(badge.group(1)).split("·")]
+        d = (parts[1] if len(parts) > 1 and parts[0].startswith("[") else parts[0]).strip().lower()
+        if d and not d.startswith("peer-reviewed"):
+            designs.setdefault(d, set()).add(pm)
+    if not designs:
+        return h, 0
+    rank = lambda d: next((i for i, k in enumerate(_DESIGN_RANK) if k in d), len(_DESIGN_RANK))
+    rows = sorted(designs.items(), key=lambda kv: (rank(kv[0]), kv[0]))
+    top = max(len(v) for _, v in rows)
+    body = "".join(
+        f'<div class="mz-pyramid-row mz-tier-{i + 1}" style="--mz-bar: {max(4, round(100 * len(v) / top))}%;">'
+        f'<span class="mz-pyramid-label">{H.escape(d[:1].upper() + d[1:], quote=False)}</span>'
+        f'<span class="mz-pyramid-count">{len(v)}</span></div>' for i, (d, v) in enumerate(rows))
+    new = '<div class="mz-evidence-pyramid" aria-label="Study designs of the papers this brief cites">' + body + "</div>"
+    h = h[:m.start()] + new + h[end:]
+    note = re.search(r'<p class="mz-pyramid-note">[\s\S]*?</p>', h[m.start():m.start() + len(new) + 3000])
+    if note:
+        a = m.start() + note.start(); b = m.start() + note.end()
+        h = h[:a] + ('<p class="mz-pyramid-note">The papers this brief cites, by study design. What the wider literature '
+                     'holds is set out in the sections below, each figure cited to its source.</p>') + h[b:]
+    return h, 1
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
@@ -4803,6 +4869,11 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         # gate (W24: an "always" a late writer wrote refused the run)
         h, _late_abs = fix_absolute_words(W, h, real)
         h, _late_name = canonical_practice_name(h)
+        # a removal in the repair loop can empty a deep-dive section (PCS:
+        # the equity section); it is authored again before the gate reads it
+        h, _late_secs = author_stub_sections(W, h, real)
+        if _late_secs:
+            print(f"  {_late_secs} deep-dive section(s) emptied by the repair loop written again from the abstract")
         if _late_abs or _late_name:
             print(f"  after the audit loop: {_late_abs} sentence(s) using never/always rewritten, {_late_name} name(s) corrected")
         g += reader_prose_faults(h)
@@ -11491,6 +11562,13 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         h, name0 = canonical_practice_name(h)
         if name0:
             print(f"  {name0} practice name(s) written without the CBG/ prefix corrected at resume")
+        h, brk1 = drop_bracket_pseudo_citations(h)
+        if brk1:
+            print(f"  {brk1} bracketed source name(s) that cite nothing a reader can open removed")
+        if fmt == "trend":
+            h, pyr1 = rebuild_pyramid_from_papers(h)
+            if pyr1:
+                print("  evidence pyramid rebuilt from the designs of the papers this brief cites")
         h, exp1 = fix_invented_experience(W, h)
         if exp1:
             print(f"  {exp1} sentence(s) claiming the clinician's own experience rewritten from the paper at resume")
@@ -11640,6 +11718,11 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
         # gate (W24: an "always" a late writer wrote refused the run)
         h, _late_abs = fix_absolute_words(W, h, real)
         h, _late_name = canonical_practice_name(h)
+        # a removal in the repair loop can empty a deep-dive section (PCS:
+        # the equity section); it is authored again before the gate reads it
+        h, _late_secs = author_stub_sections(W, h, real)
+        if _late_secs:
+            print(f"  {_late_secs} deep-dive section(s) emptied by the repair loop written again from the abstract")
         if _late_abs or _late_name:
             print(f"  after the audit loop: {_late_abs} sentence(s) using never/always rewritten, {_late_name} name(s) corrected")
         g += reader_prose_faults(h)
@@ -11659,9 +11742,26 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
     json.dump(man, open(W + "manifest.json", "w"), ensure_ascii=False)
     # S16 as the apply path has it: a reader given nothing but THE STANDARDS
-    # and the page. audit_transform above reads for the transformation's own
-    # defects; this reads for the owner's requirements
-    standards_audit(W, post_id)
+    # and the page. Its findings are REPAIRED — the sentences it quotes go
+    # through the abstract-grounded sentence repair, an emptied section is
+    # authored, bracket citations dropped — and it reads the page once more.
+    # It used to refuse outright (PCS: four findings, no repair path)
+    for _sr in range(2):
+        found = standards_audit(W, post_id, fatal=(_sr == 1))
+        if not found:
+            break
+        h, _b = drop_bracket_pseudo_citations(h)
+        h, _st = author_stub_sections(W, h, real)
+        h, _rp = repair_from_defects(W, h, [{"what": str(x), "evidence": str(x)} for x in found])
+        h, _ab = fix_absolute_words(W, h, real)
+        h = _renumber_if_unnumbered(W, h, meta, force=True)
+        print(f"  standards audit findings repaired: {_rp} sentence(s), {_st} section(s), {_b} bracket citation(s) — auditing again")
+        _left = reader_prose_faults(h)
+        if _left:
+            die(f"{post_id}: the standards repair left {len(_left)} fault(s): {_left[:3]}")
+        post["body_html"] = h
+        open(W + "body.applied.html", "w", encoding="utf-8").write(h)
+        json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
 
     aud = subprocess.run(["node", "-e",
         "import('%s/functions/_lib/post_format.js').then(m=>{const p=JSON.parse(require('fs')"
