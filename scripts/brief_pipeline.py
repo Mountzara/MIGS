@@ -4249,7 +4249,8 @@ def trend_prose_audit(W: str, h: str, man: dict) -> list:
     v = _ask_cached(W, "trend_prose", f"""You are judging a brief that checks a viral health claim against the literature. The reader may be the
 person who made the claim; the brief exists to inform them, not to score against them.
 For EACH section: is its heading a clear, specific signpost a reader can navigate by (not a label, not
-a scoreboard, not vague)? Is every sentence free of sneering, gotcha framing, or language that treats
+a scoreboard, not vague)? EXCEPT the section headed "Where the two sides can meet": that title is the one
+the standard prescribes for that section — report heading_ok=true for it and judge only its tone. Is every sentence free of sneering, gotcha framing, or language that treats
 the claim's author as a mark — while still stating plainly where the evidence is thin?
 Judge EACH subheading separately: is it a clear, specific name for that item that a reader can
 navigate by? One aggregate answer lets an unclear one through on a "mostly fine" impression.
