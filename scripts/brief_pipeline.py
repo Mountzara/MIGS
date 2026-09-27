@@ -1756,6 +1756,11 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
     if failing:
         return pmid, None, f"section(s) not passed by the verifier: {failing[:4]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
+    # the practice's name is mechanical: a section written with bare MIGS is
+    # corrected, not refused (W24: two stub sections lost to it)
+    for _k, _v in list(final.items()):
+        if isinstance(_v, str) and not _k.startswith("_"):
+            final[_k] = canonical_practice_name_text(_v)[0]
     rule_bad = draft_rule_faults(final)
     if not rule_bad:
         pth = W + ".ledger/author.pieces.json"
@@ -2715,10 +2720,12 @@ def author_stub_sections(W: str, h: str, real: dict) -> tuple:
         if not os.path.exists(dd_path):
             json.dump({}, open(dd_path, "w"))
         _pm, n_probs, err = _author_one_paper((W, pm))
-        if err and err.startswith(("refused", "section(s) not passed")):
-            # the reviewer's objection goes in front of the author for one more
-            # attempt (five of W24's thirty-eight stubs were refused once for
-            # a computed duration, a site name, a participant range)
+        # the reviewer's objection goes in front of the author for up to two
+        # more attempts, every objection accumulated (W24: stubs refused once
+        # for a computed duration, again for a different overreach)
+        for _attempt in range(2):
+            if not (err and err.startswith(("refused", "section(s) not passed"))):
+                break
             record_piece_objection(W, pm, err)
             _pm, n_probs, err = _author_one_paper((W, pm))
         if err:
