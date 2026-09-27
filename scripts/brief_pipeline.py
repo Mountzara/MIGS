@@ -2557,6 +2557,18 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
         if m:
             wanted.setdefault((m.group(1), m.group(2)), []).append((m.group(3), m.group(4), m.group(5)))
     done = 0
+
+    def _norm(t):
+        t = H.unescape(t or "")
+        t = t.replace("\u2019", "'").replace("\u2018", "'").replace("\u201c", '"').replace("\u201d", '"').replace("\u00a0", " ")
+        return re.sub(r"\s+", " ", t).strip().lower()
+
+    # how often the same text has been faulted, across rounds and resumes:
+    # a third time, it is removed rather than rewritten once more (a finding
+    # the abstract does not support cannot stay, however it is worded)
+    os.makedirs(W + ".ledger", exist_ok=True)
+    tally_path = W + ".ledger/attributed_tally.json"
+    tally = json.load(open(tally_path)) if os.path.exists(tally_path) else {}
     for (kind, pm), items in wanted.items():
         paper = real.get(pm) or {}
         abstract = paper.get("abstract") or ""
@@ -2573,9 +2585,12 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
         blanked = _blank_paper_text(cont)       # the paper's words are not ours to rewrite
         edits, taken = [], set()
         for what, shown, note in items:
-            needle = re.sub(r"\s+", " ", H.unescape(shown)).strip()[:40]
+            needle = _norm(shown)[:40]
             if len(needle) < 12:
                 continue
+            tkey = f"{kind}:{pm}:{needle}"
+            tally[tkey] = tally.get(tkey, 0) + 1
+            remove_it = tally[tkey] >= 3
             found = False
             for em in re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked):
                 if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
@@ -2584,7 +2599,7 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                 marks = list(SUP_RE.finditer(inner))
                 tok = SUP_RE.sub(lambda x: "⟦" + (_pmid_of(x.group(0)) or "?") + "⟧", inner)
                 plain = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", tok))).strip()
-                hay = re.sub(r"⟦\d+⟧", "", plain).replace("  ", " ")
+                hay = _norm(re.sub(r"⟦\d+⟧", "", plain))
                 if em.group(1) == "dd":
                     # the auditor reads a definition list's label and value as one
                     # sentence ("Design Editorial commentary."); the value alone
@@ -2592,11 +2607,29 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                     # (SKYLIGHT 1, a phase-3 trial, stayed "Editorial commentary")
                     dt = re.search(r"<dt\b[^>]*>([\s\S]*?)</dt>\s*$", cont[:em.start()])
                     if dt:
-                        hay = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", dt.group(1))) + " " + hay).strip()
+                        hay = _norm(re.sub(r"<[^>]+>", " ", dt.group(1)) + " " + hay)
                 if needle not in hay:
                     continue
                 found = True
                 is_cell = em.group(1) in ("dd", "dt", "td")
+                if remove_it:
+                    # faulted three times: the text goes. A cell says so plainly;
+                    # a paragraph loses the faulted sentence and keeps the rest
+                    # (and its markers, which travel with the sentences kept)
+                    if is_cell:
+                        rebuilt = "Not stated in the abstract."
+                    else:
+                        keep_s = [x for x in re.split(r"(?<=[.!?])\s+", plain) if _norm(x)[:40] != needle and needle not in _norm(x)]
+                        pieces = re.split(r"(⟦\d+⟧)", " ".join(keep_s))
+                        marks_iter = iter(marks)
+                        by_pm2: dict = {}
+                        for x in marks:
+                            by_pm2.setdefault(_pmid_of(x.group(0)), []).append(x.group(0))
+                        rebuilt = "".join(by_pm2[x[1:-1]].pop(0) if re.fullmatch(r"⟦\d+⟧", x) and by_pm2.get(x[1:-1]) else H.escape(x, quote=False) for x in pieces).strip()
+                    print(f"  {kind} {pm}: faulted a third time — removed: {needle!r}")
+                    edits.append((em.start(2), em.end(2), rebuilt))
+                    taken.add(em.start(2))
+                    break
                 shape = ("THIS IS A DATA CELL of a summary table (Sample, Comparator, Outcome…): return a short value — a phrase "
                          "or one plain sentence, no first person, no commentary — stating the figure exactly as the abstract gives it."
                          if is_cell else
@@ -2651,6 +2684,7 @@ Return ONLY {{"text": "<rewritten text>"}}""")
             done += 1
         if edits:
             h = h[:cm.start()] + cont + h[cm.end():]
+    json.dump(tally, open(tally_path, "w"))
     return h, done
 
 
