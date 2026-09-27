@@ -2588,11 +2588,8 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
             needle = _norm(shown)[:40]
             if len(needle) < 12:
                 continue
-            tkey = f"{kind}:{pm}:{needle}"
-            tally[tkey] = tally.get(tkey, 0) + 1
-            remove_it = tally[tkey] >= 3
             found = False
-            for em in re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked):
+            for ordinal, em in enumerate(re.finditer(r"<(p|li|dd|dt|td|blockquote)\b[^>]*>([\s\S]*?)</\1>", blanked)):
                 if em.start(2) in taken or re.search(r"<(?:p|li|dd|dt|td|section)\b", cont[em.start(2):em.end(2)]):
                     continue
                 inner = cont[em.start(2):em.end(2)]
@@ -2612,6 +2609,11 @@ def fix_attributed_text(W: str, h: str, faults: list, real: dict) -> tuple:
                     continue
                 found = True
                 is_cell = em.group(1) in ("dd", "dt", "td")
+                # the tally is per ELEMENT, not per wording: a sentence the
+                # model keeps rewording is faulted under new words each round
+                tkey = f"{kind}:{pm}:{em.group(1)}#{ordinal}"
+                tally[tkey] = tally.get(tkey, 0) + 1
+                remove_it = tally[tkey] >= 3
                 if remove_it:
                     # faulted three times: the text goes. A cell says so plainly;
                     # a paragraph loses the faulted sentence and keeps the rest
