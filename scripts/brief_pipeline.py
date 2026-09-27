@@ -3469,7 +3469,7 @@ def strip_build_comments(h: str) -> str:
     return re.sub(r"<!--[\s\S]*?-->", "", h)
 
 
-def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
+def write_abstracts(W: str, man: dict, h: str, dropped: list, strict: bool = True) -> tuple:
     """Every kept paper's abstract section carries that paper's PubMed abstract."""
     repairs = {}
     if os.path.exists(W + "abstract_repairs.json"):
@@ -3509,6 +3509,11 @@ def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
                 r'(<section class="mz-jc-section" id="dd-%s-abstract">)(.*?)(</section>)' % re.escape(pmid),
                 dm.group(2), re.S)
             if not fallback:
+                if not strict:
+                    # a legacy deep dive with no abstract container (W20): the fix step
+                    # skips it and says so; the authoring path still refuses
+                    print(f"  deep dive {pmid}: no abstract container to rebuild — skipped")
+                    continue
                 die(f"cannot write the repaired abstract for {pmid}: no abstract container or section")
         blocks = []
         for part in re.split(r"\n(?=[A-Z][A-Z ,/&-]{2,60}:)", "\n" + abstract.strip()):

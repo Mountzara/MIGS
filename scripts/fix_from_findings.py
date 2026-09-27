@@ -83,7 +83,7 @@ def main():
     h = re.sub(r'(<span class="mz-cite-design">)\s*\[\d+\]\s*·\s*', r"\1", h)
     # every deep dive's abstract rebuilt from PubMed's record, labels whole
     # ("METHODS AND RESULTS" had been torn into a section holding "AND")
-    h, _reps, n_ab = bp.write_abstracts(W, {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}, h, [])
+    h, _reps, n_ab = bp.write_abstracts(W, {"pmids": bp._carded_pmids(h), "format": fmt, "topics": []}, h, [], strict=False)
     n_ab and print(f"  {n_ab} deep-dive abstract(s) rebuilt from PubMed's record")
     h, n = bp.canonical_practice_name(h); n and print(f"  {n} practice name(s) written as CBG/MIGS")
     h, n = bp.drop_bracket_pseudo_citations(h); n and print(f"  {n} bracketed pseudo-citation(s) removed")
