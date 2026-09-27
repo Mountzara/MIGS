@@ -134,10 +134,21 @@ def main():
     h = bp.dedupe_popover_ids(h)
     h = bp.dedupe_element_ids(h)
     h = re.sub(r"\bAlways validate\s+findings against the primary source", "Validate findings against the primary source", h)
+    h = h.replace("(parity with \u00a73.8 trend brief)", "(parity with the trend brief)")
+    # any other spec mark inside a script's comment
+    h = re.sub(r"(<script\b[^>]*>[\s\S]*?</script>)",
+               lambda m: re.sub(r"(//[^\n]*?)\s*\(?\u00a7\s?\d+(?:\.\d+)*[^)\n]*\)?", r"\1", m.group(1)), h)
     print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_abs} never/always, {n_st} empty section(s)")
 
-    # deterministic gates before the review is paid for
+    # deterministic gates before the review is paid for — the deploy's own
+    # leakage checks included, on the source and on the rendered text
     faults = bp.reader_prose_faults(h)
+    import audit_no_internal_leakage as leak
+    for label, pat in leak.BANNED:
+        hits = leak.spec_hits(h, pat) if label == "internal spec reference" else pat.findall(h)
+        if hits:
+            faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
+    faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
     open(W + "fixed.html", "w", encoding="utf-8").write(h)
     if faults:
         print("  GATE FAULTS (not reviewed):")
