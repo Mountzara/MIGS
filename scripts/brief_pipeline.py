@@ -4419,7 +4419,10 @@ For EVERY sentence return one object:
             understatement); null when claim is false
  preclinical_as_human: true if a cited abstract reports animal or in-vitro work and the sentence
             presents that finding as a human or clinical result
- advice: true if the sentence tells a patient what to do (any phrasing)
+ advice: true if the sentence tells a PATIENT what to do, in any phrasing ("you should take…", "ask
+        your doctor…", "stop…" addressed to someone with the condition). An instruction addressed to the
+        CLINICIAN — what to order, choose, tailor, counsel, hold — is what this brief exists to give and is
+        NOT advice (a deep dive's Monday-clinic checklist "Tailor the progestogen" was read as patient advice)
  dose: true if the sentence states an amount of a drug or supplement to take
  provenance: true if the sentence refers to how the text was produced (a model, an assistant, an
         automated draft, a pending review, a placeholder, an internal file or process) in ANY wording
