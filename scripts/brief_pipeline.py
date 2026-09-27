@@ -9679,7 +9679,7 @@ def _quoted_sites(h: str, ev: str, limit: int = 4) -> list:
     return sites
 
 
-def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = None) -> tuple:
+def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = None, drop_unsupported: bool = False) -> tuple:
     """Fix what the read-back audit named, in every sentence it quoted.
 
     Owner, from the beginning: "this code has a way to automatically correct
@@ -9710,6 +9710,7 @@ def repair_from_defects(W: str, h: str, defects: list, counts: dict | None = Non
                     sites.append(site)
         if not sites:
             continue
+        quoted_sites = {x for x, _y, _t in sites}
         # a dangling referent lives in the sentence AFTER the one the auditor
         # quotes ("The PCS diagnosis itself remains contested. A workup for
         # these…" — "these" pointed at a sentence the orphan pass removed);
@@ -9786,8 +9787,23 @@ Reply with ONLY {{"sentences": [{{"index": <n>, "sentence": "<the corrected sent
                 print(f"  audit repair: no rewrite came back for sentence(s) {still} of the defect's {len(sites)}")
         stray_notes: list = []
 
+        _unsupported = bool(re.search(r"not supported|unsupported|uncited|no (?:inline )?citation|never mention|none of the", str(d.get("what", "")), re.I))
+
         def _apply_one(i, a, b, sentence, new_s):
             nonlocal h, done
+            _plain_old = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", sentence)))).strip()
+            if drop_unsupported and _unsupported and a in quoted_sites and (not new_s or new_s == sentence or new_s == _plain_old):
+                # the audit says no source this brief holds supports it, and the
+                # repair could not reword it into something one does: the
+                # sentence goes, and its markers with it — a marker on an
+                # unsupported claim attributes it to a paper that does not say it
+                # (PCS: payer-coverage claims no abstract mentions)
+                end = _after_run(h, b)
+                if _usable_span(h, a, end):
+                    h = _replace_span(h, a, end, "")
+                    done += 1
+                    print(f"  removed a sentence no source this brief holds supports: {_plain_old[:100]!r}")
+                return True
             if not new_s or new_s == sentence:
                 return False
             _bad = writer_reject(new_s) or ("too long" if len(new_s) > max(400, int(len(sentence) * 1.5)) else "")
@@ -11755,8 +11771,9 @@ def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> Non
             break
         h, _b = drop_bracket_pseudo_citations(h)
         h, _st = author_stub_sections(W, h, real)
-        h, _rp = repair_from_defects(W, h, [{"what": str(x), "evidence": str(x)} for x in found])
+        h, _rp = repair_from_defects(W, h, [{"what": str(x), "evidence": str(x)} for x in found], drop_unsupported=True)
         h, _ab = fix_absolute_words(W, h, real)
+        h, _bk = cite_uncited_cards(W, h, real)        # a removal may leave a card uncited
         h = _renumber_if_unnumbered(W, h, meta, force=True)
         print(f"  standards audit findings repaired: {_rp} sentence(s), {_st} section(s), {_b} bracket citation(s) — auditing again")
         _left = reader_prose_faults(h)
