@@ -87,6 +87,10 @@ def main():
     print(f"{pid}: {len(findings)} confirmed finding(s), {len(real)} paper(s) with abstracts")
 
     resume = "--resume" in sys.argv and os.path.exists(W + "fixed.html")
+    if not resume and os.path.exists(W + "fixed.html") and "--fresh" not in sys.argv:
+        # pick up where the last run left off: its repairs are on this page
+        h = open(W + "fixed.html", encoding="utf-8").read()
+        print("  continuing from the saved fixed page (its repairs are kept)")
     if resume:
         # the fixes already made (and paid for) are on disk: continue from them
         h = open(W + "fixed.html", encoding="utf-8").read()
@@ -188,36 +192,11 @@ def main():
     n_exp and print(f"  {n_exp} sentence(s) claiming the clinician's own experience rewritten from the paper")
     h, n_abs = bp.fix_absolute_words(W, h, real)
     h, n_st = bp.author_stub_sections(W, h, real)
-    h, n_rf = bp.add_dialog_references(h, real)
-    n_rf and print(f"  {n_rf} deep-dive References section(s) built from the papers' records")
     h, _b = bp.cite_uncited_cards(W, h, real)
-    # a removed sentence that was a whole bullet leaves an empty <li> (PCS: four)
-    h, n_li = bp.drop_empty_list_items(h)
-    n_li and print(f"  {n_li} emptied list item(s) removed")
-    h = bp.recount_headings(h)
-    h, n_rc = bp.recount_section_headings(h)
-    n_rc and print(f"  {n_rc} section heading count(s) recounted from their cards")
     h, n_tot = bp.fix_document_totals(W, h, real)      # prose totals ("72 papers across 9 topics")
     n_tot and print(f"  {n_tot} total(s) in the prose rebuilt from what the page holds")
-    h, n_cnt = bp.refresh_page_counts(h)
-    n_cnt and print(f"  {n_cnt} count display(s) rebuilt from what the page holds (hero, counters, design chart)")
-    meta = {q: bp._paper_record(q, r)["meta_verified"] for q, r in real.items() if bp._paper_record(q, r)["meta_verified"]}
-    h, _order = bp._number_final_page(W, h, meta)
-    h = bp.tidy_prose_spacing(h)
-    # the final assembly's own hygiene, as finish_and_audit runs it: no build
-    # comment (W25 shipped a manifest comment with an internal path), no bare
-    # "<" in a popover, no duplicate popover or element id; and the fixed
-    # footer says what it means without "Always"
-    h = bp.strip_build_comments(h)
-    h = re.sub(r"<!--[\s\S]*?-->", "", h)
-    h = bp.escape_bare_angles(h)
-    h = bp.dedupe_popover_ids(h)
-    h = bp.dedupe_element_ids(h)
-    h = re.sub(r"\bAlways validate\s+findings against the primary source", "Validate findings against the primary source", h)
-    h = h.replace("(parity with \u00a73.8 trend brief)", "(parity with the trend brief)")
-    # any other spec mark inside a script's comment
-    h = re.sub(r"(<script\b[^>]*>[\s\S]*?</script>)",
-               lambda m: re.sub(r"(//[^\n]*?)\s*\(?\u00a7\s?\d+(?:\.\d+)*[^)\n]*\)?", r"\1", m.group(1)), h)
+    # every deterministic finishing step, from the ONE list the pipeline keeps
+    h = bp.final_assembly(W, h, real, fmt)
     print(f"  fixed: {n_att} card/deep-dive text(s), {n_pro} prose sentence(s), {n_cite} citation(s) placed, {n_abs} never/always, {n_st} empty section(s)")
 
     # deterministic gates before the review is paid for — the deploy's own
@@ -283,9 +262,7 @@ def grounding_pass(W: str, pid: str, h: str, man: dict) -> tuple:
         print(f"  grounding round {_round + 1}: {len(g)} finding(s); repaired {n_a} card/deep-dive, {n_p} prose, {n_o} hover card(s)")
         if not (n_a or n_p or n_o):
             break
-        h, _li = bp.drop_empty_list_items(h)
-        meta = {q: bp._paper_record(q, r)["meta_verified"] for q, r in real.items() if bp._paper_record(q, r)["meta_verified"]}
-        h, _o = bp._number_final_page(W, h, meta)
+        h = bp.final_assembly(W, h, real, man.get("format", "weekly"))
         faults = bp.reader_prose_faults(h)
         if faults:
             return h, [f"a grounding repair broke a gate: {x}" for x in faults[:3]]
@@ -344,5 +321,49 @@ def publish():
     print(f"{pid}: published and verified on its live route")
 
 
+def preflight():
+    """No model calls: the brief's saved fixed page (else its live page) through
+    final_assembly, then every deterministic gate — the pipeline's reader and
+    body invariants, the deploy's leakage checks, the trend format checks and
+    the site's own publish audit. Run over every brief before any model step
+    is paid for, so a class of defect is found across all of them at once."""
+    import subprocess
+    pid = sys.argv[1]
+    W = os.path.join(bp.SCRATCH, "renumber", pid) + "/"
+    post = bp.curl_json(f"{bp.BASE}/api/posts/{pid}"); post = post.get("post", post)
+    fmt = "trend" if post.get("kind") == "blog" else "weekly"
+    h = open(W + "fixed.html", encoding="utf-8").read() if os.path.exists(W + "fixed.html") else post["body_html"]
+    pmids = sorted(set(bp._carded_pmids(h)) | {bp._pmid_of(m.group(0)) for m in bp.SUP_RE.finditer(h)} - {None})
+    real = bp.real_from_work(W, pmids)
+    h = bp.final_assembly(W, h, real, fmt)
+    faults = list(bp.reader_prose_faults(h))
+    man = {"pmids": bp._carded_pmids(h), "format": fmt, "topics": [t.tid for t in bp._topic_sections(h)] if fmt != "trend" else []}
+    try:
+        faults += [f for f in bp.prose_faults(W, h, man) if f not in faults]
+    except SystemExit:
+        pass
+    if fmt == "trend":
+        faults += bp.trend_format_faults(h)
+    import audit_no_internal_leakage as leak
+    for label, pat in leak.BANNED:
+        hits = leak.spec_hits(h, pat) if label == "internal spec reference" else pat.findall(h)
+        if hits:
+            faults.append(f"deploy leakage gate: {label} ({hits[:2]})")
+    faults += [f"deploy leakage gate: {x}" for x in leak.rendered_hits(h)]
+    post["body_html"] = h
+    json.dump(post, open(W + f"{pid}.preflight.json", "w"), ensure_ascii=False)
+    aud = subprocess.run(["node", "-e",
+        "import('%s/functions/_lib/post_format.js').then(m=>{const p=JSON.parse(require('fs').readFileSync('%s','utf8'));"
+        "const a=m.auditPublishable(p);console.log(JSON.stringify({publishable:a.publishable,problems:a.problems}))})"
+        % (bp.ROOT, W + f"{pid}.preflight.json")], capture_output=True, text=True, cwd=bp.ROOT)
+    v = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
+    if not v.get("publishable"):
+        faults += [f"site publish audit: {x}" for x in (v.get("problems") or ["refused"])]
+    json.dump(faults, open(W + "preflight.json", "w"), ensure_ascii=False, indent=1)
+    print(f"{pid}: {len(faults)} deterministic fault(s)")
+    for x in faults[:25]:
+        print("   ", str(x)[:200])
+
+
 if __name__ == "__main__":
-    publish() if "--publish" in sys.argv else main()
+    publish() if "--publish" in sys.argv else preflight() if "--preflight" in sys.argv else main()
