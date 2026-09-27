@@ -1766,12 +1766,22 @@ sentence, return its corrected html in fixed_sections and mark it ok; a section 
 not ok. GENERATED: {json.dumps(draft['sections'])[:60000]}
 Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
   "sections": {{"<key>": {{"ok": true|false, "why": "..."}}, ...}} for every generated key}}""")
-    if not verdict:
+    if not isinstance(verdict, dict) or not verdict:
         return pmid, None, "verification produced nothing"
     if not verdict.get("ok"):
-        return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+        return pmid, None, f"refused: {'; '.join(str(x) for x in (verdict.get('problems') or [])[:2])[:160]}"
     per = verdict.get("sections") or {}
-    failing = [k for k in draft["sections"] if not (per.get(k) or {}).get("ok")]
+    per = per if isinstance(per, dict) else {}
+
+    def _passed(x):
+        # the verifier answers {"ok": true, "why": …}, and sometimes a bare
+        # true or "ok" (W21 crashed on 'str' object has no attribute 'get')
+        if isinstance(x, dict):
+            return bool(x.get("ok"))
+        if isinstance(x, bool):
+            return x
+        return isinstance(x, str) and x.strip().lower() in ("ok", "true", "pass", "passed", "yes")
+    failing = [k for k in draft["sections"] if not _passed(per.get(k))]
     if failing:
         return pmid, None, f"section(s) not passed by the verifier: {failing[:4]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
