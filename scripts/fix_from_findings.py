@@ -116,6 +116,11 @@ def main():
     h, n_abs = bp.fix_absolute_words(W, h, real)
     h, n_st = bp.author_stub_sections(W, h, real)
     h, _b = bp.cite_uncited_cards(W, h, real)
+    h = bp.recount_headings(h)
+    h, n_tot = bp.fix_document_totals(W, h, real)      # prose totals ("72 papers across 9 topics")
+    n_tot and print(f"  {n_tot} total(s) in the prose rebuilt from what the page holds")
+    h, n_cnt = bp.refresh_page_counts(h)
+    n_cnt and print(f"  {n_cnt} count display(s) rebuilt from what the page holds (hero, counters, design chart)")
     meta = {q: bp._paper_record(q, r)["meta_verified"] for q, r in real.items() if bp._paper_record(q, r)["meta_verified"]}
     h, _order = bp._number_final_page(W, h, meta)
     h = bp.tidy_prose_spacing(h)

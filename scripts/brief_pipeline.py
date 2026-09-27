@@ -3043,6 +3043,73 @@ def rebuild_pyramid_from_papers(h: str) -> tuple:
     return h, 1
 
 
+def refresh_page_counts(h: str) -> tuple:
+    """The hero line, the counters and the study-design chart say what the page
+    HOLDS: distinct carded papers, topic sections, the cards' design badges.
+    W25 was reviewed with "62 papers across 10 topics", counters of 62 and 10,
+    and a design chart summing to 62, on a page of 33 papers in 8 topics — the
+    pre-curation figures, which no pass had ever recomputed outside the prose.
+    A counter code cannot compute from the page ("with effect estimates") is
+    removed rather than guessed. (h, changed)."""
+    cards = CARD_RE.findall(h)
+    papers = sorted({(_pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]) for c in cards} - {None})
+    total = len(papers)
+    n_topics = len(_topic_sections(h))
+    designs: dict = {}
+    seen = set()
+    for c in cards:
+        pm = _pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+        b = re.search(r'<span class="mz-cite-design">([^<]+)</span>', c)
+        if not pm or pm in seen or not b:
+            continue
+        seen.add(pm)
+        parts = [x.strip() for x in H.unescape(b.group(1)).split("·")]
+        d = (parts[1] if len(parts) > 1 and parts[0].startswith("[") else parts[0]).strip()
+        if d and not d.lower().startswith("peer-reviewed"):
+            designs[d] = designs.get(d, 0) + 1
+    if not total:
+        return h, 0
+    changed = 0
+
+    def across(mm):
+        return f"{total}{mm.group(2)}{n_topics}{mm.group(4)}" if n_topics else mm.group(0)
+    for m in list(re.finditer(r'<p class="subtitle">[\s\S]*?</p>', h))[::-1]:
+        new = re.sub(r"\b(\d+)((?:\s+[a-z]+(?:-[a-z]+)?){0,2}\s+papers?\s+(?:across|spanning|over|in|from)\s+)(\d+)((?:\s+[a-z]+(?:-[a-z]+)?){0,3}\s+(?:topic|topics|areas?)\b)",
+                     across, m.group(0))
+        if new != m.group(0):
+            h = h[:m.start()] + new + h[m.end():]; changed += 1
+    cm = re.search(r'<section class="counters">[\s\S]*?</section>', h)
+    if cm:
+        blocks = re.findall(r'<div class="counter">[\s\S]*?</div></div>', cm.group(0))
+        keep = []
+        for b in blocks:
+            lab = H.unescape(re.sub(r"<[^>]+>", " ", (re.search(r'<div class="label">([\s\S]*?)</div>', b) or [None, ""])[1])).strip().lower()
+            val = None
+            if "paper" in lab:
+                val = total
+            elif "topic" in lab:
+                val = n_topics
+            elif "design" in lab:
+                val = len(designs)
+            if val is None:
+                continue                       # not computable from the page: removed, not guessed
+            keep.append(re.sub(r'data-value="\d+"', f'data-value="{val}"', b))
+        new = '<section class="counters">' + "".join(keep) + "</section>"
+        if new != cm.group(0):
+            h = h[:cm.start()] + new + h[cm.end():]; changed += 1
+    dm = re.search(r'<section class="design-chart">[\s\S]*?</section>', h)
+    if dm and designs:
+        rows = sorted(designs.items(), key=lambda kv: (-kv[1], kv[0]))
+        body = "".join(f'<div class="design-row"><div class="label">{H.escape(d, quote=False)}</div><div class="bar-bg">'
+                       f'<div class="bar-fill" data-width="{round(100 * n / total, 1)}"></div></div><div class="count">{n}</div></div>'
+                       for d, n in rows)
+        new = ('<section class="design-chart"><h2>Study-design distribution</h2><div class="sub">The papers this brief cites, '
+               'by the design each one reports.</div>' + body + "</section>")
+        if new != dm.group(0):
+            h = h[:dm.start()] + new + h[dm.end():]; changed += 1
+    return h, changed
+
+
 def fix_invented_experience(W: str, h: str) -> tuple:
     """A sentence that speaks from the clinician's own patients is rewritten
     from the paper it cites. (h, rewritten).
