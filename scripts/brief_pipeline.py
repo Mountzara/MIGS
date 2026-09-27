@@ -7527,10 +7527,12 @@ def cite_uncited_cards(W: str, h: str, real: dict) -> tuple:
             extra = ("" if attempt == 0 else
                      " Write it in your own plain clinical words, NOT copied from the abstract, with no"
                      " section labels like METHODS or RESULTS.")
-            w = _ask_cached(W, "resynth", f"""Write ONE sentence for a clinician-facing evidence brief, in Dr. Mabini's first person (a DO and
+            w = _ask_cached(W, "resynth", f"""Write ONE sentence for a clinician-facing evidence brief, in Dr. Mabini's voice (a DO and
 complex benign gynecology / minimally invasive gynecologic surgery surgeon), reporting this paper's
-main finding with its key number as the abstract states it.{extra} At most 45 words, plain text, no
-citation markup, ending with a full stop.
+main finding with its key number as the abstract states it — as the paper's finding, by its authors
+or its design ("A Danish cohort of…", "Wang and colleagues found…"), never as the surgeon's own
+patients, practice, lab, survey or study.{extra} At most 45 words, plain text, no citation markup,
+ending with a full stop.
 THE PAPER: {paper}
 Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
             cand = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
@@ -10081,8 +10083,24 @@ def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
 
 
 
-EXPERIENCE_RE = re.compile(r"\b(?:in my (?:practice|clinic|hands|experience)|my patient|a patient of mine|"
-                           r"I (?:saw|treated|operated|managed|had) (?:a|an|this|one|my))\b", re.I)
+# The clinician's own patients, practice or research, claimed for a finding
+# that is someone else's paper. "my patient\b" never matched "my patients",
+# and nothing matched the authorship claims W20's readers quoted: "In our
+# meta-analysis of 56 RCTs", "In my pre-ART evaluations I now note", "In our
+# UK-wide survey… I found", "I find that in mice". "In my review of this
+# study" is reading, not authorship, and stays.
+EXPERIENCE_RE = re.compile(
+    r"\b(?:in my (?:practice|clinic|hands|experience|patients?|cohort|series|lab|laboratory|data|study|studies|trial|survey"
+    r"|(?:[\w-]+ )?evaluations?|(?:[\w-]+ )?assessments?)"
+    # data claimed FROM the clinician's patients ("In my patients with PCOS,
+    # this study found…", "most of my patients — 66.9% —"); "for my patients
+    # weighing IVF, this changes counseling" is applicability and stays
+    r"|(?:in|of|among) my patients|my patient\b|a patient of mine|my (?:lab|laboratory)|our (?:lab|laboratory)"
+    r"|in our (?:[\w-]+ )?(?:meta-analysis|survey|study|trial|cohort|series|practice|clinic|data|analysis|sample)"
+    r"|I (?:saw|treated|operated|managed|had) (?:a|an|this|one|my)"
+    r"|I (?:enrolled|randomi[sz]ed|surveyed|recruited|measured|followed up)"
+    r"|I (?:find|found|see|saw|observed) that in (?:mice|rats|animals|my|our)"
+    r"|we (?:enrolled|randomi[sz]ed|surveyed|recruited|measured|observed|found))\b", re.I)
 
 
 def _invents_experience(t: str) -> bool:

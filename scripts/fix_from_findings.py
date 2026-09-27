@@ -434,6 +434,13 @@ def main():
     n_hd and print(f"  {n_hd} empty section heading(s) written from their sections' content")
     # the mechanical fixes, in code
     h = bp.normalize_legacy_markup(h)
+    # the house-style structure FIRST: a jump-list group that is going to be
+    # removed must not be repaired and cited into first (W20: twelve papers'
+    # only citing sentences were written into the "Surgical Tools" synthesis,
+    # which final assembly then removed with its group)
+    h, _hs = bp.house_style(h, fmt)
+    for x in _hs:
+        print(f"  house style: {x}")
     # a card's design badge is the design alone, on every card ("[2] · RCT ·
     # ELITE" on five of eight cards read as an artifact beside the other three)
     h = re.sub(r'(<span class="mz-cite-design">)\s*\[\d+\]\s*·\s*', r"\1", h)
